@@ -1,0 +1,44 @@
+package ru.pakarpichev.homeworktool.core.navigation
+
+import kotlinx.serialization.Serializable
+
+sealed interface Destination {
+    @Serializable
+    data object MainGraph: Destination
+
+    @Serializable
+    data object AuthGraph: Destination
+
+    @Serializable
+    data object AuthScreen: Destination
+
+    @Serializable
+    data object RegistrationScreen: Destination
+
+    @Serializable
+    data object ConfirmEmailScreen: Destination
+
+    @Serializable
+    data object MainScreen: Destination
+
+    @Serializable
+    data object KanbanScreen: Destination
+
+    @Serializable
+    data class DetailsHomeworkScreen(
+        val subjectNane: String,
+        val homeworkName: String
+    ): Destination
+
+    @Serializable
+    data class HomeworkListScreen(
+        val subjectId: String,
+        val subjectNane: String
+    ): Destination
+
+    @Serializable
+    data class HomeworkAddScreen(
+        val subjectId: String,
+        val isThatFirstHomework: Boolean
+    ): Destination
+}
