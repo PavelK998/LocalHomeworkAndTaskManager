@@ -1,8 +1,5 @@
 package ru.pakarpichev.homeworktool.core.presentation.components.kanban
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.kanban.KanbanTestInfo
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.kanban.StageFromServer
 import javax.inject.Inject
 
 @HiltViewModel

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LocalHomeworkAndTaskManager</string>
+    <string name="create_password">Придумайте пин-код</string>
+    <string name="enter_password">Введите пин-код</string>
+    <string name="repeat_password">Повторите пин-код</string>
+    <string name="incorrect_password">Не верный пин-код</string>
+</resources>

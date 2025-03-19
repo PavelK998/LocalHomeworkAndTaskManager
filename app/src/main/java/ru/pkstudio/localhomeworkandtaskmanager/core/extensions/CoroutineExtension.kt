@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.extensions
+package ru.pkstudio.localhomeworkandtaskmanager.core.extensions
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler

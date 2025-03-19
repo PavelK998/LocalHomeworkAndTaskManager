@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 
 val loadingContainer = Color(0xAA000000)
 
-
+val success = Color(0xFF08A70E)
 val background = Color(0xFF1F1200)
 val primaryContainer = Color(0xFF3D1902)
 val secondaryContainer = Color(0xFF321502)

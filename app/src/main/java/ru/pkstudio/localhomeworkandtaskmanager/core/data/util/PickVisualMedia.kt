@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.data.util
+package ru.pkstudio.localhomeworkandtaskmanager.core.data.util
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult

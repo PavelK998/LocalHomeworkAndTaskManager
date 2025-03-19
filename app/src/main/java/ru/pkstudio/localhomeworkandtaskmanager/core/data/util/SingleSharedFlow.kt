@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.data.util
+package ru.pkstudio.localhomeworkandtaskmanager.core.data.util
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.FlowCollector

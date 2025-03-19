@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.domain.manager
+package ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager
 
 interface DeviceManager {
     fun setUserId(userId: String)
@@ -8,4 +8,10 @@ interface DeviceManager {
     fun setSelectedDisplayMethod(displayMethodId: String)
 
     fun getSelectedDisplayMethod(): String?
+
+    fun setPinCode(pinCode: String)
+
+    fun getPinCode(): String?
+
+    fun startMicroVibrate()
 }
