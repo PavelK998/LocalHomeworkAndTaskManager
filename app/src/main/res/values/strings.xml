@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">LocalHomeworkAndTaskManager</string>
+
+    //core
+    <string name="create_password">Сome up with a PIN code</string>
+    <string name="enter_password">Enter the PIN code</string>
+    <string name="repeat_password">Repeat the PIN code</string>
+    <string name="incorrect_password">Incorrect PIN code</string>
 </resources>

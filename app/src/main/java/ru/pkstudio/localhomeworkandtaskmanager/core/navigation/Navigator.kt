@@ -1,9 +1,9 @@
+package ru.pkstudio.localhomeworkandtaskmanager.core.navigation
+
 import androidx.navigation.NavOptionsBuilder
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
-import ru.pakarpichev.homeworktool.core.navigation.Destination
-import ru.pakarpichev.homeworktool.core.navigation.NavigationAction
 
 interface Navigator {
     val startDestination: Destination

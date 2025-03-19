@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.domain.manager
+package ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager
 
 import android.graphics.drawable.Drawable
 import android.net.Uri

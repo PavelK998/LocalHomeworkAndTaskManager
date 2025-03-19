@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.navigation
+package ru.pkstudio.localhomeworkandtaskmanager.core.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

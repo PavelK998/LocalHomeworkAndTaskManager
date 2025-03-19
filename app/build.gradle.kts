@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.dagger.hilt.android)
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.google.ksp)
-    alias(libs.plugins.google.services)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -59,11 +58,6 @@ dependencies {
     implementation(libs.core.splashscreen)
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
-
-    implementation(platform(libs.google.firebase.bom))
-    implementation(libs.google.firebase.analytics)
-    implementation(libs.google.firebase.firestore)
-    implementation(libs.google.firebase.auth)
 
     implementation(libs.dagger.hilt)
     implementation(libs.androidx.ui.text.google.fonts)

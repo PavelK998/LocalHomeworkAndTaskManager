@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.data.manager
+package ru.pkstudio.localhomeworkandtaskmanager.core.data.manager
 
 import android.content.Context
 import android.graphics.drawable.Drawable
@@ -8,7 +8,7 @@ import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import ru.pakarpichev.homeworktool.core.domain.manager.ResourceManager
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
 import javax.inject.Inject
 
 class ResourceManagerImpl @Inject constructor(@ApplicationContext private val context: Context) :
