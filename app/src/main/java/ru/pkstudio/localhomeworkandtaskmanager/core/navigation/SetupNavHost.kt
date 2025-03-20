@@ -13,6 +13,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.NavigationAction
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.ObserveAsEvents
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListScreen
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListViewModel
 
 @Composable
 fun SetupNavHost(navController: NavHostController, navigator: Navigator) {
@@ -44,6 +46,19 @@ fun SetupNavHost(navController: NavHostController, navigator: Navigator) {
                 val viewModel = hiltViewModel<AuthViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
                 AuthScreen(
+                    uiState = uiState,
+                    handleIntent = viewModel::handleIntent
+                )
+            }
+        }
+
+        navigation<Destination.MainGraph>(
+            startDestination = Destination.MainScreen
+        ) {
+            composable<Destination.MainScreen> {
+                val viewModel = hiltViewModel<SubjectListViewModel>()
+                val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+                SubjectListScreen(
                     uiState = uiState,
                     handleIntent = viewModel::handleIntent
                 )
