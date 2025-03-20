@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -56,6 +57,7 @@ fun AuthScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(bottom = 50.dp),
                     fontSize = 30.sp,
                     text = uiState.titleText
@@ -63,8 +65,8 @@ fun AuthScreen(
 
                 PinCode(
                     text = uiState.text,
-                    emptyColor = Color.White,
-                    filledColor = Color.Cyan,
+                    emptyColor = MaterialTheme.colorScheme.primary,
+                    filledColor = MaterialTheme.colorScheme.tertiary,
                     isError = uiState.isError,
                     isSuccess = uiState.isSuccess,
                 )
@@ -82,7 +84,7 @@ fun AuthScreen(
 }
 
 @Composable
-fun PinCode(
+private fun PinCode(
     modifier: Modifier = Modifier,
     text: String,
     filledColor: Color,
@@ -98,7 +100,8 @@ fun PinCode(
     ) {
         Row(
             modifier = modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -150,13 +153,13 @@ fun Keyboard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 range.forEach { index ->
                     TextButton(
                         colors = ButtonDefaults.buttonColors().copy(
-                            contentColor = Color.Black,
+                            contentColor = MaterialTheme.colorScheme.primary,
                             containerColor = Color.Transparent
                         ),
                         onClick = {
@@ -176,13 +179,13 @@ fun Keyboard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextButton(
                 colors = ButtonDefaults.buttonColors().copy(
-                    contentColor = Color.Black,
+                    contentColor = MaterialTheme.colorScheme.primary,
                     containerColor = Color.Transparent
                 ),
                 onClick = {
@@ -196,7 +199,7 @@ fun Keyboard(
             }
             TextButton(
                 colors = ButtonDefaults.buttonColors().copy(
-                    contentColor = Color.Black,
+                    contentColor = MaterialTheme.colorScheme.primary,
                     containerColor = Color.Transparent
                 ),
                 onClick = {
@@ -209,6 +212,10 @@ fun Keyboard(
                 )
             }
             IconButton(
+                colors = IconButtonDefaults.iconButtonColors().copy(
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    containerColor = Color.Transparent
+                ),
                 onClick = {
                     onKeyboardClick("-")
                 }

@@ -1,20 +1,27 @@
 package ru.pkstudio.localhomeworkandtaskmanager.auth
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
+import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
+import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val deviceManager: DeviceManager,
     private val resourceManager: ResourceManager,
-): ViewModel() {
+    private val navigator: Navigator
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState = _uiState.asStateFlow()
@@ -26,11 +33,11 @@ class AuthViewModel @Inject constructor(
     }
 
     fun handleIntent(intent: AuthIntent) {
-        when(intent) {
+        when (intent) {
             is AuthIntent.OnKeyboardClicked -> {
-                when(intent.text) {
+                when (intent.text) {
                     "-" -> {
-                        if (_uiState.value.text.isNotBlank()){
+                        if (_uiState.value.text.isNotBlank()) {
                             val newString = buildString {
                                 append(_uiState.value.text)
                                 deleteCharAt(_uiState.value.text.length - 1)
@@ -75,7 +82,7 @@ class AuthViewModel @Inject constructor(
                             }
                             if (newString.length == 4) {
                                 if (_uiState.value.isCreatePin) {
-                                    if (firstEnteredPin.isBlank()){
+                                    if (firstEnteredPin.isBlank()) {
                                         firstEnteredPin = newString
                                         _uiState.update {
                                             it.copy(
@@ -86,38 +93,19 @@ class AuthViewModel @Inject constructor(
                                     } else {
                                         val isValid = _uiState.value.text == firstEnteredPin
                                         if (isValid) {
-                                            _uiState.update {
-                                                it.copy(
-                                                    isSuccess = true
-                                                )
-                                            }
-                                            setPinCode(newString)
+                                            deviceManager.setPinCode(pinCode = newString)
+                                            pinSuccess()
                                         } else {
-                                            _uiState.update {
-                                                it.copy(
-                                                    isError = true
-                                                )
-                                            }
-                                            deviceManager.startMicroVibrate()
+                                            pinError()
                                         }
                                     }
                                 } else {
                                     if (validatePinCode(newString)) {
-                                        _uiState.update {
-                                            it.copy(
-                                                isSuccess = true
-                                            )
-                                        }
+                                        pinSuccess()
                                     } else {
-                                        _uiState.update {
-                                            it.copy(
-                                                isError = true
-                                            )
-                                        }
-                                        deviceManager.startMicroVibrate()
+                                        pinError()
                                     }
                                 }
-
                             }
                         }
                     }
@@ -125,8 +113,38 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
+
+    private fun pinSuccess() {
+        _uiState.update {
+            it.copy(
+                isSuccess = true
+            )
+        }
+        viewModelScope.launch {
+            delay(500)
+            navigator.navigate(
+                destination = Destination.MainGraph,
+                navOptions = {
+                    popUpTo<Destination.AuthGraph> {
+                        inclusive = true
+                    }
+                }
+            )
+        }
+    }
+
+    private fun pinError() {
+        _uiState.update {
+            it.copy(
+                isError = true
+            )
+        }
+        deviceManager.startMicroVibrate()
+    }
+
     private fun checkPinCode() {
         val pin = deviceManager.getPinCode()
+        Log.d("xzczxczxc", "checkPinCode: $pin")
         if (pin.isNullOrBlank()) {
             _uiState.update {
                 it.copy(
