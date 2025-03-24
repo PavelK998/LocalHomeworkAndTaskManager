@@ -9,7 +9,11 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.data.manager.ResourceManager
 
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.HomeworkRepositoryImpl
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.StageRepositoryImpl
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.SubjectsRepositoryImpl
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
 
 import javax.inject.Singleton
@@ -47,4 +51,16 @@ abstract class BindRepository {
     abstract fun bindSubjectsRepository(
         subjectsRepositoryImpl: SubjectsRepositoryImpl
     ): SubjectsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindHomeworkRepository(
+        homeworkRepositoryImpl: HomeworkRepositoryImpl
+    ): HomeworkRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindStageRepository(
+        stageRepositoryImpl: StageRepositoryImpl
+    ): StageRepository
 }

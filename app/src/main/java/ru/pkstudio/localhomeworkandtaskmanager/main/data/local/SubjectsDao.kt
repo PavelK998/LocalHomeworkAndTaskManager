@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.model.SubjectsEntity
 
 @Dao
 interface SubjectsDao {
@@ -21,6 +22,6 @@ interface SubjectsDao {
     @Query("SELECT * FROM subjects")
     fun getAllSubjects(): Flow<List<SubjectsEntity>>
 
-    @Query("SELECT * FROM subjects WHERE id = :subjectId")
+    @Query("SELECT * FROM subjects WHERE subjectId = :subjectId")
     suspend fun getSubjectById(subjectId: Long): SubjectsEntity
 }

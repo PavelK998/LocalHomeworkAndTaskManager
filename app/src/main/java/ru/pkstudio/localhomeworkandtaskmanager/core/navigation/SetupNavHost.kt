@@ -1,18 +1,20 @@
-package ru.pakarpichev.homeworktool.core.navigation
+package ru.pkstudio.localhomeworkandtaskmanager.core.navigation
 
-import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import androidx.navigation.toRoute
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthScreen
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthViewModel
-import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
-import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.NavigationAction
-import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.ObserveAsEvents
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkScreen
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkViewModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListScreen
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListViewModel
 
@@ -59,6 +61,36 @@ fun SetupNavHost(navController: NavHostController, navigator: Navigator) {
                 val viewModel = hiltViewModel<SubjectListViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
                 SubjectListScreen(
+                    uiState = uiState,
+                    handleIntent = viewModel::handleIntent
+                )
+            }
+
+            composable<Destination.HomeworkListScreen> { navBackStackEntry ->
+                val args = navBackStackEntry.toRoute<Destination.HomeworkListScreen>()
+                val viewModel = hiltViewModel<HomeworkListViewModel>()
+                val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+                LaunchedEffect(key1 = true) {
+                    viewModel.parseArguments(
+                        subjectId = args.subjectId
+                    )
+                }
+                HomeworkListScreen(
+                    uiState = uiState,
+                    handleIntent = viewModel::handleIntent
+                )
+            }
+
+            composable<Destination.HomeworkAddScreen> { navBackStackEntry ->
+                val args = navBackStackEntry.toRoute<Destination.HomeworkAddScreen>()
+                val viewModel = hiltViewModel<AddHomeworkViewModel>()
+                val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+                LaunchedEffect(key1 = true) {
+                    viewModel.parseArguments(
+                        subjectId = args.subjectId
+                    )
+                }
+                AddHomeworkScreen(
                     uiState = uiState,
                     handleIntent = viewModel::handleIntent
                 )

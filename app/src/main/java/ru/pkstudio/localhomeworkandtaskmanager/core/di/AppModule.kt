@@ -11,6 +11,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.DefaultNavigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.AppDb
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.HomeworkDao
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.StageDao
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.SubjectsDao
 import javax.inject.Singleton
 
@@ -36,6 +38,18 @@ class AppModule {
     @Singleton
     fun provideSubjectsDao(database: AppDb): SubjectsDao {
         return database.subjectsDao
+    }
+
+    @Provides
+    @Singleton
+    fun provideHomeworkDao(database: AppDb): HomeworkDao {
+        return database.homeworkDao
+    }
+
+    @Provides
+    @Singleton
+    fun provideStageDao(database: AppDb): StageDao {
+        return database.stageDao
     }
 
 }

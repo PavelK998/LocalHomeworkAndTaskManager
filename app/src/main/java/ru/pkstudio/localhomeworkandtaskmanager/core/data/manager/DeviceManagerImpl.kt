@@ -54,14 +54,14 @@ class DeviceManagerImpl @Inject constructor(
         }
     }
 
-    override fun setSelectedDisplayMethod(displayMethodId: String) {
+    override fun setSelectedDisplayMethod(displayMethodId: Int) {
         val editor = sharedPreferences.edit()
-        editor.putString(KEY_DISPLAY_ID, displayMethodId)
+        editor.putInt(KEY_DISPLAY_ID, displayMethodId)
         editor.apply()
     }
 
-    override fun getSelectedDisplayMethod(): String? {
-        return sharedPreferences.getString(KEY_DISPLAY_ID, "")
+    override fun getSelectedDisplayMethod(): Int {
+        return sharedPreferences.getInt(KEY_DISPLAY_ID, -1)
     }
 
     companion object {

@@ -33,12 +33,10 @@ sealed interface Destination {
     @Serializable
     data class HomeworkListScreen(
         val subjectId: Long,
-        val subjectNane: String
     ): Destination
 
     @Serializable
     data class HomeworkAddScreen(
-        val subjectId: String,
-        val isThatFirstHomework: Boolean
+        val subjectId: Long
     ): Destination
 }

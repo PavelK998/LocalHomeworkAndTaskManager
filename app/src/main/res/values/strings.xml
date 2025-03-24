@@ -10,4 +10,10 @@
     <string name="add_new_subject">Add new subject</string>
     <string name="confirm_button">OK</string>
     <string name="dismiss_button">Cancel</string>
+    <string name="edit">Edit</string>
+    <string name="kanban">Kanban</string>
+    <string name="list">List</string>
+    <string name="add_homework_title_label">Enter name</string>
+    <string name="add_homework_description_label">Enter description</string>
+    <string name="default_stage">Default</string>
 </resources>
