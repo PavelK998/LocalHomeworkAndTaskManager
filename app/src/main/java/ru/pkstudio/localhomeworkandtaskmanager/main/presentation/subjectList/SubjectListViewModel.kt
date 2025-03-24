@@ -1,6 +1,5 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,24 +9,31 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectUiModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.SubjectModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class SubjectListViewModel @Inject constructor(
     private val subjectsRepository: SubjectsRepository,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val resourceManager: ResourceManager,
+    private val stageRepository: StageRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SubjectListState())
     val uiState = _uiState
         .onStart {
+            checkStage()
             getData()
         }
         .stateIn(
@@ -41,6 +47,7 @@ class SubjectListViewModel @Inject constructor(
             is SubjectListIntent.AddSubject -> {
                 addSubject()
             }
+
             is SubjectListIntent.ChangeNameSubject -> {
                 _uiState.update {
                     it.copy(
@@ -48,6 +55,7 @@ class SubjectListViewModel @Inject constructor(
                     )
                 }
             }
+
             is SubjectListIntent.CloseAddSubject -> {
                 _uiState.update {
                     it.copy(
@@ -55,30 +63,35 @@ class SubjectListViewModel @Inject constructor(
                     )
                 }
             }
+
             is SubjectListIntent.DeleteSubject -> {
                 deleteSubject(intent.index)
             }
+
             is SubjectListIntent.EditSubject -> {
                 updateModel(intent.index)
             }
+
             is SubjectListIntent.LogOutClicked -> {
 
             }
+
             is SubjectListIntent.NavigateToHomeworkScreen -> {
                 viewModelScope.launch {
                     navigator.navigate(
                         destination = Destination.HomeworkListScreen(
                             subjectId = intent.subjectId,
-                            subjectNane = intent.subjectNane
                         )
                     )
                 }
             }
+
             is SubjectListIntent.NavigateUp -> {
                 viewModelScope.launch {
                     navigator.navigateUp()
                 }
             }
+
             is SubjectListIntent.OnEditCommentChanged -> {
                 _uiState.update {
                     it.copy(
@@ -86,6 +99,7 @@ class SubjectListViewModel @Inject constructor(
                     )
                 }
             }
+
             is SubjectListIntent.OnEditTitleChanged -> {
                 _uiState.update {
                     it.copy(
@@ -93,9 +107,11 @@ class SubjectListViewModel @Inject constructor(
                     )
                 }
             }
+
             is SubjectListIntent.OnRevealCardOptionsMenuClicked -> {
-              revealModel(isRevealed = intent.isRevealed, index = intent.index)
+                revealModel(isRevealed = intent.isRevealed, index = intent.index)
             }
+
             is SubjectListIntent.OpenAddSubject -> {
                 _uiState.update {
                     it.copy(
@@ -103,13 +119,44 @@ class SubjectListViewModel @Inject constructor(
                     )
                 }
             }
+
             is SubjectListIntent.TurnEditModeOff -> {
                 turnOffEditModeForModel(intent.index)
             }
+
             is SubjectListIntent.TurnEditModeOn -> {
                 turnOnEditModeForModel(intent.index)
             }
         }
+    }
+
+    private fun checkStage() {
+        viewModelScope.execute(
+            source = {
+                stageRepository.getAllStages()
+            },
+            onSuccess = { stageFlow ->
+                viewModelScope.launch {
+                    stageFlow.collect { stageModelList ->
+                        if (stageModelList.isEmpty()) {
+                            createStage()
+                        }
+                    }
+                }
+            }
+        )
+    }
+
+    private fun createStage() {
+        viewModelScope.execute(
+            source = {
+                stageRepository.insertStage(
+                    stage = StageModel(
+                        stageName = resourceManager.getString(R.string.default_stage)
+                    )
+                )
+            }
+        )
     }
 
     private fun updateModel(index: Int) {
@@ -141,7 +188,7 @@ class SubjectListViewModel @Inject constructor(
 
     private fun revealModel(isRevealed: Boolean, index: Int) {
         val subjectsList = _uiState.value.subjectsList.toMutableList()
-        if (index in subjectsList.indices){
+        if (index in subjectsList.indices) {
             if (isRevealed) {
                 subjectsList.map {
                     it.copy(
@@ -203,7 +250,7 @@ class SubjectListViewModel @Inject constructor(
     }
 
     private fun deleteSubject(index: Int) {
-        if (index in _uiState.value.subjectsList.indices){
+        if (index in _uiState.value.subjectsList.indices) {
             val modelForDelete = _uiState.value.subjectsList[index].toSubjectModel()
             viewModelScope.execute(
                 source = {
@@ -243,9 +290,8 @@ class SubjectListViewModel @Inject constructor(
 
     private fun getData() {
         viewModelScope.launch {
-            subjectsRepository.getAllSubjects().collect{ subjects ->
-                Log.d("xcxzczxczx", "getData: $subjects")
-                if (subjects.isEmpty()){
+            subjectsRepository.getAllSubjects().collect { subjects ->
+                if (subjects.isEmpty()) {
                     _uiState.update {
                         it.copy(
                             isScreenEmpty = true,
@@ -262,7 +308,7 @@ class SubjectListViewModel @Inject constructor(
                     }
                     _uiState.update {
                         it.copy(
-                            subjectsList = subjects.map {  subject ->
+                            subjectsList = subjects.map { subject ->
                                 subject.toSubjectUiModel()
                             },
                             isLoading = false

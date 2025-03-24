@@ -9,4 +9,10 @@
     <string name="add_new_subject">Добавить новый предмет</string>
     <string name="confirm_button">Ок</string>
     <string name="dismiss_button">Отмена</string>
+    <string name="edit">Edit</string>
+    <string name="kanban">Канбан</string>
+    <string name="list">Список</string>
+    <string name="add_homework_title_label">Введите название</string>
+    <string name="add_homework_description_label">Введите описание</string>
+    <string name="default_stage">Стандартная</string>
 </resources>

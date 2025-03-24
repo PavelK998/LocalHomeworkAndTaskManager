@@ -5,9 +5,9 @@ interface DeviceManager {
 
     fun getUserId(): String?
 
-    fun setSelectedDisplayMethod(displayMethodId: String)
+    fun setSelectedDisplayMethod(displayMethodId: Int)
 
-    fun getSelectedDisplayMethod(): String?
+    fun getSelectedDisplayMethod(): Int
 
     fun setPinCode(pinCode: String)
 

@@ -1,6 +1,12 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
+import android.graphics.Bitmap
+
 data class AddHomeworkState(
-    val paramOne: String = "default",
-    val paramTwo: List<String> = emptyList(),
+    val title: String = "",
+    val description: String = "",
+    val subjectName: String = "",
+    val subjectId: String = "",
+    val image: Bitmap? = null,
+    val imagesList: List<Pair<String, Bitmap>> = emptyList()
 )
