@@ -4,21 +4,51 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import ru.pakarpichev.homeworktool.core.data.manager.DeviceManagerImpl
-import ru.pakarpichev.homeworktool.main.data.repository.HomeworkRepositoryImpl
-import ru.pakarpichev.homeworktool.main.data.repository.SubjectsRepositoryImpl
-import ru.pakarpichev.homeworktool.core.domain.manager.DeviceManager
-import ru.pakarpichev.homeworktool.main.domain.repository.HomeworkRepository
-import ru.pakarpichev.homeworktool.main.domain.repository.SubjectsRepository
+import ru.pkstudio.localhomeworkandtaskmanager.core.data.manager.DeviceManagerImpl
+import ru.pkstudio.localhomeworkandtaskmanager.core.data.manager.ResourceManagerImpl
+
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.HomeworkRepositoryImpl
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.StageRepositoryImpl
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.SubjectsRepositoryImpl
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
+
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class BindRepository {
 
+//    @Binds
+//    @Singleton
+//    abstract fun bindSubjectRepository(
+//        subjectsRepositoryImpl: SubjectsRepositoryImpl
+//    ): SubjectsRepository
+//
+//    @Binds
+//    @Singleton
+//    abstract fun bindHomeworkRepository(
+//        homeworkRepositoryImpl: HomeworkRepositoryImpl
+//    ): HomeworkRepository
+
     @Binds
     @Singleton
-    abstract fun bindSubjectRepository(
+    abstract fun bindDeviceManager(
+        deviceManagerImpl: DeviceManagerImpl
+    ): DeviceManager
+
+    @Binds
+    @Singleton
+    abstract fun bindResourceManager(
+        resourceManagerImpl: ResourceManagerImpl
+    ): ResourceManager
+
+    @Binds
+    @Singleton
+    abstract fun bindSubjectsRepository(
         subjectsRepositoryImpl: SubjectsRepositoryImpl
     ): SubjectsRepository
 
@@ -30,7 +60,7 @@ abstract class BindRepository {
 
     @Binds
     @Singleton
-    abstract fun bindDeviceManager(
-        deviceManagerImpl: DeviceManagerImpl
-    ): DeviceManager
+    abstract fun bindStageRepository(
+        stageRepositoryImpl: StageRepositoryImpl
+    ): StageRepository
 }

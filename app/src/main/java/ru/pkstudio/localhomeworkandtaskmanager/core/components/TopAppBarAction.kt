@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.presentation.components
+package ru.pkstudio.localhomeworkandtaskmanager.core.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Immutable

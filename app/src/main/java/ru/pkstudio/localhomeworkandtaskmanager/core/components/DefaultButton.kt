@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.presentation.components
+package ru.pkstudio.localhomeworkandtaskmanager.core.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape

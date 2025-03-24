@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.presentation.components.kanban
+package ru.pkstudio.localhomeworkandtaskmanager.core.components.kanban
 
 data class KanbanTestInfo(
     val string: String,

@@ -17,7 +17,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ru.pakarpichev.homeworktool.ui.theme.HomeworkToolTheme
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.TopAppBarAction
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,7 +86,7 @@ fun DefaultTopAppBar(
 @Preview(showBackground = true)
 @Composable
 private fun DefaultTopAppBarPreview() {
-    HomeworkToolTheme {
+    LocalHomeworkAndTaskManagerTheme {
         DefaultTopAppBar(
             title = "Top bar",
             navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,

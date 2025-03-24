@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.presentation.components
+package ru.pkstudio.localhomeworkandtaskmanager.core.components
 
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon

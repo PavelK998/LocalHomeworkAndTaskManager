@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.navigation
+package ru.pkstudio.localhomeworkandtaskmanager.core.navigation
 
 import kotlinx.serialization.Serializable
 
@@ -32,13 +32,11 @@ sealed interface Destination {
 
     @Serializable
     data class HomeworkListScreen(
-        val subjectId: String,
-        val subjectNane: String
+        val subjectId: Long,
     ): Destination
 
     @Serializable
     data class HomeworkAddScreen(
-        val subjectId: String,
-        val isThatFirstHomework: Boolean
+        val subjectId: Long
     ): Destination
 }

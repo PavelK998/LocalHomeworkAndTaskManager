@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">LocalHomeworkAndTaskManager</string>
+
+    //core
+    <string name="create_password">Сome up with a PIN code</string>
+    <string name="enter_password">Enter the PIN code</string>
+    <string name="repeat_password">Repeat the PIN code</string>
+    <string name="incorrect_password">Incorrect PIN code</string>
+    <string name="subjects">Subjects</string>
+    <string name="add_new_subject">Add new subject</string>
+    <string name="confirm_button">OK</string>
+    <string name="dismiss_button">Cancel</string>
+    <string name="edit">Edit</string>
+    <string name="kanban">Kanban</string>
+    <string name="list">List</string>
+    <string name="add_homework_title_label">Enter name</string>
+    <string name="add_homework_description_label">Enter description</string>
+    <string name="default_stage">Default</string>
 </resources>
