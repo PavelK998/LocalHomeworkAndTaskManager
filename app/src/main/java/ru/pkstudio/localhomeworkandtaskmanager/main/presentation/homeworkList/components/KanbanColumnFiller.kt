@@ -68,7 +68,8 @@ private fun KanbanColumnFillerPreview() {
             imageUrl = "",
             isCheckBoxVisible = false,
             isChecked = false,
-            stageName = ""
+            stageName = "",
+            subjectId = 0L
 
         )
     )

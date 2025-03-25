@@ -5,6 +5,7 @@ data class HomeworkUiModel(
     val addDate: String,
     val name: String,
     val description: String,
+    val subjectId: Long,
     val startDate: String,
     val endDate: String,
     val stageName: String,

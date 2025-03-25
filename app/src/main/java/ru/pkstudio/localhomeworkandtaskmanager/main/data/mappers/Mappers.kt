@@ -174,7 +174,41 @@ fun HomeworkModel.toHomeworkUiModel(): HomeworkUiModel {
         isChecked = false,
         name = name,
         stageName = stage,
-        stageId = stageId
+        stageId = stageId,
+        subjectId = subjectId
+    )
+}
+
+fun HomeworkUiModel.toHomeworkModel(): HomeworkModel {
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy   HH:mm")
+    val addDate = try {
+        LocalDateTime.parse(this.addDate, dateTimeFormatter)
+    } catch (e: Exception) {
+        null
+    }
+
+    val endDate = try {
+        LocalDate.parse(this.endDate, dateTimeFormatter)
+    } catch (e: Exception) {
+        null
+    }
+
+    val startDate = try {
+        LocalDate.parse(this.startDate, dateTimeFormatter)
+    } catch (e: Exception) {
+        null
+    }
+    return HomeworkModel(
+        id = id,
+        addDate = addDate,
+        description = description,
+        endDate = endDate,
+        startDate = startDate,
+        imageUrl = imageUrl,
+        name = name,
+        stageId = stageId,
+        stage = stageName,
+        subjectId = subjectId
     )
 }
 
@@ -188,14 +222,16 @@ fun List<HomeworkModel>.toHomeworkUiModelList(): List<HomeworkUiModel> {
 fun StageEntity.toStageModel(): StageModel {
     return StageModel(
         id = id,
-        stageName = stageName
+        stageName = stageName,
+        position = position
     )
 }
 
 fun StageModel.toStageEntity(): StageEntity {
     return StageEntity(
         id = id,
-        stageName = stageName
+        stageName = stageName,
+        position = position
     )
 }
 
@@ -203,7 +239,8 @@ fun List<StageEntity>.toStageModelList(): List<StageModel> {
     return map {
         StageModel(
             id = it.id,
-            stageName = it.stageName
+            stageName = it.stageName,
+            position = it.position
         )
     }
 }

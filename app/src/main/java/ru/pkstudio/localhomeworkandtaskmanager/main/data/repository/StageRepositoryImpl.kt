@@ -30,9 +30,21 @@ class StageRepositoryImpl @Inject constructor(
         stageDao.getStageById(stageId).toStageModel()
     }
 
-    override suspend fun getAllStages() = withContext(Dispatchers.IO) {
+    override suspend fun getAllStagesSingleTime() = withContext(Dispatchers.IO) {
+        stageDao.getAllStagesSingleTime().toStageModelList()
+    }
+
+    override suspend fun getAllStages()= withContext(Dispatchers.IO) {
         stageDao.getAllStages().map {
             it.toStageModelList()
         }
+    }
+
+    override suspend fun deleteStageFromPosition(stage: StageModel)= withContext(Dispatchers.IO) {
+        stageDao.deleteWithShift(stage = stage.toStageEntity())
+    }
+
+    override suspend fun insertStageToPosition(stage: StageModel) = withContext(Dispatchers.IO) {
+        stageDao.insertWithShift(stage = stage.toStageEntity())
     }
 }

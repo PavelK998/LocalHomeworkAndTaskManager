@@ -18,8 +18,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.Constants
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkUiModelList
-import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.StageUiModel
@@ -37,14 +37,12 @@ class HomeworkListViewModel @Inject constructor(
     private val list = resourceManager.getString(R.string.list)
 
     private var subjectId = 0L
-    private var stagesList = emptyList<StageModel>()
     private var isDisplayMethodChosen = false
+    private var isBackButtonClicked = false
 
     fun parseArguments(subjectId: Long) {
         this.subjectId = subjectId
-        Log.d("fdgdfgdfgdfgfdgdf", "parseArguments: $subjectId")
         getHomework(subjectId)
-        getStage()
     }
 
     private val _uiState = MutableStateFlow(
@@ -126,6 +124,14 @@ class HomeworkListViewModel @Inject constructor(
             is HomeworkListIntent.TurnEditMode -> {
 
             }
+
+            is HomeworkListIntent.OnItemMoved -> {
+                moveKanbanItem(
+                    oldRowId = intent.oldRowId,
+                    oldColumnId = intent.oldColumnId,
+                    newRowId = intent.newRowId
+                )
+            }
         }
     }
 
@@ -142,7 +148,6 @@ class HomeworkListViewModel @Inject constructor(
                 }
 
                 Constants.KANBAN.ordinal -> {
-                    Log.d("dfgdfgdfgfgdf", "getDisplayMethod: ${_uiState.value.kanbanItemsList}")
                     _uiState.update {
                         it.copy(
                             segmentedButtonSelectedIndex = _uiState.value.segmentedButtonOptions.indexOf(kanban),
@@ -158,23 +163,6 @@ class HomeworkListViewModel @Inject constructor(
         deviceManager.setSelectedDisplayMethod(displayMethod)
     }
 
-    private fun getStage() = viewModelScope.execute(
-        source = {
-            stageRepository.getAllStages()
-        },
-        onSuccess = { stageFlow ->
-            viewModelScope.launch {
-                stageFlow.collect { stageList ->
-                    stagesList = stageList
-                }
-            }
-            if (!isDisplayMethodChosen) {
-                getDisplayMethod()
-                isDisplayMethodChosen = true
-            }
-        }
-    )
-
     private fun getHomework(subjectId: Long) {
         viewModelScope.execute(
             source = {
@@ -183,6 +171,7 @@ class HomeworkListViewModel @Inject constructor(
                 )
             },
             onSuccess = { subjectWithHomework ->
+                Log.d("xvxcvxcvcxv", "getHomework: $subjectWithHomework")
                 if (subjectWithHomework.homework.isEmpty()) {
                     _uiState.update {
                         it.copy(
@@ -191,8 +180,9 @@ class HomeworkListViewModel @Inject constructor(
                         )
                     }
                 } else {
-                    _uiState.update {
-                        val stageUiModelList = stagesList.map { stage ->
+                    viewModelScope.launch {
+                        val stages = stageRepository.getAllStagesSingleTime()
+                        val stageUiModelList = stages.map { stage ->
                             StageUiModel(
                                 id = stage.id?: 0L,
                                 stageName = stage.stageName,
@@ -201,26 +191,64 @@ class HomeworkListViewModel @Inject constructor(
                                 }.size.toString()
                             )
                         }
-                        it.copy(
-                            kanbanItemsList = stageUiModelList.map { stage ->
-                                KanbanItem(
-                                    rowItem = stage,
-                                    columnItems = subjectWithHomework.homework.toHomeworkUiModelList()
-                                )
-                            },
-                            homeworkList = subjectWithHomework.homework.toHomeworkUiModelList(),
-                            isLoading = false,
-                            isScreenEmpty = false
-                        )
+                        _uiState.update {
+                            it.copy(
+                                kanbanItemsList = stageUiModelList.map { stage ->
+                                    KanbanItem(
+                                        rowItem = stage,
+                                        columnItems = subjectWithHomework.homework.filter { homeworkModel ->
+                                            homeworkModel.stageId == stage.id
+                                        }.toHomeworkUiModelList()
+                                    )
+                                },
+                                homeworkList = subjectWithHomework.homework.toHomeworkUiModelList(),
+                                isLoading = false,
+                                isScreenEmpty = false
+                            )
+                        }
+                        getDisplayMethod()
                     }
                 }
             }
         )
     }
 
+    private fun moveKanbanItem(
+        oldRowId: Int,
+        oldColumnId: Int,
+        newRowId: Int
+    ) {
+        val kanbanItems = _uiState.value.kanbanItemsList.toMutableList()
+        if (oldRowId in kanbanItems.indices && newRowId in kanbanItems.indices){
+            if (oldColumnId in kanbanItems[oldRowId].columnItems.indices){
+                val homeworkModel = kanbanItems[oldRowId].columnItems[oldColumnId].copy(
+                    stageId = kanbanItems[newRowId].rowItem.id,
+                    stageName = kanbanItems[newRowId].rowItem.stageName,
+                )
+
+                viewModelScope.execute(
+                    source = {
+                        homeworkRepository.updateHomework(
+                            homework = homeworkModel.toHomeworkModel()
+                        )
+                    },
+                    onSuccess = {
+                        getHomework(subjectId = subjectId)
+                    }
+                )
+            }
+
+
+        }
+
+    }
+
     private fun navigateUp(){
-        viewModelScope.launch {
-            navigator.navigateUp()
+        if (!isBackButtonClicked){
+            viewModelScope.launch {
+                navigator.navigateUp()
+                isBackButtonClicked = true
+            }
         }
     }
 }

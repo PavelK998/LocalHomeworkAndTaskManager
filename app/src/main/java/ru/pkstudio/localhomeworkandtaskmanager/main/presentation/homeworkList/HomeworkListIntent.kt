@@ -13,9 +13,15 @@ sealed interface HomeworkListIntent {
 
     data object DeleteCards : HomeworkListIntent
 
-    data object NavigateUp: HomeworkListIntent
+    data object NavigateUp : HomeworkListIntent
 
-    data object TurnEditMode: HomeworkListIntent
+    data object TurnEditMode : HomeworkListIntent
 
-    data class OnSegmentedButtonClick(val index: Int): HomeworkListIntent
+    data class OnSegmentedButtonClick(val index: Int) : HomeworkListIntent
+
+    data class OnItemMoved(
+        val oldRowId: Int,
+        val oldColumnId: Int,
+        val newRowId: Int
+    ) : HomeworkListIntent
 }
