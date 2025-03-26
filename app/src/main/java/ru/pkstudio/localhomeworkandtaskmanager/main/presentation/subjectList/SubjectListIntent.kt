@@ -13,6 +13,10 @@ sealed interface SubjectListIntent {
 
     data object CloseAddSubject: SubjectListIntent
 
+    data object OpenDrawer: SubjectListIntent
+
+    data object CloseDrawer: SubjectListIntent
+
 
     data class ChangeNameSubject(val text: String): SubjectListIntent
 

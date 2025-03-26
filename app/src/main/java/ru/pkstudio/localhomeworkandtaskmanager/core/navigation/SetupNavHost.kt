@@ -2,8 +2,11 @@ package ru.pkstudio.localhomeworkandtaskmanager.core.navigation
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -11,8 +14,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
+import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthScreen
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthViewModel
+import ru.pkstudio.localhomeworkandtaskmanager.core.util.ObserveAsActions
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStagesScreen
@@ -22,6 +27,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.Ho
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListScreen
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListUiAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListViewModel
 
 @Composable
@@ -71,11 +77,29 @@ fun SetupNavHost(navController: NavHostController, navigator: Navigator) {
                     ExitTransition.None
                 }
             ) {
+                val coroutineScope = rememberCoroutineScope()
+                val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val viewModel = hiltViewModel<SubjectListViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+                ObserveAsActions(flow = viewModel.uiAction) { action ->
+                    when (action) {
+                        is SubjectListUiAction.CloseDrawer -> {
+                            coroutineScope.launch {
+                                drawerState.close()
+                            }
+                        }
+
+                        is SubjectListUiAction.OpenDrawer -> {
+                            coroutineScope.launch {
+                                drawerState.open()
+                            }
+                        }
+                    }
+                }
                 SubjectListScreen(
                     uiState = uiState,
-                    handleIntent = viewModel::handleIntent
+                    handleIntent = viewModel::handleIntent,
+                    drawerState = drawerState
                 )
             }
 

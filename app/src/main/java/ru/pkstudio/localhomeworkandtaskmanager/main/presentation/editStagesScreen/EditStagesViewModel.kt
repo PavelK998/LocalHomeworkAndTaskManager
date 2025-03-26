@@ -29,6 +29,8 @@ class EditStagesViewModel @Inject constructor(
     private val resourceManager: ResourceManager
 ) : ViewModel() {
 
+    private var isNavigateBtnClicked = false
+
     private val _renameFlow = MutableStateFlow(EditStageResult())
 
     private val _uiState = MutableStateFlow(EditStagesState())
@@ -60,6 +62,15 @@ class EditStagesViewModel @Inject constructor(
 
             is EditStagesIntent.OnDeleteStageBtmClick -> {
                 deleteStage(intent.stage)
+            }
+
+            is EditStagesIntent.NavigateUp -> {
+                if (!isNavigateBtnClicked) {
+                    viewModelScope.launch {
+                        navigator.navigateUp()
+                    }
+                    isNavigateBtnClicked = true
+                }
             }
         }
     }
