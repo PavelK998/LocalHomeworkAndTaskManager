@@ -151,7 +151,8 @@ private fun HomeworkCardPreview() {
                 isChecked = false,
                 isCheckBoxVisible = false,
                 stageName = "",
-                stageId = 0L
+                stageId = 0L,
+                subjectId = 0L
             ),
             onCheckCardClicked = { _ -> },
             goToDetails = {},

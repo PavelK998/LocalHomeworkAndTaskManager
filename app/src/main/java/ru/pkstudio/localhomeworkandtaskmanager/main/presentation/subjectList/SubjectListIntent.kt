@@ -13,7 +13,6 @@ sealed interface SubjectListIntent {
 
     data object CloseAddSubject: SubjectListIntent
 
-    data object NavigateUp: SubjectListIntent
 
     data class ChangeNameSubject(val text: String): SubjectListIntent
 
@@ -33,5 +32,8 @@ sealed interface SubjectListIntent {
     data class OnEditTitleChanged(val text: String): SubjectListIntent
 
     data class OnEditCommentChanged(val text: String): SubjectListIntent
+
+
+    data object OnSettingClicked: SubjectListIntent
 
 }

@@ -8,4 +8,5 @@ data class StageEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long? = null,
     val stageName: String,
+    val position: Int,
 )

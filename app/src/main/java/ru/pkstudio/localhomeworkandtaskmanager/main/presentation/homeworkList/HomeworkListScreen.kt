@@ -207,7 +207,13 @@ fun HomeworkListScreen(
 
                         },
                         onEndDragAndDrop = { oldRowId, oldColumnId, newRowId ->
-
+                            handleIntent(
+                                HomeworkListIntent.OnItemMoved(
+                                    oldRowId = oldRowId,
+                                    oldColumnId = oldColumnId,
+                                    newRowId = newRowId
+                                )
+                            )
                         }
                     )
 

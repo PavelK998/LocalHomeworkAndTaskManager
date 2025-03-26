@@ -86,12 +86,6 @@ class SubjectListViewModel @Inject constructor(
                 }
             }
 
-            is SubjectListIntent.NavigateUp -> {
-                viewModelScope.launch {
-                    navigator.navigateUp()
-                }
-            }
-
             is SubjectListIntent.OnEditCommentChanged -> {
                 _uiState.update {
                     it.copy(
@@ -127,21 +121,23 @@ class SubjectListViewModel @Inject constructor(
             is SubjectListIntent.TurnEditModeOn -> {
                 turnOnEditModeForModel(intent.index)
             }
+
+            is SubjectListIntent.OnSettingClicked -> {
+                viewModelScope.launch {
+                    navigator.navigate(Destination.SettingsScreen)
+                }
+            }
         }
     }
 
     private fun checkStage() {
         viewModelScope.execute(
             source = {
-                stageRepository.getAllStages()
+                stageRepository.getAllStagesSingleTime()
             },
-            onSuccess = { stageFlow ->
-                viewModelScope.launch {
-                    stageFlow.collect { stageModelList ->
-                        if (stageModelList.isEmpty()) {
-                            createStage()
-                        }
-                    }
+            onSuccess = { stageModelList ->
+                if (stageModelList.isEmpty()) {
+                    createStage()
                 }
             }
         )
@@ -152,7 +148,8 @@ class SubjectListViewModel @Inject constructor(
             source = {
                 stageRepository.insertStage(
                     stage = StageModel(
-                        stageName = resourceManager.getString(R.string.default_stage)
+                        stageName = resourceManager.getString(R.string.default_stage),
+                        position = 0
                     )
                 )
             }

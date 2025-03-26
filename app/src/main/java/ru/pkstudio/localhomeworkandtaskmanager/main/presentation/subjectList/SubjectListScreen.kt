@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -16,6 +18,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,8 +31,11 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,31 +57,86 @@ fun SubjectListScreen(
     uiState: SubjectListState,
     handleIntent: (SubjectListIntent) -> Unit,
 ) {
+    val localView = LocalView.current
+    val density = LocalDensity.current
+
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
+
             ModalDrawerSheet(
+                modifier = Modifier.width(
+                    with(density) { (localView.width -(localView.width / 4)).toDp()}
+                ),
                 drawerContainerColor = MaterialTheme.colorScheme.surface
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     Box(
                         modifier = Modifier
+                            .fillMaxWidth()
                             .padding(8.dp)
-                            .size(100.dp)
+                            .weight(0.6f),
 
                     ) {
-                        Image(
-                            modifier = Modifier.size(100.dp),
-                            painter = painterResource(id = R.drawable.logo4),
-                            contentDescription = "logo"
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Image(
+                                modifier = Modifier.size(100.dp),
+                                painter = painterResource(id = R.drawable.logo4),
+                                contentDescription = "logo"
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(top = 16.dp),
+                                thickness = 2.dp,
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                        }
+
+                    }
+                    Column(
+                        modifier = Modifier.weight(1.4f),
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        DefaultButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            onClick = {
+
+                            },
+                            textStyle = MaterialTheme.typography.headlineSmall,
+                            text = stringResource(id = R.string.import_database)
+                        )
+
+                        DefaultButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            onClick = {
+
+                            },
+                            textStyle = MaterialTheme.typography.headlineSmall,
+                            text = stringResource(id = R.string.export_database)
+                        )
+
+                        DefaultButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 48.dp),
+                            onClick = {
+                                handleIntent(SubjectListIntent.OnSettingClicked)
+                            },
+                            textStyle = MaterialTheme.typography.headlineSmall,
+                            text = stringResource(id = R.string.settings)
                         )
                     }
+
                 }
             }
         }
@@ -260,7 +321,10 @@ fun SubjectListScreen(
 private fun Preview() {
     LocalHomeworkAndTaskManagerTheme {
         SubjectListScreen(
-            uiState = SubjectListState(),
+            uiState = SubjectListState(
+                isLoading = false,
+                isScreenEmpty = false
+            ),
             handleIntent = {}
         )
     }

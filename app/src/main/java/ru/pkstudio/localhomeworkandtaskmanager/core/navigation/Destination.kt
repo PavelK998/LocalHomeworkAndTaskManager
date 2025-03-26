@@ -39,4 +39,10 @@ sealed interface Destination {
     data class HomeworkAddScreen(
         val subjectId: Long
     ): Destination
+
+    @Serializable
+    data object StageEditScreen: Destination
+
+    @Serializable
+    data object SettingsScreen: Destination
 }
