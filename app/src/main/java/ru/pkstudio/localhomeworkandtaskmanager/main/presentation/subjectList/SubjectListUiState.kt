@@ -1,7 +1,9 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList
 
+import androidx.compose.runtime.Immutable
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.uiModel.SubjectUiModel
 
+@Immutable
 data class SubjectListState(
     val paramOne: String = "default",
     val newSubjectName: String = "",

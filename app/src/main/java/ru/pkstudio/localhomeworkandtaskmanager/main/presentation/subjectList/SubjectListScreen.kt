@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -30,7 +31,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,7 +40,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import ru.pakarpichev.homeworktool.core.presentation.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultButton
@@ -56,12 +55,12 @@ import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskMana
 fun SubjectListScreen(
     uiState: SubjectListState,
     handleIntent: (SubjectListIntent) -> Unit,
+    drawerState: DrawerState
 ) {
     val localView = LocalView.current
     val density = LocalDensity.current
-
-    val scope = rememberCoroutineScope()
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    
+    
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -148,9 +147,7 @@ fun SubjectListScreen(
                     title = stringResource(id = R.string.subjects),
                     navigationIcon = Icons.Default.Menu,
                     navigationAction = {
-                        scope.launch {
-                            drawerState.open()
-                        }
+                        handleIntent(SubjectListIntent.OpenDrawer)
                     },
                     actions = emptyList()
                 )
@@ -325,7 +322,8 @@ private fun Preview() {
                 isLoading = false,
                 isScreenEmpty = false
             ),
-            handleIntent = {}
+            handleIntent = {},
+            drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         )
     }
 }

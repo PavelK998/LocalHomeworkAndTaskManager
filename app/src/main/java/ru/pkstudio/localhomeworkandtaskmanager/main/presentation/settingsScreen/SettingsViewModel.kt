@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
@@ -17,16 +16,10 @@ class SettingsViewModel @Inject constructor(
     private val navigator: Navigator
 ) : ViewModel() {
 
-    private var hasLoadedInitialData = false
+    private var isNavigateBtnClicked = false
 
     private val _uiState = MutableStateFlow(SettingsState())
     val uiState = _uiState
-        .onStart {
-            if (!hasLoadedInitialData) {
-                /** Load initial data here **/
-                hasLoadedInitialData = true
-            }
-        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000L),
@@ -38,6 +31,15 @@ class SettingsViewModel @Inject constructor(
             is SettingsIntent.OnEditStagesClicked -> {
                 viewModelScope.launch {
                     navigator.navigate(Destination.StageEditScreen)
+                }
+            }
+
+            is SettingsIntent.NavigateUp -> {
+                if (!isNavigateBtnClicked) {
+                    viewModelScope.launch {
+                        navigator.navigateUp()
+                    }
+                    isNavigateBtnClicked = true
                 }
             }
         }

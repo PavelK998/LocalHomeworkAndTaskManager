@@ -1,6 +1,5 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -171,10 +170,10 @@ class HomeworkListViewModel @Inject constructor(
                 )
             },
             onSuccess = { subjectWithHomework ->
-                Log.d("xvxcvxcvcxv", "getHomework: $subjectWithHomework")
                 if (subjectWithHomework.homework.isEmpty()) {
                     _uiState.update {
                         it.copy(
+                            subjectName = subjectWithHomework.subject.subjectName,
                             isLoading = false,
                             isScreenEmpty = true
                         )
@@ -193,6 +192,7 @@ class HomeworkListViewModel @Inject constructor(
                         }
                         _uiState.update {
                             it.copy(
+                                subjectName = subjectWithHomework.subject.subjectName,
                                 kanbanItemsList = stageUiModelList.map { stage ->
                                     KanbanItem(
                                         rowItem = stage,

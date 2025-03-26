@@ -3,13 +3,16 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.core.data.util.SingleSharedFlow
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
@@ -29,6 +32,9 @@ class SubjectListViewModel @Inject constructor(
     private val resourceManager: ResourceManager,
     private val stageRepository: StageRepository
 ) : ViewModel() {
+
+    private val _uiAction = SingleSharedFlow<SubjectListUiAction>()
+    val uiAction = _uiAction.asSharedFlow()
 
     private val _uiState = MutableStateFlow(SubjectListState())
     val uiState = _uiState
@@ -123,9 +129,19 @@ class SubjectListViewModel @Inject constructor(
             }
 
             is SubjectListIntent.OnSettingClicked -> {
+
                 viewModelScope.launch {
+                    _uiAction.tryEmit(SubjectListUiAction.CloseDrawer)
+                    delay(180)
                     navigator.navigate(Destination.SettingsScreen)
                 }
+            }
+
+            is SubjectListIntent.CloseDrawer -> {
+                _uiAction.tryEmit(SubjectListUiAction.CloseDrawer)
+            }
+            is SubjectListIntent.OpenDrawer -> {
+                _uiAction.tryEmit(SubjectListUiAction.OpenDrawer)
             }
         }
     }
