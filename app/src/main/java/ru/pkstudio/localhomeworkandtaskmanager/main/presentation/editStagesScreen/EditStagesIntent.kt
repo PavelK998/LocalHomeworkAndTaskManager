@@ -1,7 +1,5 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen
 
-import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
-
 sealed interface EditStagesIntent {
 
     data object NavigateUp : EditStagesIntent
@@ -10,6 +8,10 @@ sealed interface EditStagesIntent {
 
     data class OnAddStageBtmClick (val position: Int) : EditStagesIntent
 
-    data class OnDeleteStageBtmClick (val stage: StageModel) : EditStagesIntent
+    data class OnDeleteStageBtmClick (val index: Int) : EditStagesIntent
+
+    data object ConfirmDeleteStage : EditStagesIntent
+
+    data object CloseDeleteDialog : EditStagesIntent
 
 }

@@ -23,7 +23,10 @@
     <string name="name_subject">Название</string>
     <string name="comment">Комментарий(опционально)</string>
     <string name="delete_dialog_title">Вы уверены, что хотите удалить этот предмет?</string>
+    <string name="delete_dialog_title_stage">Вы уверены, что хотите удалить этот этап?</string>
     <string name="comment_subjects_delete_dialog">Все связанные данные будут удалены</string>
+    <string name="comment_subjects_delete_dialog_stage">Все связанные данные будут перенесены в этап: </string>
+    <string name="delete_single_stage">Вы не можете удалить единственный этап</string>
     <string name="enable_dark_theme">Включить темную тему</string>
     <string name="enable_light_theme">Включить светлую тему</string>
     <string name="enable_system_theme">Включить системные настройки</string>

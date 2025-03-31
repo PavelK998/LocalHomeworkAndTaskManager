@@ -24,7 +24,10 @@
     <string name="name_subject">Name</string>
     <string name="comment">Comment(optional)</string>
     <string name="delete_dialog_title">Are you suse you want to delete this subject?</string>
+    <string name="delete_dialog_title_stage">Are you suse you want to delete this subject?</string>
+    <string name="comment_subjects_delete_dialog_stage">All related data will be moved to stage:</string>
     <string name="comment_subjects_delete_dialog">All related data will be deleted</string>
+    <string name="delete_single_stage">You can not delete a single stage</string>
     <string name="enable_dark_theme">Enable dark theme</string>
     <string name="enable_light_theme">Enable light theme</string>
     <string name="enable_system_theme">Enable system default theme</string>

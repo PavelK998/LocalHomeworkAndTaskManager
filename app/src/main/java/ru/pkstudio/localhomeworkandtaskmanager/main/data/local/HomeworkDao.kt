@@ -28,4 +28,7 @@ interface HomeworkDao {
     @Transaction
     @Query("SELECT * FROM subjects WHERE subjectId = :subjectId")
     suspend fun getHomeworkWithSubjectById(subjectId: Long): SubjectWithHomeworkData
+
+    @Query("UPDATE homework SET stageId = :targetStageId WHERE stageId = :fromStageId")
+    suspend fun changeHomeworkStagesAfterDeleteStage(fromStageId: Long, targetStageId: Long)
 }
