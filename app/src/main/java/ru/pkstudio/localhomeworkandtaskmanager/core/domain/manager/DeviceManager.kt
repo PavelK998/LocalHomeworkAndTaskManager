@@ -13,5 +13,9 @@ interface DeviceManager {
 
     fun getPinCode(): String?
 
+    fun setTheme(themeId: Int)
+
+    fun getTheme(): Int
+
     fun startMicroVibrate()
 }

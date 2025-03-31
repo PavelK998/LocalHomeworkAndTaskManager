@@ -9,6 +9,8 @@ sealed interface SubjectListIntent {
 
     data object OpenAddSubject: SubjectListIntent
 
+    data object CloseDeleteDialog: SubjectListIntent
+
     data object LogOutClicked: SubjectListIntent
 
     data object CloseAddSubject: SubjectListIntent
@@ -20,6 +22,8 @@ sealed interface SubjectListIntent {
 
     data class ChangeNameSubject(val text: String): SubjectListIntent
 
+    data class ChangeCommentSubject(val text: String): SubjectListIntent
+
     data object AddSubject: SubjectListIntent
 
     data class TurnEditModeOn(val index: Int): SubjectListIntent
@@ -28,6 +32,8 @@ sealed interface SubjectListIntent {
 
 
     data class TurnEditModeOff(val index: Int) : SubjectListIntent
+
+    data object ConfirmDeleteSubject: SubjectListIntent
 
     data class DeleteSubject(val index: Int): SubjectListIntent
 

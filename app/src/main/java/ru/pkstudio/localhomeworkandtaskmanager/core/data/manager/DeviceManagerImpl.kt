@@ -36,6 +36,16 @@ class DeviceManagerImpl @Inject constructor(
         return sharedPreferences.getString(KEY_PIN_CODE, "")
     }
 
+    override fun setTheme(themeId: Int) {
+        val editor = sharedPreferences.edit()
+        editor.putInt(KEY_THEME, themeId)
+        editor.apply()
+    }
+
+    override fun getTheme(): Int {
+        return sharedPreferences.getInt(KEY_THEME, -1)
+    }
+
     override fun startMicroVibrate() {
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager =
@@ -69,5 +79,6 @@ class DeviceManagerImpl @Inject constructor(
         private const val KEY_USER_ID = "userId"
         private const val KEY_DISPLAY_ID = "displayId"
         private const val KEY_PIN_CODE = "pinCode"
+        private const val KEY_THEME = "theme"
     }
 }

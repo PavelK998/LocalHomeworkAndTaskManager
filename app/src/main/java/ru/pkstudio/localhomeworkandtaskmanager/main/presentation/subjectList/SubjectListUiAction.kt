@@ -6,4 +6,6 @@ sealed interface SubjectListUiAction {
 
     data object CloseDrawer : SubjectListUiAction
 
+    data class ShowErrorMessage(val message: String) : SubjectListUiAction
+
 }

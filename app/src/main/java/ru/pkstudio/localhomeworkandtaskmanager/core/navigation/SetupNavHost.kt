@@ -1,5 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.core.navigation
 
+import android.widget.Toast
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.material3.DrawerValue
@@ -7,6 +8,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -18,12 +20,14 @@ import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthScreen
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.ObserveAsActions
+import ru.pkstudio.localhomeworkandtaskmanager.main.activity.ActivityViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStagesScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStagesViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListViewModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsIntent
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListScreen
@@ -31,7 +35,11 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.Sub
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListViewModel
 
 @Composable
-fun SetupNavHost(navController: NavHostController, navigator: Navigator) {
+fun SetupNavHost(
+    navController: NavHostController,
+    navigator: Navigator,
+    activityViewModel: ActivityViewModel
+) {
 
     ObserveAsEvents(flow = navigator.navigationActions) { navigationAction ->
         when(navigationAction) {
@@ -77,6 +85,7 @@ fun SetupNavHost(navController: NavHostController, navigator: Navigator) {
                     ExitTransition.None
                 }
             ) {
+                val context = LocalContext.current
                 val coroutineScope = rememberCoroutineScope()
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val viewModel = hiltViewModel<SubjectListViewModel>()
@@ -94,12 +103,16 @@ fun SetupNavHost(navController: NavHostController, navigator: Navigator) {
                                 drawerState.open()
                             }
                         }
+
+                        is SubjectListUiAction.ShowErrorMessage -> {
+                            Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
                 SubjectListScreen(
                     uiState = uiState,
                     handleIntent = viewModel::handleIntent,
-                    drawerState = drawerState
+                    drawerState = drawerState,
                 )
             }
 
@@ -143,9 +156,34 @@ fun SetupNavHost(navController: NavHostController, navigator: Navigator) {
             composable<Destination.SettingsScreen> {
                 val viewModel = hiltViewModel<SettingsViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+                fun handleIntent(intent: SettingsIntent) {
+                    when(intent) {
+                        is SettingsIntent.SetDarkTheme -> {
+                            activityViewModel.toggleDarkTheme()
+                            viewModel.handleIntent(SettingsIntent.SetDarkTheme)
+                        }
+
+                        is SettingsIntent.SetDynamicColors -> {
+                            activityViewModel.toggleDynamicColors()
+                            viewModel.handleIntent(SettingsIntent.SetDynamicColors)
+                        }
+
+                        is SettingsIntent.SetLightTheme -> {
+                            activityViewModel.toggleLightTheme()
+                            viewModel.handleIntent(SettingsIntent.SetLightTheme)
+                        }
+
+                        is SettingsIntent.SetSystemTheme -> {
+                            activityViewModel.toggleSystemTheme(intent.isSystemInDarkMode)
+                            viewModel.handleIntent(SettingsIntent.SetSystemTheme(intent.isSystemInDarkMode))
+                        }
+
+                        else -> viewModel.handleIntent(intent)
+                    }
+                }
                 SettingsScreen(
                     uiState = uiState,
-                    handleIntent = viewModel::handleIntent
+                    handleIntent = ::handleIntent
                 )
             }
 
