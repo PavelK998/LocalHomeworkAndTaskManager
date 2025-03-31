@@ -31,6 +31,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +45,7 @@ import ru.pakarpichev.homeworktool.core.presentation.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultButton
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultFloatingActionButton
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DeleteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.EmptyScreen
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.Loading
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.SwipeableCard
@@ -55,12 +57,11 @@ import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskMana
 fun SubjectListScreen(
     uiState: SubjectListState,
     handleIntent: (SubjectListIntent) -> Unit,
-    drawerState: DrawerState
+    drawerState: DrawerState,
 ) {
     val localView = LocalView.current
     val density = LocalDensity.current
-    
-    
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -147,7 +148,7 @@ fun SubjectListScreen(
                     title = stringResource(id = R.string.subjects),
                     navigationIcon = Icons.Default.Menu,
                     navigationAction = {
-                        handleIntent(SubjectListIntent.OpenDrawer)
+                       handleIntent(SubjectListIntent.OpenDrawer)
                     },
                     actions = emptyList()
                 )
@@ -167,6 +168,7 @@ fun SubjectListScreen(
                 EmptyScreen(modifier = Modifier.padding(paddingValues))
             } else {
                 LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
@@ -262,6 +264,19 @@ fun SubjectListScreen(
         }
     }
 
+    if (uiState.isDeleteAlertDialogOpened) {
+        DeleteDialog(
+            title = uiState.titleDeleteAlertDialog,
+            comment = uiState.commentDeleteAlertDialog,
+            onConfirm = {
+                handleIntent(SubjectListIntent.ConfirmDeleteSubject)
+            },
+            onDismiss = {
+                handleIntent(SubjectListIntent.CloseDeleteDialog)
+            }
+        )
+    }
+
     if (uiState.isAddSubjectAlertDialogOpened) {
         AlertDialog(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -296,22 +311,48 @@ fun SubjectListScreen(
                 )
             },
             text = {
-                TextField(
-                    value = uiState.newSubjectName,
-                    colors = TextFieldDefaults.colors().copy(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        focusedIndicatorColor = MaterialTheme.colorScheme.onTertiary,
-                    ),
-                    onValueChange = {
-                        handleIntent(SubjectListIntent.ChangeNameSubject(it))
-                    }
-                )
+                Column(
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    TextField(
+                        value = uiState.newSubjectName,
+                        colors = TextFieldDefaults.colors().copy(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.onTertiary,
+                        ),
+                        label = {
+                            Text(text = stringResource(id = R.string.name_subject))
+                        },
+                        onValueChange = {
+                            handleIntent(SubjectListIntent.ChangeNameSubject(it))
+                        }
+                    )
+
+                    TextField(
+                        modifier = Modifier.padding(top = 12.dp),
+                        value = uiState.newSubjectComment,
+                        colors = TextFieldDefaults.colors().copy(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.onTertiary,
+                        ),
+                        label = {
+                            Text(text = stringResource(id = R.string.comment))
+                        },
+                        onValueChange = {
+                            handleIntent(SubjectListIntent.ChangeCommentSubject(it))
+                        }
+                    )
+                }
             }
         )
     }
 }
+
+
 
 @Preview
 @Composable
@@ -323,7 +364,7 @@ private fun Preview() {
                 isScreenEmpty = false
             ),
             handleIntent = {},
-            drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+            drawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
         )
     }
 }

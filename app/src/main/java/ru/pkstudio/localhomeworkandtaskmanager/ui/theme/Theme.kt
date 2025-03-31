@@ -54,9 +54,10 @@ private val lightScheme = lightColorScheme(
 
 @Composable
 fun LocalHomeworkAndTaskManagerTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
+    isSystemThemeEnabled: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -65,8 +66,16 @@ fun LocalHomeworkAndTaskManagerTheme(
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
+        isSystemThemeEnabled && isSystemInDarkTheme() -> darkScheme
+
+        isSystemThemeEnabled && !isSystemInDarkTheme() -> lightScheme
+
         darkTheme -> darkScheme
+
+        !darkTheme -> lightScheme
+
         else -> lightScheme
+
     }
 
     MaterialTheme(

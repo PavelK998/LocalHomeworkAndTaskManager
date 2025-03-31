@@ -7,10 +7,15 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.uiM
 data class SubjectListState(
     val paramOne: String = "default",
     val newSubjectName: String = "",
+    val newSubjectComment: String = "",
     val subjectNameForEdit: String = "",
     val subjectCommentForEdit: String = "",
     val subjectsList: List<SubjectUiModel> = emptyList(),
     val isScreenEmpty: Boolean = false,
     val isLoading: Boolean = true,
     val isAddSubjectAlertDialogOpened: Boolean = false,
+
+    val isDeleteAlertDialogOpened: Boolean = false,
+    val titleDeleteAlertDialog: String = "",
+    val commentDeleteAlertDialog: String = "",
 )

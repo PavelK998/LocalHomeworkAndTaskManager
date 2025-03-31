@@ -33,10 +33,17 @@ class SubjectListViewModel @Inject constructor(
     private val stageRepository: StageRepository
 ) : ViewModel() {
 
+    private var indexItemForDelete = -1
+
     private val _uiAction = SingleSharedFlow<SubjectListUiAction>()
     val uiAction = _uiAction.asSharedFlow()
 
-    private val _uiState = MutableStateFlow(SubjectListState())
+    private val _uiState = MutableStateFlow(
+        SubjectListState(
+            titleDeleteAlertDialog = resourceManager.getString(R.string.delete_dialog_title),
+            commentDeleteAlertDialog = resourceManager.getString(R.string.comment_subjects_delete_dialog)
+        )
+    )
     val uiState = _uiState
         .onStart {
             checkStage()
@@ -70,8 +77,28 @@ class SubjectListViewModel @Inject constructor(
                 }
             }
 
+            is SubjectListIntent.ConfirmDeleteSubject -> {
+                if (indexItemForDelete != -1) {
+                    deleteSubject(indexItemForDelete)
+                }
+
+            }
+
+            is SubjectListIntent.CloseDeleteDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isDeleteAlertDialogOpened = false
+                    )
+                }
+            }
+
             is SubjectListIntent.DeleteSubject -> {
-                deleteSubject(intent.index)
+                indexItemForDelete = intent.index
+                _uiState.update {
+                    it.copy(
+                        isDeleteAlertDialogOpened = true
+                    )
+                }
             }
 
             is SubjectListIntent.EditSubject -> {
@@ -129,7 +156,6 @@ class SubjectListViewModel @Inject constructor(
             }
 
             is SubjectListIntent.OnSettingClicked -> {
-
                 viewModelScope.launch {
                     _uiAction.tryEmit(SubjectListUiAction.CloseDrawer)
                     delay(180)
@@ -140,8 +166,17 @@ class SubjectListViewModel @Inject constructor(
             is SubjectListIntent.CloseDrawer -> {
                 _uiAction.tryEmit(SubjectListUiAction.CloseDrawer)
             }
+
             is SubjectListIntent.OpenDrawer -> {
                 _uiAction.tryEmit(SubjectListUiAction.OpenDrawer)
+            }
+
+            is SubjectListIntent.ChangeCommentSubject -> {
+                _uiState.update {
+                    it.copy(
+                        newSubjectComment = intent.text
+                    )
+                }
             }
         }
     }
@@ -271,34 +306,53 @@ class SubjectListViewModel @Inject constructor(
                         subject = modelForDelete
                     )
                 },
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(
+                            isDeleteAlertDialogOpened = false
+                        )
+                    }
+                },
                 onError = {}
             )
         }
     }
 
     private fun addSubject() {
-        viewModelScope.execute(
-            source = {
-                subjectsRepository.insertSubject(
-                    subject = SubjectModel(
-                        id = null,
-                        subjectName = _uiState.value.newSubjectName,
-                        comment = ""
+        if (_uiState.value.newSubjectName.isNotBlank()) {
+            viewModelScope.execute(
+                source = {
+                    subjectsRepository.insertSubject(
+                        subject = SubjectModel(
+                            id = null,
+                            subjectName = _uiState.value.newSubjectName,
+                            comment = _uiState.value.newSubjectComment
+                        )
+                    )
+                },
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(
+                            isAddSubjectAlertDialogOpened = false,
+                            newSubjectName = "",
+                            newSubjectComment = ""
+                        )
+                    }
+                },
+                onError = {
+
+                }
+            )
+        } else {
+            _uiAction.tryEmit(
+                SubjectListUiAction.ShowErrorMessage(
+                    resourceManager.getString(
+                        R.string.subject_name_empty
                     )
                 )
-            },
-            onSuccess = {
-                _uiState.update {
-                    it.copy(
-                        isAddSubjectAlertDialogOpened = false,
-                        newSubjectName = ""
-                    )
-                }
-            },
-            onError = {
+            )
+        }
 
-            }
-        )
     }
 
     private fun getData() {

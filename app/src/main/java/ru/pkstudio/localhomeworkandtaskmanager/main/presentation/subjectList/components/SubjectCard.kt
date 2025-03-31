@@ -78,7 +78,10 @@ private fun InfoMode(
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             modifier = Modifier
-                .padding(vertical = 18.dp, horizontal = 8.dp)
+                .padding(
+                    vertical = if (comment.isNotBlank()) 12.dp else 18.dp,
+                    horizontal = 8.dp
+                )
                 .align(Alignment.CenterHorizontally),
             text = title,
             fontSize = 18.sp,
@@ -87,7 +90,8 @@ private fun InfoMode(
         if (comment.isNotBlank()){
             Text(
                 modifier = Modifier
-                    .padding(vertical = 18.dp, horizontal = 8.dp)
+                    .padding(horizontal = 8.dp)
+                    .padding(top = 4.dp, bottom = 12.dp)
                     .align(Alignment.Start),
                 text = comment,
                 fontSize = 14.sp,
@@ -184,7 +188,7 @@ private fun SubjectCardPrev() {
             navigateToHomeworkScreen = {},
             isEditModeEnabled = false,
             title = "Math",
-            comment = "Prepod Ivanov A U",
+            comment = "",
             onConfirmChangesBtnCLicked = {},
             onDiscardChangesBtnCLicked = {}
         )
