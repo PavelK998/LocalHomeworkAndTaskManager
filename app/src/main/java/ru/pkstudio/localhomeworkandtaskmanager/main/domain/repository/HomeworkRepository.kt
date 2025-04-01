@@ -14,4 +14,6 @@ interface HomeworkRepository {
     suspend fun getAllHomeworkWithSubject(): Flow<List<SubjectWithHomework>>
 
     suspend fun getHomeworkWithSubjectById(subjectId: Long): SubjectWithHomework
+
+    suspend fun changeHomeworkStagesAfterDeleteStage(fromStageId: Long, targetStageId: Long)
 }

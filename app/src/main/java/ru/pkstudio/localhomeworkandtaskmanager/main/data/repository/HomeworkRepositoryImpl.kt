@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 class HomeworkRepositoryImpl @Inject constructor(
     private val homeworkDao: HomeworkDao
-): HomeworkRepository {
+) : HomeworkRepository {
     override suspend fun insertHomework(homework: HomeworkModel) = withContext(Dispatchers.IO) {
         homeworkDao.insertHomework(homework.toHomeworkEntity())
     }
@@ -32,7 +32,17 @@ class HomeworkRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getHomeworkWithSubjectById(subjectId: Long)= withContext(Dispatchers.IO) {
+    override suspend fun getHomeworkWithSubjectById(subjectId: Long) = withContext(Dispatchers.IO) {
         homeworkDao.getHomeworkWithSubjectById(subjectId = subjectId).toSubjectWithHomework()
+    }
+
+    override suspend fun changeHomeworkStagesAfterDeleteStage(
+        fromStageId: Long,
+        targetStageId: Long
+    ) = withContext(Dispatchers.IO) {
+        homeworkDao.changeHomeworkStagesAfterDeleteStage(
+            fromStageId = fromStageId,
+            targetStageId = targetStageId
+        )
     }
 }

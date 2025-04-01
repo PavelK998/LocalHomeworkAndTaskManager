@@ -23,6 +23,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.util.ObserveAsActions
 import ru.pkstudio.localhomeworkandtaskmanager.main.activity.ActivityViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkViewModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStageUiAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStagesScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStagesViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListScreen
@@ -190,6 +191,14 @@ fun SetupNavHost(
             composable<Destination.StageEditScreen> {
                 val viewModel = hiltViewModel<EditStagesViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+                val context = LocalContext.current
+                ObserveAsActions(flow = viewModel.uiAction) { action ->
+                    when (action) {
+                        is EditStageUiAction.ShowErrorMessage -> {
+                            Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
                 EditStagesScreen(
                     uiState = uiState,
                     handleIntent = viewModel::handleIntent

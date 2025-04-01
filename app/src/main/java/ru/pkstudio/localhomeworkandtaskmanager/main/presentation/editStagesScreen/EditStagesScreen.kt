@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ru.pakarpichev.homeworktool.core.presentation.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DeleteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.components.EditStageCard
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 
@@ -57,10 +58,23 @@ fun EditStagesScreen(
                         handleIntent(EditStagesIntent.OnAddStageBtmClick(index))
                     },
                     onDeleteBtnClick = {
-                        handleIntent(EditStagesIntent.OnDeleteStageBtmClick(stage = model))
+                        handleIntent(EditStagesIntent.OnDeleteStageBtmClick(index = index))
                     }
                 )
             }
+        }
+
+        if (uiState.isDeleteAlertDialogOpened) {
+            DeleteDialog(
+                title = uiState.titleDeleteAlertDialog,
+                comment = uiState.commentDeleteAlertDialog,
+                onConfirm = {
+                    handleIntent(EditStagesIntent.ConfirmDeleteStage)
+                },
+                onDismiss = {
+                    handleIntent(EditStagesIntent.CloseDeleteDialog)
+                }
+            )
         }
     }
 }
