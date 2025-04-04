@@ -32,4 +32,9 @@
     <string name="enable_light_theme">Enable light theme</string>
     <string name="enable_system_theme">Enable system default theme</string>
     <string name="enable_dynamic_color_theme">Enable dynamic color</string>
+
+
+    <string name="import_database_dialog_title">You are going to import a database</string>
+    <string name="import_database_dialog_description">If the import is successful, the application will be restarted.</string>
+    <string name="export_database_success">Database exported successfully</string>
 </resources>
