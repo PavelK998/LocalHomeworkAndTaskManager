@@ -31,7 +31,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -61,6 +60,8 @@ fun SubjectListScreen(
 ) {
     val localView = LocalView.current
     val density = LocalDensity.current
+
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -108,7 +109,7 @@ fun SubjectListScreen(
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             onClick = {
-
+                                handleIntent(SubjectListIntent.OnImportClicked)
                             },
                             textStyle = MaterialTheme.typography.headlineSmall,
                             text = stringResource(id = R.string.import_database)
@@ -119,7 +120,7 @@ fun SubjectListScreen(
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             onClick = {
-
+                                handleIntent(SubjectListIntent.OnExportClicked)
                             },
                             textStyle = MaterialTheme.typography.headlineSmall,
                             text = stringResource(id = R.string.export_database)
@@ -273,6 +274,19 @@ fun SubjectListScreen(
             },
             onDismiss = {
                 handleIntent(SubjectListIntent.CloseDeleteDialog)
+            }
+        )
+    }
+
+    if (uiState.isImportAlertDialogOpened) {
+        DeleteDialog(
+            title = uiState.titleImportAlertDialog,
+            comment = uiState.commentImportAlertDialog,
+            onConfirm = {
+                handleIntent(SubjectListIntent.ImportConfirmed)
+            },
+            onDismiss = {
+                handleIntent(SubjectListIntent.CloseImportDialog)
             }
         )
     }

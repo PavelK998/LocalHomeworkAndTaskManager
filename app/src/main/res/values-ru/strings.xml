@@ -31,4 +31,9 @@
     <string name="enable_light_theme">Включить светлую тему</string>
     <string name="enable_system_theme">Включить системные настройки</string>
     <string name="enable_dynamic_color_theme">Включить динамические цвета</string>
+
+    <string name="import_database_dialog_title">Вы собираетесь импортировать базу данных</string>
+    <string name="import_database_dialog_description">Если импорт пройдет успешно, приложение будет перезапущено.</string>
+    <string name="export_database_success">База данных успешно экспортирована</string>
+
 </resources>

@@ -29,11 +29,13 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
@@ -52,6 +54,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -85,39 +88,39 @@ fun <M, A> KanbanBoard(
     val scrollZoneSize = 100.dp
     val scrollSpeed = 20f
     val coroutineScope = rememberCoroutineScope()
-    var rowUniqueIdForItem by remember {
-        mutableIntStateOf(0)
+
+    val savedItemsWithIndices = remember(key1 = items) {
+        val newListItems: SnapshotStateList<KanbanUtilRowItem<M,A>> = mutableStateListOf()
+
+        items.forEach { kanbanItem ->
+            var rowId: Long
+            do {
+                rowId = Random.nextLong()
+            } while (newListItems.any { item -> item.id == rowId })
+
+            val columnItems = mutableListOf<Item<A>>()
+            kanbanItem.columnItems.forEach { columnItem ->
+                var columnId: Long
+                do {
+                    columnId = Random.nextLong()
+                } while (columnItems.any { item -> item.id == columnId })
+                columnItems.add(
+                    Item(
+                        id = columnId,
+                        item = columnItem
+                    )
+                )
+            }
+
+            val newKanbanItem = KanbanUtilRowItem(
+                id = rowId,
+                rowItem = kanbanItem.rowItem,
+                items = columnItems
+            )
+            newListItems.add(newKanbanItem)
+        }
+        newListItems
     }
-    var columnUniqueIdForItem by remember {
-        mutableIntStateOf(0)
-    }
-//    val savedRowItems = remember(rowItems) {
-//        val rowNewList = mutableStateListOf<KanbanUtilRowItem<T>>()
-//        rowItems.forEach { rowItem ->
-//            val items = mutableListOf<Item<T>>()
-//            rowItem.items.forEach { t ->
-//                items.add(
-//                    Item(
-//                        id = columnUniqueIdForItem,
-//                        item = t
-//                    )
-//                )
-//                columnUniqueIdForItem += 1
-//            }
-//            val rowList =
-//                KanbanUtilRowItem(
-//                    id = rowUniqueIdForItem,
-//                    header = rowItem.header,
-//                    footer = rowItem.footer,
-//                    itemFiller = rowItem.itemFiller,
-//                    items = items
-//                )
-//
-//            rowNewList.add(rowList)
-//            rowUniqueIdForItem += 1
-//        }
-//        rowNewList
-//    }
     var oldColumnId by rememberSaveable {
         mutableIntStateOf(-1)
     }
@@ -139,9 +142,9 @@ fun <M, A> KanbanBoard(
 
     fun moveItem(oldRowId: Int, oldColumnId: Int, newRowId: Int) {
         if (
-            newRowId in items.indices
-            && oldRowId in items.indices
-            && oldColumnId in items[oldRowId].columnItems.indices
+            newRowId in savedItemsWithIndices.indices
+            && oldRowId in savedItemsWithIndices.indices
+            && oldColumnId in savedItemsWithIndices[oldRowId].items.indices
             && oldRowId != newRowId
         ) {
             onEndDragAndDrop(oldRowId, oldColumnId, newRowId)
@@ -284,7 +287,10 @@ fun <M, A> KanbanBoard(
             horizontalArrangement = Arrangement.spacedBy(spaceBetweenColumns)
         ) {
             itemsIndexed(
-                items = items,
+                items = savedItemsWithIndices,
+                key = { _, item ->
+                    item.id
+                }
             ) { rowIndex, rowItem ->
                 Column(
                     modifier = Modifier
@@ -307,8 +313,10 @@ fun <M, A> KanbanBoard(
                             .heightIn(min = 300.dp)
                     ) {
                         itemsIndexed(
-                            items = rowItem.columnItems,
-
+                            items = rowItem.items,
+                            key = { _, item ->
+                                item.id
+                            }
                             ) { columnIndex, columnItem ->
                             Box(
                                 modifier = Modifier
@@ -345,7 +353,7 @@ fun <M, A> KanbanBoard(
                                     }
 
                             ) {
-                                columnFiller(columnItem)
+                                columnFiller(columnItem.item)
                             }
                         }
                     }

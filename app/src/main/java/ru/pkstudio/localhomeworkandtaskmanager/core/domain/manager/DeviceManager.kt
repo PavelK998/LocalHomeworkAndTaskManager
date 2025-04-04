@@ -18,4 +18,8 @@ interface DeviceManager {
     fun getTheme(): Int
 
     fun startMicroVibrate()
+
+    fun setFilePathUri(path: String)
+
+    fun getFilePathUri(): String?
 }

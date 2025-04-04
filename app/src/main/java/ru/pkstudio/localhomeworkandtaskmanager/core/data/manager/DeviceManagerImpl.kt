@@ -64,6 +64,16 @@ class DeviceManagerImpl @Inject constructor(
         }
     }
 
+    override fun setFilePathUri(path: String) {
+        val editor = sharedPreferences.edit()
+        editor.putString(KEY_FILE_PATH, path)
+        editor.apply()
+    }
+
+    override fun getFilePathUri(): String? {
+        return sharedPreferences.getString(KEY_FILE_PATH, "")
+    }
+
     override fun setSelectedDisplayMethod(displayMethodId: Int) {
         val editor = sharedPreferences.edit()
         editor.putInt(KEY_DISPLAY_ID, displayMethodId)
@@ -80,5 +90,6 @@ class DeviceManagerImpl @Inject constructor(
         private const val KEY_DISPLAY_ID = "displayId"
         private const val KEY_PIN_CODE = "pinCode"
         private const val KEY_THEME = "theme"
+        private const val KEY_FILE_PATH = "file_path"
     }
 }

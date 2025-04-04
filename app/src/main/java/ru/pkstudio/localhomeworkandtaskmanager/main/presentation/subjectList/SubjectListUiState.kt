@@ -18,4 +18,8 @@ data class SubjectListState(
     val isDeleteAlertDialogOpened: Boolean = false,
     val titleDeleteAlertDialog: String = "",
     val commentDeleteAlertDialog: String = "",
+
+    val isImportAlertDialogOpened: Boolean = false,
+    val titleImportAlertDialog: String = "",
+    val commentImportAlertDialog: String = "",
 )

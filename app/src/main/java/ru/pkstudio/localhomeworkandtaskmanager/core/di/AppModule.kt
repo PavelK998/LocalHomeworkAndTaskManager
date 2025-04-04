@@ -14,6 +14,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.AppDb
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.HomeworkDao
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.StageDao
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.SubjectsDao
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.ImportExportDbRepositoryImpl
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.ImportExportDbRepository
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -50,6 +52,18 @@ class AppModule {
     @Singleton
     fun provideStageDao(database: AppDb): StageDao {
         return database.stageDao
+    }
+
+    @Provides
+    @Singleton
+    fun provideImportExportDbRepository(
+        @ApplicationContext context: Context,
+        appDb: AppDb
+    ): ImportExportDbRepository {
+        return ImportExportDbRepositoryImpl(
+            context = context,
+            appDb = appDb,
+        )
     }
 
 }

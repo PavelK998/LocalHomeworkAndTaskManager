@@ -1,5 +1,8 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList
 
+import android.net.Uri
+import android.util.Log
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,6 +16,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.data.util.SingleSharedFlow
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
@@ -21,6 +25,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.SubjectModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.ImportExportDbRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
 import javax.inject.Inject
@@ -30,7 +35,9 @@ class SubjectListViewModel @Inject constructor(
     private val subjectsRepository: SubjectsRepository,
     private val navigator: Navigator,
     private val resourceManager: ResourceManager,
-    private val stageRepository: StageRepository
+    private val deviceManager: DeviceManager,
+    private val stageRepository: StageRepository,
+    private val importExportDbRepository: ImportExportDbRepository,
 ) : ViewModel() {
 
     private var indexItemForDelete = -1
@@ -41,7 +48,9 @@ class SubjectListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         SubjectListState(
             titleDeleteAlertDialog = resourceManager.getString(R.string.delete_dialog_title),
-            commentDeleteAlertDialog = resourceManager.getString(R.string.comment_subjects_delete_dialog)
+            commentDeleteAlertDialog = resourceManager.getString(R.string.comment_subjects_delete_dialog),
+            titleImportAlertDialog = resourceManager.getString(R.string.import_database_dialog_title),
+            commentImportAlertDialog = resourceManager.getString(R.string.import_database_dialog_description)
         )
     )
     val uiState = _uiState
@@ -178,8 +187,82 @@ class SubjectListViewModel @Inject constructor(
                     )
                 }
             }
+
+            is SubjectListIntent.OnExportClicked -> {
+                val filePath = deviceManager.getFilePathUri()
+                if (filePath.isNullOrEmpty()) {
+                    _uiAction.tryEmit(SubjectListUiAction.OpenDocumentTree)
+                } else {
+                    exportDb(filePath.toUri())
+                }
+            }
+
+            is SubjectListIntent.OnImportClicked -> {
+                _uiState.update {
+                    it.copy(
+                        isImportAlertDialogOpened = true
+                    )
+                }
+            }
+
+            is SubjectListIntent.OnFileExportPathSelected -> {
+                deviceManager.setFilePathUri(intent.uri.toString())
+                exportDb(intent.uri)
+
+            }
+
+            is SubjectListIntent.OnFileImportPathSelected -> {
+                importDb(intent.uri)
+            }
+
+            is SubjectListIntent.CloseImportDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isImportAlertDialogOpened = false
+                    )
+                }
+            }
+
+            is SubjectListIntent.ImportConfirmed -> {
+                _uiState.update {
+                    it.copy(
+                        isImportAlertDialogOpened = false
+                    )
+                }
+                _uiAction.tryEmit(SubjectListUiAction.SelectDatabaseFile)
+            }
         }
     }
+
+    private fun exportDb(uri: Uri) = viewModelScope.execute(
+        source = {
+            importExportDbRepository.exportDatabase(uri)
+        },
+        onSuccess = {
+            _uiAction.tryEmit(
+                SubjectListUiAction.ShowErrorMessage(
+                    resourceManager.getString(R.string.export_database_success)
+                )
+            )
+
+        },
+        onError = {
+
+        }
+    )
+
+    private fun importDb(uri: Uri) = viewModelScope.execute(
+        source = {
+            importExportDbRepository.importDatabase(uri)
+        },
+        onSuccess = {
+            _uiAction.tryEmit(SubjectListUiAction.RestartApp)
+
+        },
+        onError = {
+
+        }
+    )
 
     private fun checkStage() {
         viewModelScope.execute(
@@ -358,6 +441,7 @@ class SubjectListViewModel @Inject constructor(
     private fun getData() {
         viewModelScope.launch {
             subjectsRepository.getAllSubjects().collect { subjects ->
+                Log.d("cxbvxcvxc", "getData: $subjects")
                 if (subjects.isEmpty()) {
                     _uiState.update {
                         it.copy(
