@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.HomeworkDao
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkEntity
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toListSubjectWithHomework
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectWithHomework
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
@@ -34,6 +35,10 @@ class HomeworkRepositoryImpl @Inject constructor(
 
     override suspend fun getHomeworkWithSubjectById(subjectId: Long) = withContext(Dispatchers.IO) {
         homeworkDao.getHomeworkWithSubjectById(subjectId = subjectId).toSubjectWithHomework()
+    }
+
+    override suspend fun getHomeworkById(homeworkId: Long) = withContext(Dispatchers.IO) {
+        homeworkDao.getHomeworkById(homeworkId = homeworkId).toHomeworkModel()
     }
 
     override suspend fun changeHomeworkStagesAfterDeleteStage(

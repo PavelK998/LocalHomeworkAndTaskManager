@@ -1,6 +1,5 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,8 +21,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ru.pakarpichev.homeworktool.core.presentation.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.TopAppBarAction
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 
@@ -35,7 +34,6 @@ fun AddHomeworkScreen(
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
-            Log.d("tyrtyrtyrtyrtyrt", "AddHomeworkScreen: $uri")
             uri?.let {
                /// onEvent(AddHomeworkEvent.OnImagePicked(it))
             }

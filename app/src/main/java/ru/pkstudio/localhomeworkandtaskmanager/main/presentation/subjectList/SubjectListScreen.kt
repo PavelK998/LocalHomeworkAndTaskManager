@@ -40,12 +40,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ru.pakarpichev.homeworktool.core.presentation.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultButton
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultFloatingActionButton
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DeleteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.EmptyScreen
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.GradientFloatingActionButton
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.Loading
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.SwipeableCard
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.components.SubjectCard
@@ -69,7 +70,7 @@ fun SubjectListScreen(
 
             ModalDrawerSheet(
                 modifier = Modifier.width(
-                    with(density) { (localView.width -(localView.width / 4)).toDp()}
+                    with(density) { (localView.width - (localView.width / 4)).toDp() }
                 ),
                 drawerContainerColor = MaterialTheme.colorScheme.surface
             ) {
@@ -83,7 +84,7 @@ fun SubjectListScreen(
                             .padding(8.dp)
                             .weight(0.6f),
 
-                    ) {
+                        ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -149,18 +150,29 @@ fun SubjectListScreen(
                     title = stringResource(id = R.string.subjects),
                     navigationIcon = Icons.Default.Menu,
                     navigationAction = {
-                       handleIntent(SubjectListIntent.OpenDrawer)
+                        handleIntent(SubjectListIntent.OpenDrawer)
                     },
                     actions = emptyList()
                 )
             },
             floatingActionButton = {
-                DefaultFloatingActionButton(
-                    onClick = {
-                        handleIntent(SubjectListIntent.OpenAddSubject)
-                    },
-                    imageVector = Icons.Default.Add
-                )
+                if (uiState.isScreenEmpty) {
+                    GradientFloatingActionButton(
+                        onClick = {
+                            handleIntent(SubjectListIntent.OpenAddSubject)
+                        },
+                        imageVector = Icons.Default.Add,
+                    )
+                } else {
+                    DefaultFloatingActionButton(
+                        onClick = {
+                            handleIntent(SubjectListIntent.OpenAddSubject)
+                        },
+                        imageVector = Icons.Default.Add,
+                    )
+                }
+
+
             }
         ) { paddingValues ->
             if (uiState.isLoading) {
@@ -310,7 +322,7 @@ fun SubjectListScreen(
                     },
                     text = stringResource(id = R.string.confirm_button),
                     textStyle = MaterialTheme.typography.bodyMedium,
-                    )
+                )
 
             },
             dismissButton = {
@@ -365,7 +377,6 @@ fun SubjectListScreen(
         )
     }
 }
-
 
 
 @Preview

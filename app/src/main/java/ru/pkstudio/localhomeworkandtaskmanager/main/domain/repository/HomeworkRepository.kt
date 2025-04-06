@@ -15,5 +15,8 @@ interface HomeworkRepository {
 
     suspend fun getHomeworkWithSubjectById(subjectId: Long): SubjectWithHomework
 
+    suspend fun getHomeworkById(homeworkId: Long): HomeworkModel
+
     suspend fun changeHomeworkStagesAfterDeleteStage(fromStageId: Long, targetStageId: Long)
+
 }

@@ -32,6 +32,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.Add
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStageUiAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStagesScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStagesViewModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo.HomeworkInfoScreen
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo.HomeworkInfoViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsIntent
@@ -200,6 +202,22 @@ fun SetupNavHost(
                     )
                 }
                 AddHomeworkScreen(
+                    uiState = uiState,
+                    handleIntent = viewModel::handleIntent
+                )
+            }
+
+            composable<Destination.DetailsHomeworkScreen> { navBackStackEntry ->
+                val args = navBackStackEntry.toRoute<Destination.DetailsHomeworkScreen>()
+                val viewModel = hiltViewModel<HomeworkInfoViewModel>()
+                val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+                LaunchedEffect(key1 = true) {
+                    viewModel.parseArguments(
+                        homeworkId = args.homeworkId,
+                        subjectId = args.subjectId
+                    )
+                }
+                HomeworkInfoScreen(
                     uiState = uiState,
                     handleIntent = viewModel::handleIntent
                 )
