@@ -1,4 +1,4 @@
-package ru.pakarpichev.homeworktool.core.presentation.components
+package ru.pkstudio.localhomeworkandtaskmanager.core.components
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ru.pkstudio.localhomeworkandtaskmanager.core.components.TopAppBarAction
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -31,10 +31,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ru.pakarpichev.homeworktool.core.presentation.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultFloatingActionButton
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.EmptyScreen
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.GradientFloatingActionButton
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.Loading
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.TopAppBarAction
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.kanban.KanbanBoard
@@ -119,18 +120,27 @@ fun HomeworkListScreen(
             }
         },
         floatingActionButton = {
-            DefaultFloatingActionButton(
-                onClick = {
-                    handleIntent.invoke(HomeworkListIntent.NavigateToAddHomework(uiState.subjectId))
-                },
-                imageVector = Icons.Default.Add
-            )
+            if (uiState.isScreenEmpty) {
+                GradientFloatingActionButton(
+                    onClick = {
+                        handleIntent.invoke(HomeworkListIntent.NavigateToAddHomework)
+                    },
+                    imageVector = Icons.Default.Add,
+                )
+            } else {
+                DefaultFloatingActionButton(
+                    onClick = {
+                        handleIntent.invoke(HomeworkListIntent.NavigateToAddHomework)
+                    },
+                    imageVector = Icons.Default.Add
+                )
+            }
         }
     ) { paddingValues ->
         if (uiState.isLoading) {
             Loading()
         } else if (uiState.isScreenEmpty) {
-            EmptyScreen()
+            EmptyScreen(modifier = Modifier.padding(paddingValues))
         } else {
             Column(
                 modifier = Modifier
@@ -201,7 +211,12 @@ fun HomeworkListScreen(
                         columnBackgroundColor = Color.Transparent,
                         borderColor = MaterialTheme.colorScheme.primaryContainer,
                         onColumnFillerClicked = { rowIndex, columnIndex ->
-
+                            handleIntent(
+                                HomeworkListIntent.NavigateToDetailsHomeworkFromKanban(
+                                    rowIndex = rowIndex,
+                                    columnIndex = columnIndex
+                                )
+                            )
                         },
                         onStartDragAndDrop = { oldRowId, oldColumnId ->
 
@@ -235,11 +250,12 @@ fun HomeworkListScreen(
                                     .padding(vertical = 2.dp),
                                 homeworkUiModel = model,
                                 goToDetails = {
-//                                    handleIntent(
-//                                        HomeworkListIntent.NavigateToDetailsHomework(
-//                                            homeworkName = model.id
-//                                        )
-//                                    )
+                                    handleIntent(
+                                        HomeworkListIntent.NavigateToDetailsHomework(
+                                            homeworkId = model.id,
+                                            subjectId = model.subjectId
+                                        )
+                                    )
                                 },
                                 onCheckCardClicked = { isChecked ->
                                     handleIntent(

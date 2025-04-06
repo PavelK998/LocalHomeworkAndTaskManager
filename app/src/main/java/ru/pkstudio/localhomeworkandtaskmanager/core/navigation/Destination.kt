@@ -26,8 +26,8 @@ sealed interface Destination {
 
     @Serializable
     data class DetailsHomeworkScreen(
-        val subjectNane: String,
-        val homeworkName: String
+        val homeworkId: Long,
+        val subjectId: Long,
     ): Destination
 
     @Serializable

@@ -20,18 +20,6 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 abstract class BindRepository {
 
-//    @Binds
-//    @Singleton
-//    abstract fun bindSubjectRepository(
-//        subjectsRepositoryImpl: SubjectsRepositoryImpl
-//    ): SubjectsRepository
-//
-//    @Binds
-//    @Singleton
-//    abstract fun bindHomeworkRepository(
-//        homeworkRepositoryImpl: HomeworkRepositoryImpl
-//    ): HomeworkRepository
-
     @Binds
     @Singleton
     abstract fun bindDeviceManager(

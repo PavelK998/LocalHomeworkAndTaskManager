@@ -71,12 +71,15 @@ class HomeworkListViewModel @Inject constructor(
             is HomeworkListIntent.CheckCard -> {
 
             }
+
             is HomeworkListIntent.DeleteCards -> {
 
             }
+
             is HomeworkListIntent.ExpandMenu -> {
 
             }
+
             is HomeworkListIntent.NavigateToAddHomework -> {
                 viewModelScope.launch {
                     navigator.navigate(
@@ -86,12 +89,22 @@ class HomeworkListViewModel @Inject constructor(
                     )
                 }
             }
-            is HomeworkListIntent.NavigateToDetailsHomework -> {
 
+            is HomeworkListIntent.NavigateToDetailsHomework -> {
+                viewModelScope.launch {
+                    navigator.navigate(
+                        Destination.DetailsHomeworkScreen(
+                            intent.homeworkId,
+                            intent.subjectId
+                        )
+                    )
+                }
             }
+
             is HomeworkListIntent.NavigateUp -> {
                 navigateUp()
             }
+
             is HomeworkListIntent.OnSegmentedButtonClick -> {
                 if (intent.index in _uiState.value.segmentedButtonOptions.indices) {
                     when (_uiState.value.segmentedButtonOptions[intent.index]) {
@@ -105,6 +118,7 @@ class HomeworkListViewModel @Inject constructor(
 
                             setDisplayMethod(Constants.LIST.ordinal)
                         }
+
                         kanban -> {
                             _uiState.update {
                                 it.copy(
@@ -117,9 +131,11 @@ class HomeworkListViewModel @Inject constructor(
                     }
                 }
             }
+
             is HomeworkListIntent.ShrinkMenu -> {
 
             }
+
             is HomeworkListIntent.TurnEditMode -> {
 
             }
@@ -131,6 +147,23 @@ class HomeworkListViewModel @Inject constructor(
                     newRowId = intent.newRowId
                 )
             }
+
+            is HomeworkListIntent.NavigateToDetailsHomeworkFromKanban -> {
+                if (
+                    intent.rowIndex in _uiState.value.kanbanItemsList.indices
+                    && intent.columnIndex in _uiState.value.kanbanItemsList[intent.rowIndex].columnItems.indices
+                ) {
+                    viewModelScope.launch {
+                        navigator.navigate(
+                            Destination.DetailsHomeworkScreen(
+                                homeworkId =
+                                _uiState.value.kanbanItemsList[intent.rowIndex].columnItems[intent.columnIndex].id,
+                                subjectId = subjectId
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -140,7 +173,9 @@ class HomeworkListViewModel @Inject constructor(
                 Constants.LIST.ordinal -> {
                     _uiState.update {
                         it.copy(
-                            segmentedButtonSelectedIndex = _uiState.value.segmentedButtonOptions.indexOf(list),
+                            segmentedButtonSelectedIndex = _uiState.value.segmentedButtonOptions.indexOf(
+                                list
+                            ),
                             isKanbanScreenVisible = false
                         )
                     }
@@ -149,7 +184,9 @@ class HomeworkListViewModel @Inject constructor(
                 Constants.KANBAN.ordinal -> {
                     _uiState.update {
                         it.copy(
-                            segmentedButtonSelectedIndex = _uiState.value.segmentedButtonOptions.indexOf(kanban),
+                            segmentedButtonSelectedIndex = _uiState.value.segmentedButtonOptions.indexOf(
+                                kanban
+                            ),
                             isKanbanScreenVisible = true
                         )
                     }
@@ -183,7 +220,7 @@ class HomeworkListViewModel @Inject constructor(
                         val stages = stageRepository.getAllStagesSingleTime()
                         val stageUiModelList = stages.map { stage ->
                             StageUiModel(
-                                id = stage.id?: 0L,
+                                id = stage.id ?: 0L,
                                 stageName = stage.stageName,
                                 itemsCount = subjectWithHomework.homework.filter { homework ->
                                     homework.stageId == stage.id
@@ -219,8 +256,8 @@ class HomeworkListViewModel @Inject constructor(
         newRowId: Int
     ) {
         val kanbanItems = _uiState.value.kanbanItemsList.toMutableList()
-        if (oldRowId in kanbanItems.indices && newRowId in kanbanItems.indices){
-            if (oldColumnId in kanbanItems[oldRowId].columnItems.indices){
+        if (oldRowId in kanbanItems.indices && newRowId in kanbanItems.indices) {
+            if (oldColumnId in kanbanItems[oldRowId].columnItems.indices) {
                 val homeworkModel = kanbanItems[oldRowId].columnItems[oldColumnId].copy(
                     stageId = kanbanItems[newRowId].rowItem.id,
                     stageName = kanbanItems[newRowId].rowItem.stageName,
@@ -243,8 +280,8 @@ class HomeworkListViewModel @Inject constructor(
 
     }
 
-    private fun navigateUp(){
-        if (!isBackButtonClicked){
+    private fun navigateUp() {
+        if (!isBackButtonClicked) {
             viewModelScope.launch {
                 navigator.navigateUp()
                 isBackButtonClicked = true

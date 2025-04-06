@@ -1,9 +1,17 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList
 
 sealed interface HomeworkListIntent {
-    data class NavigateToAddHomework(val subjectId: String) : HomeworkListIntent
+    data object NavigateToAddHomework : HomeworkListIntent
 
-    data class NavigateToDetailsHomework(val homeworkName: String) : HomeworkListIntent
+    data class NavigateToDetailsHomework(
+        val homeworkId: Long,
+        val subjectId: Long,
+    ) : HomeworkListIntent
+
+    data class NavigateToDetailsHomeworkFromKanban(
+        val rowIndex: Int,
+        val columnIndex: Int,
+    ) : HomeworkListIntent
 
     data class CheckCard(val index: Int, val isChecked: Boolean) : HomeworkListIntent
 
