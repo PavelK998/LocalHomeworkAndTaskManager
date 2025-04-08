@@ -5,10 +5,14 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.core.data.util.SingleSharedFlow
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
@@ -21,13 +25,15 @@ import javax.inject.Inject
 class AddHomeworkViewModel @Inject constructor(
     private val navigator: Navigator,
     private val homeworkRepository: HomeworkRepository,
-    private val stageRepository: StageRepository
+    private val stageRepository: StageRepository,
+    private val resourceManager: ResourceManager
 ) : ViewModel() {
 
 
     private var subjectId: Long = 0
 
     private var stageId = 0L
+    private var stageName = ""
 
     fun parseArguments(subjectId: Long) {
         this.subjectId = subjectId
@@ -43,6 +49,9 @@ class AddHomeworkViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000L),
             initialValue = AddHomeworkState()
         )
+
+    private val _uiAction = SingleSharedFlow<AddHomeworkUIAction>()
+    val uiAction = _uiAction.asSharedFlow()
 
     fun handleIntent(intent: AddHomeworkIntent) {
         when (intent) {
@@ -71,7 +80,14 @@ class AddHomeworkViewModel @Inject constructor(
             }
             is AddHomeworkIntent.Save -> {
                 if (subjectId != 0L) {
-                    addHomework(subjectId = subjectId)
+                    if (_uiState.value.title.isNotEmpty()) {
+                        addHomework(subjectId = subjectId)
+                    } else {
+                        _uiAction.tryEmit(
+                            AddHomeworkUIAction.ShowError(resourceManager.getString(R.string.empty_homework_title))
+                        )
+                    }
+
                 }
             }
         }
@@ -86,6 +102,7 @@ class AddHomeworkViewModel @Inject constructor(
                 stageFlow.collect{ stageList ->
                     if (stageList.isNotEmpty()) {
                         stageId = stageList[0].id?: 0L
+                        stageName = stageList[0].stageName
                     }
                 }
             }
@@ -102,7 +119,7 @@ class AddHomeworkViewModel @Inject constructor(
                         subjectId = subjectId,
                         addDate = LocalDateTime.now(),
                         name = _uiState.value.title,
-                        stage = "",
+                        stage = stageName,
                         description = _uiState.value.description,
                         startDate = null,
                         endDate = null,

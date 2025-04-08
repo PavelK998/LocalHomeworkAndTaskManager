@@ -25,7 +25,7 @@
     <string name="edit_stages">Настройка этапов</string>
     <string name="subject_name_empty">Имя предмета не может быть пустым</string>
     <string name="name_subject">Название</string>
-    <string name="comment">Комментарий(опционально)</string>
+    <string name="comment">Комментарий\n(опционально)</string>
     <string name="delete_dialog_title">Вы уверены, что хотите удалить этот предмет?</string>
     <string name="delete_dialog_title_stage">Вы уверены, что хотите удалить этот этап?</string>
     <string name="comment_subjects_delete_dialog">Все связанные данные будут удалены</string>
@@ -44,7 +44,9 @@
     <string name="add_date">Добавлено:</string>
     <string name="delete_homework_dialog_title">Подтвердите удаление</string>
     <string name="delete_homework_dialog_description">Это домашнее задание будет удалено</string>
+    <string name="delete_multiple_homework_dialog_description">Все выбранные элементы будут удалены</string>
 
     <string name="emptyScreen">Кажется здесь пусто!!!\nПожалуйста, нажми кнопку, чтобы это исправить:)</string>
+    <string name="empty_homework_title">Название не может быть пустым</string>
 
 </resources>

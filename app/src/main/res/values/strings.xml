@@ -27,7 +27,7 @@
     <string name="edit_stages">Edit stages</string>
     <string name="subject_name_empty">Subject name can not be empty</string>
     <string name="name_subject">Name</string>
-    <string name="comment">Comment(optional)</string>
+    <string name="comment">Comment\n(optional)</string>
     <string name="delete_dialog_title">Are you suse you want to delete this subject?</string>
     <string name="delete_dialog_title_stage">Are you suse you want to delete this stage?</string>
     <string name="comment_subjects_delete_dialog_stage">All related data will be moved to stage:</string>
@@ -49,6 +49,9 @@
     <string name="add_date">Add date:</string>
     <string name="delete_homework_dialog_title">Confirm delete</string>
     <string name="delete_homework_dialog_description">This homework will be deleted</string>
+    <string name="delete_multiple_homework_dialog_description">All selected elements will be deleted</string>
 
     <string name="emptyScreen">Seems like there is empty!!!\nPlease tap button to fix that:)</string>
+
+    <string name="empty_homework_title">Name can not be empty</string>
 </resources>

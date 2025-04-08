@@ -9,6 +9,8 @@ interface HomeworkRepository {
 
     suspend fun deleteHomework(homework: HomeworkModel)
 
+    suspend fun deleteListHomework(homework: List<HomeworkModel>)
+
     suspend fun updateHomework(homework: HomeworkModel)
 
     suspend fun getAllHomeworkWithSubject(): Flow<List<SubjectWithHomework>>

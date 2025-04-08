@@ -21,9 +21,13 @@ sealed interface HomeworkListIntent {
 
     data object DeleteCards : HomeworkListIntent
 
+    data object ConfirmDeleteCards : HomeworkListIntent
+
+    data object CloseDeleteAlertDialog : HomeworkListIntent
+
     data object NavigateUp : HomeworkListIntent
 
-    data object TurnEditMode : HomeworkListIntent
+    data class TurnEditMode(val index: Int) : HomeworkListIntent
 
     data class OnSegmentedButtonClick(val index: Int) : HomeworkListIntent
 

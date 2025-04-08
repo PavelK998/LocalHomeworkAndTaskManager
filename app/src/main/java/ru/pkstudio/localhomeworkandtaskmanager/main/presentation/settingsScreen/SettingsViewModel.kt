@@ -19,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val navigator: Navigator,
-    deviceManager: DeviceManager
+    private val deviceManager: DeviceManager
 ) : ViewModel() {
 
     private var isNavigateBtnClicked = false
@@ -32,6 +32,20 @@ class SettingsViewModel @Inject constructor(
     val uiState = _uiState
         .onStart {
             val themeId = deviceManager.getTheme()
+            val isDynamicColor = deviceManager.getDynamicColors()
+            if (isDynamicColor) {
+                _uiState.update {
+                    it.copy(
+                        isDynamicColor = true
+                    )
+                }
+            } else {
+                _uiState.update {
+                    it.copy(
+                        isDynamicColor = false
+                    )
+                }
+            }
             when(themeId) {
                 ThemeConstants.SYSTEM_DEFAULTS.ordinal -> {
                     _uiState.update {
@@ -41,19 +55,6 @@ class SettingsViewModel @Inject constructor(
                             isLightTheme = false,
                             isLightThemeBtnEnabled = false,
                             isSystemTheme = true,
-                            isDynamicColor = false
-                        )
-                    }
-                }
-                ThemeConstants.DYNAMIC_COLORS.ordinal -> {
-                    _uiState.update {
-                        it.copy(
-                            isDarkTheme = false,
-                            isDarkThemeBtnEnabled = true,
-                            isLightTheme = false,
-                            isLightThemeBtnEnabled = true,
-                            isSystemTheme = false,
-                            isDynamicColor = true
                         )
                     }
                 }
@@ -65,7 +66,6 @@ class SettingsViewModel @Inject constructor(
                             isLightThemeBtnEnabled = true,
                             isDarkThemeBtnEnabled = true,
                             isSystemTheme = false,
-                            isDynamicColor = false
                         )
                     }
                 }
@@ -77,7 +77,6 @@ class SettingsViewModel @Inject constructor(
                             isLightThemeBtnEnabled = true,
                             isDarkThemeBtnEnabled = true,
                             isSystemTheme = false,
-                            isDynamicColor = false
                         )
                     }
                 }
@@ -113,7 +112,6 @@ class SettingsViewModel @Inject constructor(
                             isDarkTheme = true,
                             isLightTheme = false,
                             isSystemTheme = false,
-                            isDynamicColor = false
                         )
                     }
                 }
@@ -123,12 +121,13 @@ class SettingsViewModel @Inject constructor(
                 if (!_uiState.value.isDynamicColor){
                     _uiState.update {
                         it.copy(
-                            isDarkTheme = false,
-                            isDarkThemeBtnEnabled = true,
-                            isLightTheme = false,
-                            isLightThemeBtnEnabled = true,
-                            isSystemTheme = false,
                             isDynamicColor = true
+                        )
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            isDynamicColor = false
                         )
                     }
                 }
@@ -140,7 +139,6 @@ class SettingsViewModel @Inject constructor(
                             isDarkTheme = false,
                             isLightTheme = true,
                             isSystemTheme = false,
-                            isDynamicColor = false
                         )
                     }
                 }
@@ -156,7 +154,6 @@ class SettingsViewModel @Inject constructor(
                             isLightTheme = lightTheme,
                             isLightThemeBtnEnabled = true,
                             isSystemTheme = false,
-                            isDynamicColor = false
                         )
                     }
                 } else {
@@ -167,11 +164,9 @@ class SettingsViewModel @Inject constructor(
                             isLightTheme = false,
                             isLightThemeBtnEnabled = false,
                             isSystemTheme = true,
-                            isDynamicColor = false
                         )
                     }
                 }
-
             }
         }
     }

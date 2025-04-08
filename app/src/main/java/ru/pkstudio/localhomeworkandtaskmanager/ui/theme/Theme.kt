@@ -63,7 +63,18 @@ fun LocalHomeworkAndTaskManagerTheme(
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+
+            when {
+                isSystemThemeEnabled && isSystemInDarkTheme() -> dynamicDarkColorScheme(context)
+
+                isSystemThemeEnabled && !isSystemInDarkTheme() -> dynamicLightColorScheme(context)
+
+                darkTheme -> dynamicDarkColorScheme(context)
+
+                !darkTheme -> dynamicLightColorScheme(context)
+
+                else -> dynamicLightColorScheme(context)
+            }
         }
 
         isSystemThemeEnabled && isSystemInDarkTheme() -> darkScheme

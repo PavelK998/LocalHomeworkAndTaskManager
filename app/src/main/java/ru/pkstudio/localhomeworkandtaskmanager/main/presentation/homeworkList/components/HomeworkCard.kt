@@ -2,6 +2,8 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.c
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -10,8 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -20,10 +24,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.HomeworkUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 
@@ -62,9 +68,9 @@ fun HomeworkCard(
                             onTap = {
                                 onCheckCardClicked(homeworkUiModel.isChecked)
                             },
-                            onLongPress = {
-                                turnEditModeOn()
-                            }
+//                            onLongPress = {
+//                                turnEditModeOn()
+//                            }
                         )
                     },
                 color = Color.Transparent
@@ -74,15 +80,22 @@ fun HomeworkCard(
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-
-            Text(
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(end = 8.dp, top = 4.dp),
-                style = MaterialTheme.typography.titleSmall,
-                text = homeworkUiModel.addDate,
-                textAlign = TextAlign.End
-            )
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = stringResource(id = R.string.add_date))
+                Text(
+                    modifier = Modifier
+                        .padding(start = 8.dp, end = 8.dp),
+                    style = MaterialTheme.typography.titleSmall,
+                    text = homeworkUiModel.addDate,
+                    textAlign = TextAlign.End
+                )
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -107,30 +120,46 @@ fun HomeworkCard(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                if (homeworkUiModel.isCheckBoxVisible) {
-                    Checkbox(
-                        colors = CheckboxDefaults.colors().copy(
-                            uncheckedBorderColor = MaterialTheme.colorScheme.secondaryContainer,
-                            checkedBorderColor = MaterialTheme.colorScheme.secondaryContainer
-                        ),
-                        checked = homeworkUiModel.isChecked,
-                        onCheckedChange = {
-                            onCheckCardClicked(
-                                homeworkUiModel.isChecked
-                            )
-                        }
+                if (homeworkUiModel.isChecked) {
+                    Icon(
+                        modifier = Modifier.padding(end = 14.dp),
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "check",
+                        tint = MaterialTheme.colorScheme.tertiary
+                    )
+
+//                    Checkbox(
+//                        colors = CheckboxDefaults.colors().copy(
+//                            uncheckedBorderColor = MaterialTheme.colorScheme.secondaryContainer,
+//                            checkedBorderColor = MaterialTheme.colorScheme.secondaryContainer
+//                        ),
+//                        checked = homeworkUiModel.isChecked,
+//                        onCheckedChange = {
+//                            onCheckCardClicked(
+//                                homeworkUiModel.isChecked
+//                            )
+//                        }
+//                    )
+                }
+            }
+            Box(
+                modifier =  Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.CenterEnd
+            ){
+                Card(
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .padding(bottom = 4.dp, end = 8.dp)
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(4.dp),
+                        style = MaterialTheme.typography.titleSmall,
+                        text = homeworkUiModel.stageName,
+                        textAlign = TextAlign.End
                     )
                 }
             }
-
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(end = 8.dp, top = 4.dp),
-                style = MaterialTheme.typography.titleSmall,
-                text = "${homeworkUiModel.startDate} - ${homeworkUiModel.endDate}",
-                textAlign = TextAlign.End
-            )
         }
     }
 }
@@ -149,7 +178,7 @@ private fun HomeworkCardPreview() {
                 endDate = "",
                 imageUrl = "",
                 isChecked = false,
-                isCheckBoxVisible = false,
+                isCheckBoxVisible = true,
                 stageName = "",
                 stageId = 0L,
                 subjectId = 0L

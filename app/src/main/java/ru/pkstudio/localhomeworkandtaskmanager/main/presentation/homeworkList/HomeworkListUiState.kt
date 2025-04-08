@@ -18,5 +18,9 @@ data class HomeworkListState(
     val segmentedButtonOptions: List<String> = emptyList(),
     val segmentedButtonSelectedIndex: Int = 0,
     val isScreenEmpty: Boolean = false,
-    val numberOfCheckedCards: Int = 0
+    val numberOfCheckedCards: Int = 0,
+
+    val isDeleteDialogOpen: Boolean = false,
+    val deleteDialogTitle: String = "",
+    val deleteDialogDescription: String = "",
 )

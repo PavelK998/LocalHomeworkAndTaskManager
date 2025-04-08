@@ -28,6 +28,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.ObserveAsActions
 import ru.pkstudio.localhomeworkandtaskmanager.main.activity.ActivityViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkScreen
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkUIAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStageUiAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStagesScreen
@@ -193,9 +194,17 @@ fun SetupNavHost(
             }
 
             composable<Destination.HomeworkAddScreen> { navBackStackEntry ->
+                val context = LocalContext.current
                 val args = navBackStackEntry.toRoute<Destination.HomeworkAddScreen>()
                 val viewModel = hiltViewModel<AddHomeworkViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+                ObserveAsActions(flow = viewModel.uiAction) { action ->
+                    when (action) {
+                        is AddHomeworkUIAction.ShowError -> {
+                            Toast.makeText(context, action.text, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
                 LaunchedEffect(key1 = true) {
                     viewModel.parseArguments(
                         subjectId = args.subjectId
