@@ -19,3 +19,18 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keepattributes *Annotation*
+-keepattributes Signature
+-keepattributes Exceptions
+
+-keep class ru.pkstudio.localhomeworkandtaskmanager.R$* {
+    *;
+}
+
+-keep class androidx.room.** { *; }
+-keep @androidx.room.Entity class * {
+    *;
+}
+
+-dontwarn com.google.**

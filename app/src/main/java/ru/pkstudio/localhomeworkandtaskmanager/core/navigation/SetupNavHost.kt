@@ -1,5 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.core.navigation
 
+import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.os.Process
@@ -24,6 +25,7 @@ import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthScreen
+import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthUiAction
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.ObserveAsActions
 import ru.pkstudio.localhomeworkandtaskmanager.main.activity.ActivityViewModel
@@ -53,14 +55,15 @@ fun SetupNavHost(
 ) {
 
     ObserveAsEvents(flow = navigator.navigationActions) { navigationAction ->
-        when(navigationAction) {
+        when (navigationAction) {
             is NavigationAction.Navigate -> {
                 navController.navigate(
                     navigationAction.destination
-                ){
+                ) {
                     navigationAction.navOptions(this)
                 }
             }
+
             is NavigationAction.NavigateUp -> {
                 navController.navigateUp()
             }
@@ -78,9 +81,34 @@ fun SetupNavHost(
             composable<Destination.AuthScreen> {
                 val viewModel = hiltViewModel<AuthViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+                val context = LocalContext.current
+                ObserveAsActions(flow = viewModel.uiAction) { action ->
+                    when (action) {
+                        is AuthUiAction.SetDarkTheme -> {
+                            activityViewModel.toggleDarkThemeFromAuth()
+                        }
+
+                        is AuthUiAction.SetLightTheme -> {
+                            activityViewModel.toggleLightThemeFromAuth()
+                        }
+
+                        is AuthUiAction.SetSystemTheme -> {
+                            activityViewModel.toggleSystemThemeFromAuth()
+                        }
+
+                        is AuthUiAction.ToggleDynamicColors -> {
+                            activityViewModel.toggleDynamicColors()
+                        }
+
+                        is AuthUiAction.FinishActivity -> {
+                            (context as? Activity)?.finish()
+                        }
+                    }
+                }
                 AuthScreen(
                     uiState = uiState,
-                    handleIntent = viewModel::handleIntent
+                    handleIntent = viewModel::handleIntent,
+                    player = viewModel.player
                 )
             }
         }
@@ -107,9 +135,14 @@ fun SetupNavHost(
                         if (result.resultCode == RESULT_OK) {
                             result.data?.data?.let { uri ->
                                 Log.d("sadasdsadas", "SetupNavHost: export uri $uri")
-                                val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                val takeFlags =
+                                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                                 context.contentResolver.takePersistableUriPermission(uri, takeFlags)
-                                viewModel.handleIntent(SubjectListIntent.OnFileExportPathSelected(uri))
+                                viewModel.handleIntent(
+                                    SubjectListIntent.OnFileExportPathSelected(
+                                        uri
+                                    )
+                                )
                             }
                         }
                     }
@@ -120,7 +153,11 @@ fun SetupNavHost(
                         if (result.resultCode == RESULT_OK) {
                             result.data?.data?.let { uri ->
                                 Log.d("sadasdsadas", "SetupNavHost: import uri $uri")
-                                viewModel.handleIntent(SubjectListIntent.OnFileImportPathSelected(uri))
+                                viewModel.handleIntent(
+                                    SubjectListIntent.OnFileImportPathSelected(
+                                        uri
+                                    )
+                                )
                             }
                         }
                     }
@@ -157,7 +194,8 @@ fun SetupNavHost(
                         }
 
                         is SubjectListUiAction.RestartApp -> {
-                            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                            val intent =
+                                context.packageManager.getLaunchIntentForPackage(context.packageName)
                             intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                             context.startActivity(intent)
                             Process.killProcess(Process.myPid())
@@ -167,7 +205,7 @@ fun SetupNavHost(
                 SubjectListScreen(
                     uiState = uiState,
                     handleIntent = viewModel::handleIntent,
-                    drawerState = drawerState,
+                    drawerState = drawerState
                 )
             }
 
@@ -236,7 +274,7 @@ fun SetupNavHost(
                 val viewModel = hiltViewModel<SettingsViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
                 fun handleIntent(intent: SettingsIntent) {
-                    when(intent) {
+                    when (intent) {
                         is SettingsIntent.SetDarkTheme -> {
                             activityViewModel.toggleDarkTheme()
                             viewModel.handleIntent(SettingsIntent.SetDarkTheme)

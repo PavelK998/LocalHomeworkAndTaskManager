@@ -3,6 +3,8 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList
 sealed interface HomeworkListIntent {
     data object NavigateToAddHomework : HomeworkListIntent
 
+    data object NavigateToEditStages : HomeworkListIntent
+
     data class NavigateToDetailsHomework(
         val homeworkId: Long,
         val subjectId: Long,

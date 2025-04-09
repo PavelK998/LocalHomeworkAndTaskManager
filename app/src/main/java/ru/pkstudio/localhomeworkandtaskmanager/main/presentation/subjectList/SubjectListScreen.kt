@@ -57,12 +57,10 @@ import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskMana
 fun SubjectListScreen(
     uiState: SubjectListState,
     handleIntent: (SubjectListIntent) -> Unit,
-    drawerState: DrawerState,
+    drawerState: DrawerState
 ) {
     val localView = LocalView.current
     val density = LocalDensity.current
-
-
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -147,7 +145,7 @@ fun SubjectListScreen(
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 DefaultTopAppBar(
-                    title = stringResource(id = R.string.subjects),
+                    title = uiState.toolbarTitle,
                     navigationIcon = Icons.Default.Menu,
                     navigationAction = {
                         handleIntent(SubjectListIntent.OpenDrawer)
@@ -275,6 +273,7 @@ fun SubjectListScreen(
                 }
             }
         }
+
     }
 
     if (uiState.isDeleteAlertDialogOpened) {
@@ -303,13 +302,26 @@ fun SubjectListScreen(
         )
     }
 
+    if (uiState.isExportAlertDialogOpened) {
+        DeleteDialog(
+            title = uiState.titleExportAlertDialog,
+            comment = uiState.commentExportAlertDialog,
+            onConfirm = {
+                handleIntent(SubjectListIntent.ExportConfirmed)
+            },
+            onDismiss = {
+                handleIntent(SubjectListIntent.CloseExportDialog)
+            }
+        )
+    }
+
     if (uiState.isAddSubjectAlertDialogOpened) {
         AlertDialog(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
             title = {
                 Text(
                     style = MaterialTheme.typography.headlineSmall,
-                    text = stringResource(id = R.string.add_new_subject)
+                    text = uiState.titleAddDialog
                 )
             },
             onDismissRequest = {

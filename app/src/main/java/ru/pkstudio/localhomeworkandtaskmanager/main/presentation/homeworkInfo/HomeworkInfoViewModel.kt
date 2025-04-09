@@ -197,7 +197,7 @@ class HomeworkInfoViewModel @Inject constructor(
                 homeworkRepository.updateHomework(
                     homework = homeworkModel.copy(
                         name = newName,
-                        description = newDescription
+                        description = newDescription,
                     )
                 )
             },
@@ -207,12 +207,14 @@ class HomeworkInfoViewModel @Inject constructor(
             }
         )
 
-    private fun changeStage(homeworkModel: HomeworkModel, newStageId: Long) =
+    private fun changeStage(homeworkModel: HomeworkModel, newStageId: Long) {
+        val stage = _uiState.value.stagesList.find { it.id == newStageId }
         viewModelScope.execute(
             source = {
                 homeworkRepository.updateHomework(
                     homework = homeworkModel.copy(
-                        stageId = newStageId
+                        stageId = newStageId,
+                        stage = stage?.stageName ?: ""
                     )
                 )
             },
@@ -227,6 +229,7 @@ class HomeworkInfoViewModel @Inject constructor(
                 Log.d("gdfgdfgdfgdf", "changeStage: success")
             }
         )
+    }
 
     private fun getHomework(homeworkId: Long) {
         _uiState.update {

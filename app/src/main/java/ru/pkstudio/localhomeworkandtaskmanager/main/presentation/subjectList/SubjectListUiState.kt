@@ -5,7 +5,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.uiM
 
 @Immutable
 data class SubjectListState(
-    val paramOne: String = "default",
+    val toolbarTitle: String = "",
+    val titleAddDialog: String = "",
     val newSubjectName: String = "",
     val newSubjectComment: String = "",
     val subjectNameForEdit: String = "",
@@ -22,4 +23,10 @@ data class SubjectListState(
     val isImportAlertDialogOpened: Boolean = false,
     val titleImportAlertDialog: String = "",
     val commentImportAlertDialog: String = "",
+
+    val isExportAlertDialogOpened: Boolean = false,
+    val titleExportAlertDialog: String = "",
+    val commentExportAlertDialog: String = "",
+
+    val isVideoPlayerViewVisible: Boolean = true,
 )

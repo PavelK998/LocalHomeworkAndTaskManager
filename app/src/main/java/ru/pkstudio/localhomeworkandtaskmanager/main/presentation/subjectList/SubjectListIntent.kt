@@ -15,6 +15,8 @@ sealed interface SubjectListIntent {
 
     data object CloseImportDialog: SubjectListIntent
 
+    data object CloseExportDialog: SubjectListIntent
+
     data object LogOutClicked: SubjectListIntent
 
     data object CloseAddSubject: SubjectListIntent
@@ -55,6 +57,10 @@ sealed interface SubjectListIntent {
     data object ImportConfirmed: SubjectListIntent
 
     data object OnExportClicked: SubjectListIntent
+
+    data object ExportConfirmed: SubjectListIntent
+
+
 
     data class OnFileExportPathSelected(val uri: Uri): SubjectListIntent
 

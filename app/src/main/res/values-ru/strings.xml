@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LocalHomeworkAndTaskManager</string>
+    <string name="app_name">MyHomeworkManager</string>
 
     <string name="edit">Редактировать</string>
     <string name="delete">Удалить</string>
+    <string name="select">Выбрать</string>
 
     <string name="create_password">Придумайте пин-код</string>
     <string name="enter_password">Введите пин-код</string>
     <string name="repeat_password">Повторите пин-код</string>
     <string name="incorrect_password">Не верный пин-код</string>
     <string name="subjects">Предметы</string>
+    <string name="categories">Категории</string>
     <string name="add_new_subject">Добавить новый предмет</string>
+    <string name="add_new_category">Добавить новую категорию</string>
     <string name="confirm_button">Ок</string>
     <string name="dismiss_button">Отмена</string>
 
@@ -24,9 +27,11 @@
     <string name="settings">Настройки</string>
     <string name="edit_stages">Настройка этапов</string>
     <string name="subject_name_empty">Имя предмета не может быть пустым</string>
+    <string name="category_name_empty">Имя категории не может быть пустым</string>
     <string name="name_subject">Название</string>
     <string name="comment">Комментарий\n(опционально)</string>
     <string name="delete_dialog_title">Вы уверены, что хотите удалить этот предмет?</string>
+    <string name="delete_dialog_title_category">Вы уверены, что хотите удалить эту категорию?</string>
     <string name="delete_dialog_title_stage">Вы уверены, что хотите удалить этот этап?</string>
     <string name="comment_subjects_delete_dialog">Все связанные данные будут удалены</string>
     <string name="comment_subjects_delete_dialog_stage">Все связанные данные будут перенесены в этап: </string>
@@ -40,13 +45,26 @@
     <string name="import_database_dialog_description">Если импорт пройдет успешно, приложение будет перезапущено.</string>
     <string name="export_database_success">База данных успешно экспортирована</string>
 
+    <string name="export_database_dialog_title">Вы собираетесь экспортировать базу данных</string>
+    <string name="export_database_dialog_description">Если экспорт пройдет успешно, приложение будет перезапущено.\nИногда операционная система не дает выбрать папку, попробуйте либо выбрать другую папку, либо выйти из этой и вернуться к ней</string>
+
     <string name="subject_name">Название предмета:</string>
+    <string name="category_name">Название категории:</string>
     <string name="add_date">Добавлено:</string>
     <string name="delete_homework_dialog_title">Подтвердите удаление</string>
     <string name="delete_homework_dialog_description">Это домашнее задание будет удалено</string>
+    <string name="delete_task_dialog_description">Эта задача будет удалена</string>
     <string name="delete_multiple_homework_dialog_description">Все выбранные элементы будут удалены</string>
 
     <string name="emptyScreen">Кажется здесь пусто!!!\nПожалуйста, нажми кнопку, чтобы это исправить:)</string>
     <string name="empty_homework_title">Название не может быть пустым</string>
 
+    //auth
+    <string name="auth_usage_title">Приложение может быть, как трекером задач, так и вашим электронным дневником.</string>
+    <string name="auth_usage_sub_title">Как вы хотите его использовать?</string>
+    <string name="auth_usage_parentheses">(это влияет только на текст уведомлений и названий экранов)</string>
+    <string name="auth_usage_btn_diary">Дневник</string>
+    <string name="auth_usage_btn_task_tracker">Таск трекер</string>
+    <string name="auth_theme_title">Выберите тему приложения</string>
+    <string name="auth_theme_hint">Просто смахните вправо:)</string>
 </resources>

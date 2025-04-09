@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import javax.inject.Inject
@@ -17,9 +18,9 @@ class DeviceManagerImpl @Inject constructor(
     private val sharedPreferences =
         context.getSharedPreferences(KEY_PREFERENCES, Context.MODE_PRIVATE)
     override fun setUserId(userId: String) {
-        val editor = sharedPreferences.edit()
-        editor.putString(KEY_USER_ID, userId)
-        editor.apply()
+        sharedPreferences.edit() {
+            putString(KEY_USER_ID, userId)
+        }
     }
 
     override fun getUserId(): String? {
@@ -27,9 +28,9 @@ class DeviceManagerImpl @Inject constructor(
     }
 
     override fun setPinCode(pinCode: String) {
-        val editor = sharedPreferences.edit()
-        editor.putString(KEY_PIN_CODE, pinCode)
-        editor.apply()
+        sharedPreferences.edit() {
+            putString(KEY_PIN_CODE, pinCode)
+        }
     }
 
     override fun getPinCode(): String? {
@@ -37,9 +38,9 @@ class DeviceManagerImpl @Inject constructor(
     }
 
     override fun setTheme(themeId: Int) {
-        val editor = sharedPreferences.edit()
-        editor.putInt(KEY_THEME, themeId)
-        editor.apply()
+        sharedPreferences.edit() {
+            putInt(KEY_THEME, themeId)
+        }
     }
 
     override fun getTheme(): Int {
@@ -65,9 +66,9 @@ class DeviceManagerImpl @Inject constructor(
     }
 
     override fun setFilePathUri(path: String) {
-        val editor = sharedPreferences.edit()
-        editor.putString(KEY_FILE_PATH, path)
-        editor.apply()
+        sharedPreferences.edit() {
+            putString(KEY_FILE_PATH, path)
+        }
     }
 
     override fun getFilePathUri(): String? {
@@ -75,15 +76,15 @@ class DeviceManagerImpl @Inject constructor(
     }
 
     override fun setSelectedDisplayMethod(displayMethodId: Int) {
-        val editor = sharedPreferences.edit()
-        editor.putInt(KEY_DISPLAY_ID, displayMethodId)
-        editor.apply()
+        sharedPreferences.edit() {
+            putInt(KEY_DISPLAY_ID, displayMethodId)
+        }
     }
 
     override fun setDynamicColors(isDynamicColor: Boolean) {
-        val editor = sharedPreferences.edit()
-        editor.putBoolean(KEY_DYNAMIC_COLOR, isDynamicColor)
-        editor.apply()
+        sharedPreferences.edit() {
+            putBoolean(KEY_DYNAMIC_COLOR, isDynamicColor)
+        }
     }
 
     override fun getDynamicColors(): Boolean {
@@ -94,6 +95,36 @@ class DeviceManagerImpl @Inject constructor(
         return sharedPreferences.getInt(KEY_DISPLAY_ID, -1)
     }
 
+    override fun getIsFirstLaunch(): Boolean {
+        return sharedPreferences.getBoolean(KEY_FIRST_LAUNCH, true)
+    }
+
+    override fun setIsFirstLaunch(isFirstLaunch: Boolean) {
+        sharedPreferences.edit() {
+            putBoolean(KEY_FIRST_LAUNCH, isFirstLaunch)
+        }
+    }
+
+    override fun getUsage(): Int {
+        return sharedPreferences.getInt(KEY_USAGE, -1)
+    }
+
+    override fun setUsage(usageId: Int) {
+        sharedPreferences.edit() {
+            putInt(KEY_USAGE, usageId)
+        }
+    }
+
+    override fun setLastAuthAction(authAction: Int) {
+        sharedPreferences.edit() {
+            putInt(KEY_LAST_AUTH_ACTION, authAction)
+        }
+    }
+
+    override fun getLastAuthAction(): Int {
+        return sharedPreferences.getInt(KEY_LAST_AUTH_ACTION, -1)
+    }
+
     companion object {
         private const val KEY_PREFERENCES = "prefs"
         private const val KEY_USER_ID = "userId"
@@ -102,5 +133,8 @@ class DeviceManagerImpl @Inject constructor(
         private const val KEY_THEME = "theme"
         private const val KEY_DYNAMIC_COLOR = "dynamic_color"
         private const val KEY_FILE_PATH = "file_path"
+        private const val KEY_FIRST_LAUNCH = "first_launch"
+        private const val KEY_USAGE = "usage"
+        private const val KEY_LAST_AUTH_ACTION = "last_auth_action"
     }
 }
