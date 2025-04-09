@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultFloatingActionButton
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DeleteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.EmptyScreen
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.GradientFloatingActionButton
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.Loading
@@ -57,7 +58,7 @@ fun HomeworkListScreen(
                     title = uiState.numberOfCheckedCards.toString(),
                     navigationIcon = Icons.Default.Close,
                     navigationAction = {
-                        handleIntent.invoke(HomeworkListIntent.TurnEditMode)
+                        handleIntent.invoke(HomeworkListIntent.TurnEditMode(index = -1))
                     },
                     actions = listOf(
                         TopAppBarAction(
@@ -66,7 +67,7 @@ fun HomeworkListScreen(
                             action = {
                                 handleIntent.invoke(HomeworkListIntent.DeleteCards)
                             },
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 )
@@ -137,6 +138,18 @@ fun HomeworkListScreen(
             }
         }
     ) { paddingValues ->
+        if (uiState.isDeleteDialogOpen) {
+            DeleteDialog(
+                title = uiState.deleteDialogTitle,
+                comment = uiState.deleteDialogDescription,
+                onConfirm = {
+                    handleIntent(HomeworkListIntent.ConfirmDeleteCards)
+                },
+                onDismiss = {
+                    handleIntent(HomeworkListIntent.CloseDeleteAlertDialog)
+                }
+            )
+        }
         if (uiState.isLoading) {
             Loading()
         } else if (uiState.isScreenEmpty) {
@@ -257,16 +270,20 @@ fun HomeworkListScreen(
                                         )
                                     )
                                 },
-                                onCheckCardClicked = { isChecked ->
+                                turnEditModeOn = {
                                     handleIntent(
-                                        HomeworkListIntent.CheckCard(
-                                            index = index,
-                                            isChecked = isChecked
+                                        HomeworkListIntent.TurnEditMode(
+                                            index = index
                                         )
                                     )
                                 },
-                                turnEditModeOn = {
-                                    handleIntent(HomeworkListIntent.TurnEditMode)
+                                onCheckCardClicked = {
+                                    handleIntent(
+                                        HomeworkListIntent.CheckCard(
+                                            index = index,
+                                            isChecked = it
+                                        )
+                                    )
                                 }
                             )
                         }

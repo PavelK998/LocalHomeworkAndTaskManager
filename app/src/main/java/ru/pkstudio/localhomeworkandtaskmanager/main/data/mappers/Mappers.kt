@@ -123,6 +123,18 @@ fun HomeworkModel.toHomeworkEntity(): HomeworkEntity {
     )
 }
 
+fun List<HomeworkModel>.toListHomeworkEntity(): List<HomeworkEntity> {
+    return this.map {
+        it.toHomeworkEntity()
+    }
+}
+
+fun List<HomeworkUiModel>.toListHomeworkModels(): List<HomeworkModel> {
+    return  this.map {
+        it.toHomeworkModel()
+    }
+}
+
 fun SubjectWithHomeworkData.toSubjectWithHomework(): SubjectWithHomework {
     return SubjectWithHomework(
         subject = subject.toSubjectModel(),

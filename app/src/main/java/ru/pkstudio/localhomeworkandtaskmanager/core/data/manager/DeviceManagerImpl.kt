@@ -80,6 +80,16 @@ class DeviceManagerImpl @Inject constructor(
         editor.apply()
     }
 
+    override fun setDynamicColors(isDynamicColor: Boolean) {
+        val editor = sharedPreferences.edit()
+        editor.putBoolean(KEY_DYNAMIC_COLOR, isDynamicColor)
+        editor.apply()
+    }
+
+    override fun getDynamicColors(): Boolean {
+        return sharedPreferences.getBoolean(KEY_DYNAMIC_COLOR, false)
+    }
+
     override fun getSelectedDisplayMethod(): Int {
         return sharedPreferences.getInt(KEY_DISPLAY_ID, -1)
     }
@@ -90,6 +100,7 @@ class DeviceManagerImpl @Inject constructor(
         private const val KEY_DISPLAY_ID = "displayId"
         private const val KEY_PIN_CODE = "pinCode"
         private const val KEY_THEME = "theme"
+        private const val KEY_DYNAMIC_COLOR = "dynamic_color"
         private const val KEY_FILE_PATH = "file_path"
     }
 }

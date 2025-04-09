@@ -1,7 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -60,18 +59,18 @@ fun AddHomeworkScreen(
                     handleIntent(AddHomeworkIntent.NavigateUp)
                 },
                 actions = listOf(
-                    TopAppBarAction(
-                        imageRes = R.drawable.icon_backspace,
-                        contentDescription = "Select media",
-                        action = {
-                            launcherForMultiplyImages.launch(
-                                PickVisualMediaRequest(
-                                    mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
-                                )
-                            )
-                        },
-                        tint = MaterialTheme.colorScheme.onSurface
-                    ),
+//                    TopAppBarAction(
+//                        imageRes = R.drawable.icon_backspace,
+//                        contentDescription = "Select media",
+//                        action = {
+//                            launcherForMultiplyImages.launch(
+//                                PickVisualMediaRequest(
+//                                    mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+//                                )
+//                            )
+//                        },
+//                        tint = MaterialTheme.colorScheme.onSurface
+//                    ),
                     TopAppBarAction(
                         image = Icons.Filled.Done,
                         contentDescription = "Done",

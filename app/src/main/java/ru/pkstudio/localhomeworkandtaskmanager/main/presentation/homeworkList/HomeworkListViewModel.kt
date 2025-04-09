@@ -19,6 +19,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.Constants
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkUiModelList
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toListHomeworkModels
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.StageUiModel
@@ -38,6 +40,7 @@ class HomeworkListViewModel @Inject constructor(
     private var subjectId = 0L
     private var isDisplayMethodChosen = false
     private var isBackButtonClicked = false
+    private var stagesList = emptyList<StageModel>()
 
     fun parseArguments(subjectId: Long) {
         this.subjectId = subjectId
@@ -49,7 +52,9 @@ class HomeworkListViewModel @Inject constructor(
             segmentedButtonOptions = listOf(
                 list,
                 kanban
-            )
+            ),
+            deleteDialogTitle = resourceManager.getString(R.string.delete_homework_dialog_title),
+            deleteDialogDescription = resourceManager.getString(R.string.delete_homework_dialog_description)
         )
     )
     val uiState = _uiState
@@ -69,11 +74,30 @@ class HomeworkListViewModel @Inject constructor(
     fun handleIntent(intent: HomeworkListIntent) {
         when (intent) {
             is HomeworkListIntent.CheckCard -> {
-
+                if (intent.index in _uiState.value.homeworkList.indices) {
+                    checkCard(
+                        index = intent.index,
+                        isChecked = intent.isChecked
+                    )
+                    if (_uiState.value.homeworkList.all { !it.isChecked }) {
+                        turnOffCardEditMode()
+                    }
+                    _uiState.update {
+                        it.copy(
+                            numberOfCheckedCards = _uiState.value.homeworkList.filter { homework ->
+                                homework.isChecked
+                            }.size
+                        )
+                    }
+                }
             }
 
             is HomeworkListIntent.DeleteCards -> {
-
+                _uiState.update {
+                    it.copy(
+                        isDeleteDialogOpen = true
+                    )
+                }
             }
 
             is HomeworkListIntent.ExpandMenu -> {
@@ -137,7 +161,18 @@ class HomeworkListViewModel @Inject constructor(
             }
 
             is HomeworkListIntent.TurnEditMode -> {
-
+                if (intent.index in _uiState.value.homeworkList.indices) {
+                    turnCardEditMode(index = intent.index)
+                    _uiState.update {
+                        it.copy(
+                            numberOfCheckedCards = _uiState.value.homeworkList.filter { homework ->
+                                homework.isChecked
+                            }.size
+                        )
+                    }
+                } else if (intent.index == -1) {
+                    turnOffCardEditMode()
+                }
             }
 
             is HomeworkListIntent.OnItemMoved -> {
@@ -164,6 +199,104 @@ class HomeworkListViewModel @Inject constructor(
                     }
                 }
             }
+
+            is HomeworkListIntent.CloseDeleteAlertDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isDeleteDialogOpen = false
+                    )
+                }
+            }
+
+            is HomeworkListIntent.ConfirmDeleteCards -> {
+                deleteSelectedCards()
+                _uiState.update {
+                    it.copy(
+                        isDeleteDialogOpen = false
+                    )
+                }
+            }
+        }
+    }
+
+    private fun deleteSelectedCards() {
+        val listForDelete = _uiState.value.homeworkList.filter { it.isChecked }
+        viewModelScope.execute(
+            source = {
+                homeworkRepository.deleteListHomework(listForDelete.toListHomeworkModels())
+            },
+            onSuccess = {
+                _uiState.update {
+                    it.copy(
+                        isEditModeEnabled = false
+                    )
+                }
+                getHomework(subjectId = subjectId)
+            }
+        )
+    }
+
+
+//    {
+//        val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+//
+//        }
+//        viewModelScope.launch(exceptionHandler) {
+//            val deferredResultList = mutableListOf<Deferred<Unit>>()
+//            val listForDelete = _uiState.value.homeworkList.filter { it.isChecked }
+//            listForDelete.forEach { homeworkUiModel ->
+//                val deferredResult = async {
+//                    homeworkRepository.deleteHomework(homeworkUiModel.toHomeworkModel())
+//                }
+//                deferredResultList.add(deferredResult)
+//            }
+//            deferredResultList.awaitAll()
+//        }
+//    }
+
+    private fun turnCardEditMode(index: Int) {
+        val list = _uiState.value.homeworkList.map {
+            it.copy(
+                isCheckBoxVisible = true
+            )
+        }.toMutableList()
+        val item = list[index].copy(
+            isChecked = true
+        )
+        list[index] = item
+        _uiState.update {
+            it.copy(
+                homeworkList = list,
+                isEditModeEnabled = true
+            )
+        }
+    }
+
+    private fun turnOffCardEditMode() {
+        val list = _uiState.value.homeworkList.map {
+            it.copy(
+                isCheckBoxVisible = false,
+                isChecked = false
+            )
+        }.toMutableList()
+        _uiState.update {
+            it.copy(
+                homeworkList = list,
+                isEditModeEnabled = false
+            )
+        }
+    }
+
+    private fun checkCard(index: Int, isChecked: Boolean) {
+        val list = _uiState.value.homeworkList.toMutableList()
+        val item = list[index].copy(
+            isChecked = !isChecked
+        )
+        list[index] = item
+        _uiState.update {
+            it.copy(
+                homeworkList = list
+            )
         }
     }
 

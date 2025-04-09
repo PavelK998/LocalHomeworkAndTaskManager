@@ -18,6 +18,9 @@ interface HomeworkDao {
     @Delete
     suspend fun deleteHomework(homework: HomeworkEntity)
 
+    @Delete
+    suspend fun deleteListHomework(homeworkList: List<HomeworkEntity>)
+
     @Update
     suspend fun updateHomework(homework: HomeworkEntity)
 

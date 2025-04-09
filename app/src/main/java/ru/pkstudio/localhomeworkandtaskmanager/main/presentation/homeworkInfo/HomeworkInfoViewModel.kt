@@ -174,8 +174,8 @@ class HomeworkInfoViewModel @Inject constructor(
                 _uiState.value.homeworkUiModel?.let {
                     updateHomework(
                         homeworkModel = it.toHomeworkModel(),
-                        newName = _uiState.value.homeworkEditName,
-                        newDescription = _uiState.value.homeworkEditDescription
+                        newName = _uiState.value.homeworkEditName.trimEnd(),
+                        newDescription = _uiState.value.homeworkEditDescription.trimEnd()
                     )
                 }
             }

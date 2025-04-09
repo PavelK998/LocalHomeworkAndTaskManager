@@ -22,6 +22,21 @@ class ActivityViewModel @Inject constructor(
     val uiState = _uiState
         .onStart {
             val themeId = getThemeId()
+            val isDynamicColors = deviceManager.getDynamicColors()
+            if (isDynamicColors) {
+                _uiState.update {
+                    it.copy(
+                        isDynamicColor = true
+                    )
+                }
+            } else {
+                _uiState.update {
+                    it.copy(
+                        isDynamicColor = false
+                    )
+                }
+            }
+
             when (themeId) {
                 ThemeConstants.SYSTEM_DEFAULTS.ordinal -> {
                     _uiState.update {
@@ -29,16 +44,6 @@ class ActivityViewModel @Inject constructor(
                             isDarkTheme = false,
                             isSystemTheme = true,
                             isDynamicColor = false,
-                            isReady = true
-                        )
-                    }
-                }
-                ThemeConstants.DYNAMIC_COLORS.ordinal -> {
-                    _uiState.update {
-                        it.copy(
-                            isDarkTheme = false,
-                            isSystemTheme = false,
-                            isDynamicColor = true,
                             isReady = true
                         )
                     }
@@ -102,13 +107,20 @@ class ActivityViewModel @Inject constructor(
     }
 
     fun toggleDynamicColors() {
-        deviceManager.setTheme(ThemeConstants.DYNAMIC_COLORS.ordinal)
-        _uiState.update {
-            it.copy(
-                isDarkTheme = false,
-                isSystemTheme = false,
-                isDynamicColor = true
-            )
+        if (_uiState.value.isDynamicColor){
+            deviceManager.setDynamicColors(false)
+            _uiState.update {
+                it.copy(
+                    isDynamicColor = false
+                )
+            }
+        } else {
+            deviceManager.setDynamicColors(true)
+            _uiState.update {
+                it.copy(
+                    isDynamicColor = true
+                )
+            }
         }
     }
 
@@ -118,7 +130,6 @@ class ActivityViewModel @Inject constructor(
                 it.copy(
                     isDarkTheme = isSystemInDarkMode,
                     isSystemTheme = false,
-                    isDynamicColor = false
                 )
             }
         } else {
@@ -127,7 +138,6 @@ class ActivityViewModel @Inject constructor(
                 it.copy(
                     isDarkTheme = false,
                     isSystemTheme = true,
-                    isDynamicColor = false
                 )
             }
         }

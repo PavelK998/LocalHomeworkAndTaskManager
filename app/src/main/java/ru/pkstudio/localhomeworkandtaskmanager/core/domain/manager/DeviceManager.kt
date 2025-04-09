@@ -15,6 +15,10 @@ interface DeviceManager {
 
     fun setTheme(themeId: Int)
 
+    fun setDynamicColors(isDynamicColor: Boolean)
+
+    fun getDynamicColors(): Boolean
+
     fun getTheme(): Int
 
     fun startMicroVibrate()
