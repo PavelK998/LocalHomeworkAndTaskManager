@@ -1,5 +1,10 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -129,12 +134,18 @@ fun HomeworkListScreen(
                     imageVector = Icons.Default.Add,
                 )
             } else {
-                DefaultFloatingActionButton(
-                    onClick = {
-                        handleIntent.invoke(HomeworkListIntent.NavigateToAddHomework)
-                    },
-                    imageVector = Icons.Default.Add
-                )
+                AnimatedVisibility(
+                    visible = uiState.isFABVisible,
+                    enter = slideInHorizontally() + fadeIn(),
+                    exit = slideOutHorizontally() + fadeOut()
+                ) {
+                    DefaultFloatingActionButton(
+                        onClick = {
+                            handleIntent.invoke(HomeworkListIntent.NavigateToAddHomework)
+                        },
+                        imageVector = Icons.Default.Add
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -196,6 +207,7 @@ fun HomeworkListScreen(
                 )
                 if (uiState.isKanbanScreenVisible) {
                     KanbanBoard(
+                        modifier = Modifier.fillMaxSize(),
                         items = uiState.kanbanItemsList,
                         header = {
                             KanbanHeader(
@@ -242,6 +254,21 @@ fun HomeworkListScreen(
                                     newRowId = newRowId
                                 )
                             )
+                        },
+                        itemInDeleteBtn = { oldRowId, oldColumnId ->
+                            handleIntent(
+                                HomeworkListIntent.DeleteItemFromKanban(
+                                    oldRowId = oldRowId,
+                                    oldColumnId = oldColumnId
+                                )
+                            )
+                        },
+                        isItemDrag = { isDrag ->
+                            if (isDrag) {
+                                handleIntent(HomeworkListIntent.TurnFabInvisible)
+                            } else {
+                                handleIntent(HomeworkListIntent.TurnFabVisible)
+                            }
                         }
                     )
 

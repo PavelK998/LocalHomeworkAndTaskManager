@@ -251,7 +251,7 @@ class AuthViewModel @Inject constructor(
         }
         if (isFirstLaunch) {
             viewModelScope.launch {
-                videoPlayerRepository.playVideo(R.raw.start)
+                videoPlayerRepository.playVideo(R.raw.intro)
                 player.addListener(
                     object : Player.Listener {
                         override fun onPlaybackStateChanged(playbackState: Int) {

@@ -35,7 +35,9 @@ class HomeworkRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getHomeworkWithSubjectById(subjectId: Long) = withContext(Dispatchers.IO) {
-        homeworkDao.getHomeworkWithSubjectById(subjectId = subjectId).toSubjectWithHomework()
+        homeworkDao.getHomeworkWithSubjectById(subjectId = subjectId).map {
+            it.toSubjectWithHomework()
+        }
     }
 
     override suspend fun getHomeworkById(homeworkId: Long) = withContext(Dispatchers.IO) {

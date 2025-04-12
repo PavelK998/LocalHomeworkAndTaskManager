@@ -33,9 +33,18 @@ sealed interface HomeworkListIntent {
 
     data class OnSegmentedButtonClick(val index: Int) : HomeworkListIntent
 
+    data object TurnFabVisible : HomeworkListIntent
+
+    data object TurnFabInvisible : HomeworkListIntent
+
     data class OnItemMoved(
         val oldRowId: Int,
         val oldColumnId: Int,
         val newRowId: Int
+    ) : HomeworkListIntent
+
+    data class DeleteItemFromKanban(
+        val oldRowId: Int,
+        val oldColumnId: Int,
     ) : HomeworkListIntent
 }
