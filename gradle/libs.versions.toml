@@ -1,13 +1,13 @@
 [versions]
-agp = "8.5.1"
-kotlin = "1.9.0"
-coreKtx = "1.13.1"
+agp = "8.9.1"
+kotlin = "1.9.25"
+coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
-composeBom = "2024.12.01"
+composeBom = "2025.03.01"
 hilt = "2.51.1"
 room = "2.6.1"
 ksp = "1.9.0-1.0.13"
@@ -19,6 +19,7 @@ hiltNavigationCompose = "1.2.0"
 desugar = "2.1.4"
 uiTextGoogleFonts = "1.7.6"
 core-splashscreen = "1.0.1"
+exoplayer = "1.6.0"
 
 [libraries]
 
@@ -36,6 +37,9 @@ google-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", ve
 google-firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 google-firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 google-firebase-auth = { module = "com.google.firebase:firebase-auth" }
+
+media3 = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "exoplayer" }
+media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "exoplayer" }
 
 
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "composeNavigation" }

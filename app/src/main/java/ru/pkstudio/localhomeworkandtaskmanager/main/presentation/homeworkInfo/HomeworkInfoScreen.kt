@@ -19,7 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -32,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,7 +58,6 @@ fun HomeworkInfoScreen(
     uiState: HomeworkInfoState,
     handleIntent: (HomeworkInfoIntent) -> Unit,
 ) {
-    val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
     val windowInsets = WindowInsets
@@ -244,7 +242,7 @@ private fun InfoTopBar(
         },
         actions = listOf(
             TopAppBarAction(
-                image = Icons.Default.Settings,
+                image = Icons.Default.MoreVert,
                 contentDescription = "",
                 action = {
                     onSettingsClicked()

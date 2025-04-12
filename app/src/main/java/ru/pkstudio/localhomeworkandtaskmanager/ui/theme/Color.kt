@@ -3,6 +3,7 @@ package ru.pkstudio.localhomeworkandtaskmanager.ui.theme
 import androidx.compose.ui.graphics.Color
 
 val loadingContainer = Color(0xAA000000)
+val startVideoContainer = Color(0xFF032030)
 
 val success = Color(0xFF08A70E)
 val background = Color(0xFF1F1200)
@@ -13,7 +14,7 @@ val primary = Color(0xFFBAB5B1)
 val secondary = Color(0xFFFE7016)
 val onSecondary = Color(0xFFB24F11)
 val tertiary = Color(0xFF1A9992)
-val onBackground = Color(0xFF3D2606)
+val onBackground = Color(0xFFE9E4E4)  // text color
 val onSurface = Color(0xFFd9b8c4)
 val surfaceVariant = Color(0xFF422525)
 val textTest2 = Color(0xFFE9E4E4)

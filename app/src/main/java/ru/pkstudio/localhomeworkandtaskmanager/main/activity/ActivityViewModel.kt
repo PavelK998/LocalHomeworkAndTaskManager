@@ -1,5 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.activity
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,6 +23,7 @@ class ActivityViewModel @Inject constructor(
     val uiState = _uiState
         .onStart {
             val themeId = getThemeId()
+            Log.d("xzcxzczxczx", "theme id : $themeId")
             val isDynamicColors = deviceManager.getDynamicColors()
             if (isDynamicColors) {
                 _uiState.update {
@@ -39,6 +41,7 @@ class ActivityViewModel @Inject constructor(
 
             when (themeId) {
                 ThemeConstants.SYSTEM_DEFAULTS.ordinal -> {
+                    Log.d("xzcxzczxczx", "theme default")
                     _uiState.update {
                         it.copy(
                             isDarkTheme = false,
@@ -49,16 +52,20 @@ class ActivityViewModel @Inject constructor(
                     }
                 }
                 ThemeConstants.LIGHT_THEME.ordinal -> {
+                    Log.d("xzcxzczxczx", "theme light")
                     _uiState.update {
                         it.copy(
+                            isSystemTheme = false,
                             isDarkTheme = false,
                             isReady = true
                         )
                     }
                 }
                 ThemeConstants.DARK_THEME.ordinal -> {
+                    Log.d("xzcxzczxczx", "theme dark")
                     _uiState.update {
                         it.copy(
+                            isSystemTheme = false,
                             isDarkTheme = true,
                             isReady = true
                         )
@@ -140,6 +147,38 @@ class ActivityViewModel @Inject constructor(
                     isSystemTheme = true,
                 )
             }
+        }
+    }
+
+    fun toggleSystemThemeFromAuth() {
+        if (!_uiState.value.isSystemTheme) {
+            deviceManager.setTheme(ThemeConstants.SYSTEM_DEFAULTS.ordinal)
+            _uiState.update {
+                it.copy(
+                    isDarkTheme = false,
+                    isSystemTheme = true,
+                )
+            }
+        }
+    }
+
+    fun toggleDarkThemeFromAuth() {
+        deviceManager.setTheme(ThemeConstants.DARK_THEME.ordinal)
+        _uiState.update {
+            it.copy(
+                isSystemTheme = false,
+                isDarkTheme = true,
+            )
+        }
+    }
+
+    fun toggleLightThemeFromAuth() {
+        deviceManager.setTheme(ThemeConstants.LIGHT_THEME.ordinal)
+        _uiState.update {
+            it.copy(
+                isSystemTheme = false,
+                isDarkTheme = false
+            )
         }
     }
 }

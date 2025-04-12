@@ -59,7 +59,7 @@ class HomeworkListViewModel @Inject constructor(
     )
     val uiState = _uiState
         .onStart {
-
+            checkUsage()
         }
         .stateIn(
             scope = viewModelScope,
@@ -213,6 +213,32 @@ class HomeworkListViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isDeleteDialogOpen = false
+                    )
+                }
+            }
+
+            is HomeworkListIntent.NavigateToEditStages -> {
+                viewModelScope.launch {
+                    navigator.navigate(Destination.StageEditScreen)
+                }
+            }
+        }
+    }
+
+    private fun checkUsage() {
+        when(deviceManager.getUsage()) {
+            Constants.TASK_TRACKER.ordinal -> {
+                _uiState.update {
+                    it.copy(
+                        deleteDialogDescription = resourceManager.getString(R.string.delete_task_dialog_description)
+                    )
+                }
+            }
+
+            Constants.DIARY.ordinal -> {
+                _uiState.update {
+                    it.copy(
+                        deleteDialogDescription = resourceManager.getString(R.string.delete_homework_dialog_description)
                     )
                 }
             }

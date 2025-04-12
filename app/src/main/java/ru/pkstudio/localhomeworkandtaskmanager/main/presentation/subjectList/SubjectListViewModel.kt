@@ -1,7 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList
 
 import android.net.Uri
-import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,6 +20,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManag
 import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
+import ru.pkstudio.localhomeworkandtaskmanager.core.util.Constants
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
@@ -42,6 +42,8 @@ class SubjectListViewModel @Inject constructor(
 
     private var indexItemForDelete = -1
 
+
+
     private val _uiAction = SingleSharedFlow<SubjectListUiAction>()
     val uiAction = _uiAction.asSharedFlow()
 
@@ -50,11 +52,14 @@ class SubjectListViewModel @Inject constructor(
             titleDeleteAlertDialog = resourceManager.getString(R.string.delete_dialog_title),
             commentDeleteAlertDialog = resourceManager.getString(R.string.comment_subjects_delete_dialog),
             titleImportAlertDialog = resourceManager.getString(R.string.import_database_dialog_title),
-            commentImportAlertDialog = resourceManager.getString(R.string.import_database_dialog_description)
+            commentImportAlertDialog = resourceManager.getString(R.string.import_database_dialog_description),
+            titleExportAlertDialog = resourceManager.getString(R.string.export_database_dialog_title),
+            commentExportAlertDialog = resourceManager.getString(R.string.export_database_dialog_description)
         )
     )
     val uiState = _uiState
         .onStart {
+            checkUsage()
             checkStage()
             getData()
         }
@@ -189,11 +194,10 @@ class SubjectListViewModel @Inject constructor(
             }
 
             is SubjectListIntent.OnExportClicked -> {
-                val filePath = deviceManager.getFilePathUri()
-                if (filePath.isNullOrEmpty()) {
-                    _uiAction.tryEmit(SubjectListUiAction.OpenDocumentTree)
-                } else {
-                    exportDb(filePath.toUri())
+                _uiState.update {
+                    it.copy(
+                        isExportAlertDialogOpened = true
+                    )
                 }
             }
 
@@ -231,6 +235,23 @@ class SubjectListViewModel @Inject constructor(
                 }
                 _uiAction.tryEmit(SubjectListUiAction.SelectDatabaseFile)
             }
+
+            is SubjectListIntent.CloseExportDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isExportAlertDialogOpened = false
+                    )
+                }
+            }
+
+            is SubjectListIntent.ExportConfirmed -> {
+                val filePath = deviceManager.getFilePathUri()
+                if (filePath.isNullOrEmpty()) {
+                    _uiAction.tryEmit(SubjectListUiAction.OpenDocumentTree)
+                } else {
+                    exportDb(filePath.toUri())
+                }
+            }
         }
     }
 
@@ -239,11 +260,12 @@ class SubjectListViewModel @Inject constructor(
             importExportDbRepository.exportDatabase(uri)
         },
         onSuccess = {
-            _uiAction.tryEmit(
-                SubjectListUiAction.ShowErrorMessage(
-                    resourceManager.getString(R.string.export_database_success)
-                )
-            )
+//            _uiAction.tryEmit(
+//                SubjectListUiAction.ShowErrorMessage(
+//                    resourceManager.getString(R.string.export_database_success)
+//                )
+//            )
+            _uiAction.tryEmit(SubjectListUiAction.RestartApp)
 
         },
         onError = {
@@ -264,6 +286,29 @@ class SubjectListViewModel @Inject constructor(
         }
     )
 
+    private fun checkUsage() {
+        when(deviceManager.getUsage()) {
+            Constants.TASK_TRACKER.ordinal -> {
+                _uiState.update {
+                    it.copy(
+                        toolbarTitle = resourceManager.getString(R.string.categories),
+                        titleDeleteAlertDialog = resourceManager.getString(R.string.delete_dialog_title_category),
+                        titleAddDialog = resourceManager.getString(R.string.add_new_category)
+                    )
+                }
+            }
+
+            Constants.DIARY.ordinal -> {
+                _uiState.update {
+                    it.copy(
+                        toolbarTitle = resourceManager.getString(R.string.subjects),
+                        titleDeleteAlertDialog = resourceManager.getString(R.string.delete_dialog_title),
+                        titleAddDialog = resourceManager.getString(R.string.add_new_subject)
+                    )
+                }
+            }
+        }
+    }
     private fun checkStage() {
         viewModelScope.execute(
             source = {
@@ -414,6 +459,7 @@ class SubjectListViewModel @Inject constructor(
                     )
                 },
                 onSuccess = {
+
                     _uiState.update {
                         it.copy(
                             isAddSubjectAlertDialogOpened = false,
@@ -441,7 +487,6 @@ class SubjectListViewModel @Inject constructor(
     private fun getData() {
         viewModelScope.launch {
             subjectsRepository.getAllSubjects().collect { subjects ->
-                Log.d("cxbvxcvxc", "getData: $subjects")
                 if (subjects.isEmpty()) {
                     _uiState.update {
                         it.copy(

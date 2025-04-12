@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "ru.pkstudio.localhomeworkandtaskmanager"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "ru.pkstudio.localhomeworkandtaskmanager"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -26,7 +26,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -45,7 +45,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
     packaging {
         resources {
@@ -67,6 +67,9 @@ dependencies {
     implementation(libs.androidx.room)
     implementation(libs.androidx.room.coroutines)
     ksp(libs.androidx.room.ksp)
+
+    implementation(libs.media3)
+    implementation(libs.media3.ui)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

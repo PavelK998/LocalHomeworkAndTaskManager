@@ -26,4 +26,18 @@ interface DeviceManager {
     fun setFilePathUri(path: String)
 
     fun getFilePathUri(): String?
+
+    fun getIsFirstLaunch(): Boolean
+
+    fun setIsFirstLaunch(isFirstLaunch: Boolean)
+
+    fun getUsage(): Int
+
+    fun setUsage(usageId: Int)
+
+    fun setLastAuthAction(authAction: Int)
+
+    fun getLastAuthAction(): Int
+
+
 }
