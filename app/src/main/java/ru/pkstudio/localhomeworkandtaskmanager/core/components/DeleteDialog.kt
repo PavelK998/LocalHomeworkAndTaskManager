@@ -21,7 +21,6 @@ fun DeleteDialog(
 ) {
     AlertDialog(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.secondaryContainer,
         title = {
             Text(
                 style = MaterialTheme.typography.headlineSmall,

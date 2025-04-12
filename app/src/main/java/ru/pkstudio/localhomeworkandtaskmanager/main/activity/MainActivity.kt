@@ -34,8 +34,9 @@ class MainActivity : ComponentActivity(){
         }
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(
-                scrim = context.getColor(R.color.transparent),
+            statusBarStyle = SystemBarStyle.auto(
+                lightScrim = context.getColor(R.color.black),
+                darkScrim = context.getColor(R.color.white)
             ),
             navigationBarStyle = SystemBarStyle.dark(
                 scrim = context.getColor(R.color.transparent),

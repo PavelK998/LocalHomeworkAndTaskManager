@@ -21,9 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultButton
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 
 
@@ -68,12 +68,6 @@ fun SettingsScreen(
                     onCheckedChange = {
                         handleIntent(SettingsIntent.SetSystemTheme(isSystemInDarkMode))
                     },
-                    colors = SwitchDefaults.colors().copy(
-                        checkedTrackColor = MaterialTheme.colorScheme.onSecondary,
-                        checkedThumbColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        uncheckedThumbColor = MaterialTheme.colorScheme.primary,
-                        uncheckedTrackColor = MaterialTheme.colorScheme.background
-                    )
                 )
             }
             Row(
@@ -96,12 +90,6 @@ fun SettingsScreen(
                     onCheckedChange = {
                         handleIntent(SettingsIntent.SetLightTheme)
                     },
-                    colors = SwitchDefaults.colors().copy(
-                        checkedTrackColor = MaterialTheme.colorScheme.onSecondary,
-                        checkedThumbColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        uncheckedThumbColor = MaterialTheme.colorScheme.primary,
-                        uncheckedTrackColor = MaterialTheme.colorScheme.background
-                    )
                 )
             }
             Row(
@@ -124,12 +112,6 @@ fun SettingsScreen(
                     onCheckedChange = {
                         handleIntent(SettingsIntent.SetDarkTheme)
                     },
-                    colors = SwitchDefaults.colors().copy(
-                        checkedTrackColor = MaterialTheme.colorScheme.onSecondary,
-                        checkedThumbColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        uncheckedThumbColor = MaterialTheme.colorScheme.primary,
-                        uncheckedTrackColor = MaterialTheme.colorScheme.background
-                    )
                 )
             }
             if (uiState.isDynamicColorAvailable) {

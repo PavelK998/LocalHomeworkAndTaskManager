@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.lightGray
 
 @Composable
 fun GradientFloatingActionButton(
@@ -39,7 +40,7 @@ fun GradientFloatingActionButton(
     onClick: () -> Unit,
     imageVector: ImageVector,
     contentDescription: String = "",
-    iconTint: Color = MaterialTheme.colorScheme.onSurface
+    iconTint: Color = MaterialTheme.colorScheme.onPrimaryContainer
 ) {
     var size by remember {
         mutableStateOf(IntSize.Zero)
@@ -55,7 +56,7 @@ fun GradientFloatingActionButton(
     )
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .size(70.dp)
             .onGloballyPositioned {
                 size = it.size
@@ -65,7 +66,7 @@ fun GradientFloatingActionButton(
                 Brush.linearGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.colorScheme.onTertiary,
+                        lightGray,
                         MaterialTheme.colorScheme.primaryContainer,
                     ),
                     start = Offset(

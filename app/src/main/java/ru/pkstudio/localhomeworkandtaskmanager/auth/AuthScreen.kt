@@ -54,6 +54,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.auth.utils.AuthAction
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultButton
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.emptyColor
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.filledColor
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.success
 
 @Composable
@@ -310,10 +312,6 @@ fun SelectTheme(
                     onClick = {
                         onSelectBtnClick()
                     },
-                    colors = ButtonDefaults.buttonColors().copy(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onBackground
-                    )
                 ) {
                     Text(
                         style = MaterialTheme.typography.titleLarge,
@@ -349,8 +347,8 @@ private fun SetPinCode(
 
             PinCode(
                 text = uiState.text,
-                emptyColor = MaterialTheme.colorScheme.primary,
-                filledColor = MaterialTheme.colorScheme.tertiary,
+                emptyColor = emptyColor,
+                filledColor = filledColor,
                 isError = uiState.isError,
                 isSuccess = uiState.isSuccess,
             )
