@@ -317,7 +317,6 @@ fun SubjectListScreen(
 
     if (uiState.isAddSubjectAlertDialogOpened) {
         AlertDialog(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
             title = {
                 Text(
                     style = MaterialTheme.typography.headlineSmall,
@@ -357,8 +356,8 @@ fun SubjectListScreen(
                         colors = TextFieldDefaults.colors().copy(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            focusedIndicatorColor = MaterialTheme.colorScheme.onTertiary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                         ),
                         label = {
                             Text(text = stringResource(id = R.string.name_subject))
@@ -374,8 +373,8 @@ fun SubjectListScreen(
                         colors = TextFieldDefaults.colors().copy(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            focusedIndicatorColor = MaterialTheme.colorScheme.onTertiary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                         ),
                         label = {
                             Text(text = stringResource(id = R.string.comment))

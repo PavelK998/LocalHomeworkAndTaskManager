@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -42,7 +41,7 @@ fun HomeworkCard(
     onCheckCardClicked: (Boolean) -> Unit,
 ) {
     Surface(
-        color = MaterialTheme.colorScheme.primaryContainer,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
         contentColor = MaterialTheme.colorScheme.onSurface,
         shape = RoundedCornerShape(8.dp),
         modifier = modifier
@@ -59,7 +58,7 @@ fun HomeworkCard(
             }
             .height(intrinsicSize = IntrinsicSize.Min)
     ) {
-        if (homeworkUiModel.isCheckBoxVisible){
+        if (homeworkUiModel.isCheckBoxVisible) {
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
@@ -74,7 +73,7 @@ fun HomeworkCard(
                         )
                     },
                 color = Color.Transparent
-            ){}
+            ) {}
         }
         Column(
             modifier = Modifier
@@ -143,22 +142,18 @@ fun HomeworkCard(
                 }
             }
             Box(
-                modifier =  Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.CenterEnd
-            ){
-                Card(
+            ) {
+                Text(
                     modifier = Modifier
-                        .padding(4.dp)
-                        .padding(bottom = 4.dp, end = 8.dp)
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(4.dp),
-                        style = MaterialTheme.typography.titleSmall,
-                        text = homeworkUiModel.stageName,
-                        textAlign = TextAlign.End
-                    )
-                }
+                        .padding(bottom = 16.dp, end = 24.dp),
+                    style = MaterialTheme.typography.titleSmall,
+                    text = homeworkUiModel.stageName,
+                    textAlign = TextAlign.End,
+                    color = MaterialTheme.colorScheme.primaryContainer
+                )
+
             }
         }
     }
@@ -171,7 +166,7 @@ private fun HomeworkCardPreview() {
         HomeworkCard(
             homeworkUiModel = HomeworkUiModel(
                 id = 0L,
-                addDate ="12.10.2024",
+                addDate = "12.10.2024",
                 name = "Сделать доклад",
                 description = "Важный доклад по важной теме",
                 startDate = "",

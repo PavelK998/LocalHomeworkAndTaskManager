@@ -172,7 +172,7 @@ fun HomeworkListScreen(
                             SegmentedButton(
                                 colors = SegmentedButtonDefaults.colors().copy(
                                     activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    activeContentColor = MaterialTheme.colorScheme.onSurface,
+                                    activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                                     activeBorderColor = MaterialTheme.colorScheme.outline
                                 ),
                                 selected = uiState.segmentedButtonSelectedIndex == index,
