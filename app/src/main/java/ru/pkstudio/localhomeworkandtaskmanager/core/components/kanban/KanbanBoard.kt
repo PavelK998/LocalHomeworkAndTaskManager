@@ -1,8 +1,11 @@
 package ru.pkstudio.localhomeworkandtaskmanager.core.components.kanban
 
 import android.content.ClipData
+import android.util.Log
 import android.view.DragEvent
 import android.view.View
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,12 +20,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -44,9 +53,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
@@ -74,13 +85,39 @@ fun <M, A> KanbanBoard(
     spaceBetweenHeaderAndItems: Dp = 8.dp,
     spaceBetweenFooterAndItems: Dp = 8.dp,
     onStartDragAndDrop: (oldRowId: Int, oldColumnId: Int) -> Unit,
-    onEndDragAndDrop: (oldRowId: Int, oldColumnId: Int, newRowId: Int) -> Unit
+    onEndDragAndDrop: (oldRowId: Int, oldColumnId: Int, newRowId: Int) -> Unit,
+    itemInDeleteBtn: (oldRowId: Int, oldColumnId: Int) -> Unit,
+    isItemDrag: (Boolean) -> Unit
 ) {
     var moveItemEvent by remember {
         mutableStateOf(false)
     }
     var shimmerBoxSize by remember {
         mutableStateOf(IntSize.Zero)
+    }
+    var deleteBoxWidth by remember {
+        mutableIntStateOf(0)
+    }
+    var deleteBoxHeight by remember {
+        mutableIntStateOf(0)
+    }
+    var deleteBoxGlobalCoordinates by remember {
+        mutableStateOf(Offset.Zero)
+    }
+    var isInDeleteBtn by remember {
+        mutableStateOf(false)
+    }
+    val deleteBtnColor by animateColorAsState(
+        targetValue =
+            if (!isInDeleteBtn) MaterialTheme.colorScheme.primaryContainer
+            else MaterialTheme.colorScheme.errorContainer
+    )
+
+    var kanbanHeight by remember {
+        mutableIntStateOf(0)
+    }
+    var isDrag by remember {
+        mutableStateOf(false)
     }
     val view = LocalView.current
     val localDensity = LocalDensity.current
@@ -90,7 +127,7 @@ fun <M, A> KanbanBoard(
     val coroutineScope = rememberCoroutineScope()
 
     val savedItemsWithIndices = remember(key1 = items) {
-        val newListItems: SnapshotStateList<KanbanUtilRowItem<M,A>> = mutableStateListOf()
+        val newListItems: SnapshotStateList<KanbanUtilRowItem<M, A>> = mutableStateListOf()
 
         items.forEach { kanbanItem ->
             var rowId: Long
@@ -140,6 +177,7 @@ fun <M, A> KanbanBoard(
         mutableStateOf(false)
     }
 
+
     fun moveItem(oldRowId: Int, oldColumnId: Int, newRowId: Int) {
         if (
             newRowId in savedItemsWithIndices.indices
@@ -167,11 +205,24 @@ fun <M, A> KanbanBoard(
         val dragListener = View.OnDragListener { _, event ->
             when (event.action) {
                 DragEvent.ACTION_DRAG_STARTED -> {
-
+                    isDrag = true
+                    isItemDrag(true)
                 }
 
                 DragEvent.ACTION_DRAG_LOCATION -> {
                     fingerPosition = Offset(event.x, event.y)
+                    if (
+                        fingerPosition.x in (deleteBoxGlobalCoordinates.x..deleteBoxGlobalCoordinates.x + deleteBoxWidth)
+                        && fingerPosition.y in (deleteBoxGlobalCoordinates.y..deleteBoxGlobalCoordinates.y + deleteBoxHeight)
+                    ) {
+                        if (!isInDeleteBtn) {
+                            isInDeleteBtn = true
+                        }
+                    } else {
+                        if (isInDeleteBtn) {
+                            isInDeleteBtn = false
+                        }
+                    }
                     val xPos = fingerPosition.x
                     val viewWidth = view.width.toFloat()
 
@@ -209,6 +260,8 @@ fun <M, A> KanbanBoard(
                 }
 
                 DragEvent.ACTION_DRAG_ENDED -> {
+                    isDrag = false
+                    isItemDrag(false)
                     isScrolling = false
                     if (scrollJob != null && scrollJob!!.isActive) {
                         scrollJob!!.cancel()
@@ -266,6 +319,9 @@ fun <M, A> KanbanBoard(
                         delay(100)
                         moveItemEvent = false
                     }
+                    if (isInDeleteBtn) {
+                        itemInDeleteBtn(oldRowId, oldColumnId)
+                    }
                 }
             }
             true // Указываем, что событие обработано
@@ -279,7 +335,10 @@ fun <M, A> KanbanBoard(
 
     Box(
         modifier = modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .onGloballyPositioned { layoutCoordinates ->
+                kanbanHeight = layoutCoordinates.size.height
+            },
     ) {
         LazyRow(
             state = lazyListState,
@@ -317,7 +376,7 @@ fun <M, A> KanbanBoard(
                             key = { _, item ->
                                 item.id
                             }
-                            ) { columnIndex, columnItem ->
+                        ) { columnIndex, columnItem ->
                             Box(
                                 modifier = Modifier
                                     .background(Color.Transparent)
@@ -360,6 +419,36 @@ fun <M, A> KanbanBoard(
                     Spacer(modifier = Modifier.height(spaceBetweenFooterAndItems))
                     footer(rowItem.rowItem)
                 }
+            }
+        }
+        AnimatedVisibility(isDrag) {
+            FloatingActionButton(
+                modifier = Modifier
+                    .size(70.dp)
+                    .offset {
+                        IntOffset(
+                            x = ((view.width / 2) - (deleteBoxWidth / 2)),
+                            y = kanbanHeight - deleteBoxHeight - 40
+                        )
+                    }
+
+                    .onGloballyPositioned { layoutCoordinates ->
+                        deleteBoxWidth = layoutCoordinates.size.width
+                        deleteBoxHeight = layoutCoordinates.size.height
+                        deleteBoxGlobalCoordinates = layoutCoordinates.positionInRoot()
+                        Log.d("zxczcxzcxzz", "KanbanBoard: ${layoutCoordinates.positionInRoot()}")
+
+                    },
+                onClick = {
+
+                },
+                containerColor = deleteBtnColor
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    contentDescription = ""
+                )
             }
         }
     }

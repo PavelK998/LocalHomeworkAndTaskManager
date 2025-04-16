@@ -30,7 +30,7 @@ interface HomeworkDao {
 
     @Transaction
     @Query("SELECT * FROM subjects WHERE subjectId = :subjectId")
-    suspend fun getHomeworkWithSubjectById(subjectId: Long): SubjectWithHomeworkData
+    fun getHomeworkWithSubjectById(subjectId: Long): Flow<SubjectWithHomeworkData>
 
     @Query("SELECT * FROM homework WHERE id = :homeworkId")
     suspend fun getHomeworkById(homeworkId: Long): HomeworkEntity

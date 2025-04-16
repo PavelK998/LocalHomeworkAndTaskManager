@@ -34,6 +34,7 @@ class AddHomeworkViewModel @Inject constructor(
 
     private var stageId = 0L
     private var stageName = ""
+    private var isNavigateUp = false
 
     fun parseArguments(subjectId: Long) {
         this.subjectId = subjectId
@@ -56,7 +57,11 @@ class AddHomeworkViewModel @Inject constructor(
     fun handleIntent(intent: AddHomeworkIntent) {
         when (intent) {
             is AddHomeworkIntent.NavigateUp -> {
-                navigateUp()
+                if (!isNavigateUp) {
+                    isNavigateUp = true
+                    navigateUp()
+                }
+
             }
             is AddHomeworkIntent.OnDescriptionHomeworkChange -> {
                 _uiState.update {

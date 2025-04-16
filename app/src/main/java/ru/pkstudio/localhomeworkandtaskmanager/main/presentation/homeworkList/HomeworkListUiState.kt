@@ -11,6 +11,7 @@ data class HomeworkListState(
     val subjectName: String = "",
     val subjectId: String = "",
     val isEditModeEnabled: Boolean = false,
+    val isFABVisible: Boolean = true,
     val isDropDownMenuVisible: Boolean = false,
     val kanbanItemsList: List<KanbanItem<StageUiModel, HomeworkUiModel>> = emptyList(),
     val isLoading: Boolean = true,
