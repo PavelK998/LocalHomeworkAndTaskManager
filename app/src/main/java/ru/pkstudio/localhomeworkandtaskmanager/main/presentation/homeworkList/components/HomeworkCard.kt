@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,6 +27,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.richeditor.model.rememberRichTextState
+import com.mohamedrejeb.richeditor.ui.material3.RichText
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.HomeworkUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
@@ -46,35 +47,26 @@ fun HomeworkCard(
         shape = RoundedCornerShape(8.dp),
         modifier = modifier
             .background(Color.Transparent)
-            .pointerInput(Unit) {
+            .pointerInput(homeworkUiModel.isChecked) {
                 detectTapGestures(
                     onTap = {
-                        goToDetails()
+                        if (homeworkUiModel.isCheckBoxVisible){
+                            onCheckCardClicked(homeworkUiModel.isChecked)
+                        } else {
+                            goToDetails()
+                        }
+
                     },
                     onLongPress = {
-                        turnEditModeOn()
+                        if (!homeworkUiModel.isCheckBoxVisible){
+                            turnEditModeOn()
+                        }
+
                     }
                 )
             }
             .height(intrinsicSize = IntrinsicSize.Min)
     ) {
-        if (homeworkUiModel.isCheckBoxVisible) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(homeworkUiModel.isChecked) {
-                        detectTapGestures(
-                            onTap = {
-                                onCheckCardClicked(homeworkUiModel.isChecked)
-                            },
-//                            onLongPress = {
-//                                turnEditModeOn()
-//                            }
-                        )
-                    },
-                color = Color.Transparent
-            ) {}
-        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -103,19 +95,20 @@ fun HomeworkCard(
                     modifier = Modifier
                         .weight(1f)
                 ) {
-                    Text(
+                    RichText(
                         modifier = Modifier
                             .padding(start = 8.dp, top = 8.dp),
-                        style = MaterialTheme.typography.titleLarge,
-                        text = homeworkUiModel.name
+                        state = rememberRichTextState().setHtml(homeworkUiModel.name),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-                    Text(
+                    RichText(
                         modifier = Modifier
                             .padding(vertical = 12.dp)
                             .padding(horizontal = 8.dp),
-                        text = homeworkUiModel.description,
+                        state = rememberRichTextState().setHtml(homeworkUiModel.description),
                         style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                 }

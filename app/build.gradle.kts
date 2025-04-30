@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -52,12 +53,18 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
 }
+
+
 
 dependencies {
     implementation(libs.core.splashscreen)
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.richText)
+    implementation(libs.iconsExtended)
 
     implementation(libs.dagger.hilt)
     implementation(libs.androidx.ui.text.google.fonts)

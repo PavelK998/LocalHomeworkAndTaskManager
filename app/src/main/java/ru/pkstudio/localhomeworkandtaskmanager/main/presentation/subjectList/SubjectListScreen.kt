@@ -283,6 +283,9 @@ fun SubjectListScreen(
             onConfirm = {
                 handleIntent(SubjectListIntent.ConfirmDeleteSubject)
             },
+            onDismissRequest = {
+                handleIntent(SubjectListIntent.CloseDeleteDialog)
+            },
             onDismiss = {
                 handleIntent(SubjectListIntent.CloseDeleteDialog)
             }
@@ -296,6 +299,9 @@ fun SubjectListScreen(
             onConfirm = {
                 handleIntent(SubjectListIntent.ImportConfirmed)
             },
+            onDismissRequest = {
+                handleIntent(SubjectListIntent.CloseImportDialog)
+            },
             onDismiss = {
                 handleIntent(SubjectListIntent.CloseImportDialog)
             }
@@ -308,6 +314,9 @@ fun SubjectListScreen(
             comment = uiState.commentExportAlertDialog,
             onConfirm = {
                 handleIntent(SubjectListIntent.ExportConfirmed)
+            },
+            onDismissRequest = {
+                handleIntent(SubjectListIntent.CloseExportDialog)
             },
             onDismiss = {
                 handleIntent(SubjectListIntent.CloseExportDialog)

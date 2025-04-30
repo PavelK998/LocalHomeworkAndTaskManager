@@ -5,6 +5,8 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="select">Select</string>
+    <string name="selectColor">Select color:</string>
+    <string name="importance_info">The colors are arranged in importance from left to right</string>
 
 
 
@@ -77,4 +79,13 @@
     <string name="auth_usage_btn_task_tracker">Task tracker</string>
     <string name="auth_theme_title">Select app theme</string>
     <string name="auth_theme_hint">Just swipe to the right:)</string>
+
+    //add homework
+    <string name="name">Name:</string>
+    <string name="description">Description:</string>
+
+    //info
+    <string name="update_info_dialog_title">Your data has been changed</string>
+    <string name="update_info_dialog_comment">Do you want to update data?</string>
+    <string name="update_info_toast">Updated successfully</string>
 </resources>

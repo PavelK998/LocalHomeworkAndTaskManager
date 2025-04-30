@@ -156,6 +156,9 @@ fun HomeworkListScreen(
                 onConfirm = {
                     handleIntent(HomeworkListIntent.ConfirmDeleteCards)
                 },
+                onDismissRequest = {
+                    handleIntent(HomeworkListIntent.CloseDeleteAlertDialog)
+                },
                 onDismiss = {
                     handleIntent(HomeworkListIntent.CloseDeleteAlertDialog)
                 }
