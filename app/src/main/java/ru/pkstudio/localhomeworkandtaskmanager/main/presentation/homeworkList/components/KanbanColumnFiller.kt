@@ -8,12 +8,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.richeditor.model.rememberRichTextState
+import com.mohamedrejeb.richeditor.ui.material3.RichText
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.HomeworkUiModel
 
 @Composable
@@ -36,17 +37,15 @@ fun KanbanColumnFiller(
             modifier = Modifier.padding(8.dp)
         ) {
             Column {
-                Text(
-                    style = MaterialTheme.typography.bodyLarge,
+                RichText(
+                    state = rememberRichTextState().setHtml(model.name),
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    text = model.name
+                    overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    style = MaterialTheme.typography.bodyMedium,
+                RichText(
+                    state = rememberRichTextState().setHtml(model.description),
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    text = model.description
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }

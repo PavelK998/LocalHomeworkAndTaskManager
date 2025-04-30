@@ -1,8 +1,14 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
 import android.util.Log
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mohamedrejeb.richeditor.model.RichTextState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.async
@@ -34,6 +40,11 @@ class HomeworkInfoViewModel @Inject constructor(
 ) : ViewModel() {
     private var homeworkId: Long = 0L
 
+    private val defaultNameState = RichTextState()
+    private val defaultDescriptionState = RichTextState()
+    private var isUpdateClicked = false
+    private var isDeleteClicked = false
+
     fun parseArguments(homeworkId: Long, subjectId: Long) {
         this.homeworkId = homeworkId
         getInitialData(homeworkId = homeworkId, subjectId = subjectId)
@@ -43,6 +54,8 @@ class HomeworkInfoViewModel @Inject constructor(
         HomeworkInfoState(
             deleteDialogTitle = resourceManager.getString(R.string.delete_dialog_title),
             deleteDialogDescription = resourceManager.getString(R.string.delete_homework_dialog_description),
+            updateDialogTitle = resourceManager.getString(R.string.update_info_dialog_title),
+            updateDialogDescription = resourceManager.getString(R.string.update_info_dialog_comment),
         )
     )
     val uiState = _uiState
@@ -115,12 +128,17 @@ class HomeworkInfoViewModel @Inject constructor(
             }
 
             is HomeworkInfoIntent.DeleteConfirm -> {
-                _uiState.value.homeworkUiModel?.let {
-                    deleteHomework(it.toHomeworkModel())
+                if (!isDeleteClicked){
+                    isDeleteClicked = true
+                    _uiState.value.homeworkUiModel?.let {
+                        deleteHomework(it.toHomeworkModel())
+                    }
                 }
+
             }
 
             is HomeworkInfoIntent.OnDeleteBtnClick -> {
+                isDeleteClicked = false
                 _uiState.update {
                     it.copy(
                         isDeleteDialogOpened = true,
@@ -130,9 +148,22 @@ class HomeworkInfoViewModel @Inject constructor(
             }
 
             is HomeworkInfoIntent.NavigateUp -> {
-                viewModelScope.launch {
-                    navigator.navigateUp()
+                if (
+                    _uiState.value.nameRichTextState.annotatedString != defaultNameState.annotatedString
+                    || _uiState.value.descriptionRichTextState.annotatedString != defaultDescriptionState.annotatedString
+                ) {
+                    isUpdateClicked = false
+                    _uiState.update {
+                        it.copy(
+                            isUpdateDialogOpened = true
+                        )
+                    }
+                } else {
+                    viewModelScope.launch {
+                        navigator.navigateUp()
+                    }
                 }
+
             }
 
             is HomeworkInfoIntent.CloseSettingsMenu -> {
@@ -179,7 +210,183 @@ class HomeworkInfoViewModel @Inject constructor(
                     )
                 }
             }
+
+            is HomeworkInfoIntent.ToggleNameBold -> {
+                toggleBold(_uiState.value.nameRichTextState)
+            }
+
+            is HomeworkInfoIntent.ToggleNameItalic -> {
+                toggleItalic(_uiState.value.nameRichTextState)
+            }
+
+            is HomeworkInfoIntent.ToggleNameLineThrough -> {
+                toggleLineThrough(_uiState.value.nameRichTextState)
+            }
+
+            is HomeworkInfoIntent.DescriptionFontSizeChange -> {
+                _uiState.value.descriptionRichTextState.toggleSpanStyle(
+                    SpanStyle(fontSize = intent.font.sp)
+                )
+            }
+
+            is HomeworkInfoIntent.NameFontSizeChange -> {
+                changeFontSize(
+                    textState = _uiState.value.nameRichTextState,
+                    fontSize = intent.font
+                )
+            }
+
+            is HomeworkInfoIntent.ToggleDescriptionExtraOptions -> {
+                if (_uiState.value.isDescriptionExtraOptionsVisible) {
+                    _uiState.update {
+                        it.copy(
+                            isDescriptionExtraOptionsVisible = false
+                        )
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            isDescriptionExtraOptionsVisible = true
+                        )
+                    }
+                }
+            }
+
+            is HomeworkInfoIntent.ToggleNameExtraOptions -> {
+                if (_uiState.value.isNameExtraOptionsVisible) {
+                    _uiState.update {
+                        it.copy(
+                            isNameExtraOptionsVisible = false
+                        )
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            isNameExtraOptionsVisible = true
+                        )
+                    }
+                }
+            }
+
+            is HomeworkInfoIntent.ToggleNameUnderline -> {
+                toggleUnderlined(_uiState.value.nameRichTextState)
+            }
+
+            is HomeworkInfoIntent.ToggleDescriptionBold -> {
+                toggleBold(_uiState.value.descriptionRichTextState)
+            }
+
+            is HomeworkInfoIntent.ToggleDescriptionItalic -> {
+                toggleItalic(_uiState.value.descriptionRichTextState)
+            }
+
+            is HomeworkInfoIntent.ToggleDescriptionLineThrough -> {
+                toggleLineThrough(_uiState.value.descriptionRichTextState)
+            }
+
+            is HomeworkInfoIntent.ToggleDescriptionUnderline -> {
+                toggleUnderlined(_uiState.value.descriptionRichTextState)
+            }
+
+            is HomeworkInfoIntent.CloseDescriptionChangeCard -> {
+                _uiState.update {
+                    it.copy(
+                        isDescriptionCardVisible = false
+                    )
+                }
+            }
+
+            is HomeworkInfoIntent.CloseNameChangeCard -> {
+                _uiState.update {
+                    it.copy(
+                        isNameCardVisible = false
+                    )
+                }
+            }
+
+            is HomeworkInfoIntent.OnDescriptionChangeClick -> {
+                _uiState.update {
+                    it.copy(
+                        isDescriptionCardVisible = true
+                    )
+                }
+            }
+
+            is HomeworkInfoIntent.OnNameChangeClick -> {
+                _uiState.update {
+                    it.copy(
+                        isNameCardVisible = true
+                    )
+                }
+            }
+
+            is HomeworkInfoIntent.CloseUpdateAlertDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isUpdateDialogOpened = false
+                    )
+                }
+
+            }
+
+            is HomeworkInfoIntent.UpdateConfirm -> {
+                if (!isUpdateClicked){
+                    isUpdateClicked = true
+                    _uiState.value.homeworkUiModel?.let {
+                        updateHomework(
+                            homeworkModel = it.toHomeworkModel(),
+                            newName = _uiState.value.nameRichTextState.toHtml(),
+                            newDescription = _uiState.value.descriptionRichTextState.toHtml()
+                        )
+                    }
+                }
+
+            }
+
+            is HomeworkInfoIntent.UpdateDismiss -> {
+                _uiState.update {
+                    it.copy(
+                        isUpdateDialogOpened = false
+                    )
+                }
+                viewModelScope.launch {
+                    navigator.navigateUp()
+                }
+            }
         }
+    }
+
+
+    private fun changeFontSize(textState: RichTextState, fontSize: Int) {
+        if (textState.currentSpanStyle.fontSize != fontSize.sp) {
+            textState.toggleSpanStyle(
+                SpanStyle(fontSize = fontSize.sp)
+            )
+        }
+    }
+
+    private fun toggleBold(textState: RichTextState) {
+        textState.toggleSpanStyle(
+            SpanStyle(fontWeight = FontWeight.Bold)
+        )
+    }
+
+    private fun toggleUnderlined(textState: RichTextState) {
+        textState.toggleSpanStyle(
+            SpanStyle(textDecoration = TextDecoration.Underline)
+        )
+    }
+
+    private fun toggleItalic(textState: RichTextState) {
+        textState.toggleSpanStyle(
+            SpanStyle(fontStyle = FontStyle.Italic)
+        )
+    }
+
+    private fun toggleLineThrough(textState: RichTextState) {
+        textState.toggleSpanStyle(
+            SpanStyle(textDecoration = TextDecoration.LineThrough)
+        )
     }
 
     private fun deleteHomework(homeworkModel: HomeworkModel) = viewModelScope.execute(
@@ -191,9 +398,14 @@ class HomeworkInfoViewModel @Inject constructor(
         }
     )
 
-    private fun updateHomework(homeworkModel: HomeworkModel, newName: String, newDescription: String) =
+    private fun updateHomework(
+        homeworkModel: HomeworkModel,
+        newName: String,
+        newDescription: String
+    ) =
         viewModelScope.execute(
             source = {
+                Log.d("gdfhfghfgh", "updateHomework: ")
                 homeworkRepository.updateHomework(
                     homework = homeworkModel.copy(
                         name = newName,
@@ -202,8 +414,14 @@ class HomeworkInfoViewModel @Inject constructor(
                 )
             },
             onSuccess = {
-                getHomework(homeworkId = homeworkId)
-                Log.d("gdfgdfgdfgdf", "update: success")
+                _uiState.update {
+                    it.copy(
+                        isUpdateDialogOpened = false
+                    )
+                }
+                viewModelScope.launch {
+                    navigator.navigateUp()
+                }
             }
         )
 
@@ -252,6 +470,7 @@ class HomeworkInfoViewModel @Inject constructor(
             }
         )
     }
+
     private fun getInitialData(homeworkId: Long, subjectId: Long) {
         val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
             Log.d("jdgfhfghfgfghjhg", "getInitialData error: $throwable")
@@ -283,9 +502,14 @@ class HomeworkInfoViewModel @Inject constructor(
             }
             val subjectResult = subject.await().toSubjectUiModel()
             Log.d("nbcvnvbnbvn", "getInitialData: stages $stagesResult")
-
+            defaultNameState.setHtml(homeworkResult.name)
+            defaultDescriptionState.setHtml(homeworkResult.description)
             _uiState.update {
                 it.copy(
+                    nameRichTextState = _uiState.value.nameRichTextState.setHtml(homeworkResult.name),
+                    descriptionRichTextState = _uiState.value.descriptionRichTextState.setHtml(
+                        homeworkResult.description
+                    ),
                     homeworkUiModel = homeworkResult,
                     addDateText = "${resourceManager.getString(R.string.add_date)} ${homeworkResult.addDate}",
                     currentSelectStageName = currentStageName ?: "",

@@ -15,6 +15,7 @@ fun DeleteDialog(
     modifier: Modifier = Modifier,
     title: String,
     comment: String,
+    onDismissRequest: () -> Unit,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 
@@ -28,7 +29,7 @@ fun DeleteDialog(
             )
         },
         onDismissRequest = {
-            onDismiss()
+            onDismissRequest()
         },
         confirmButton = {
             DefaultButton(

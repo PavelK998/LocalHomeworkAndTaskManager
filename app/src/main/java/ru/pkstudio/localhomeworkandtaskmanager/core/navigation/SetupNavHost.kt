@@ -248,6 +248,7 @@ fun SetupNavHost(
                         subjectId = args.subjectId
                     )
                 }
+
                 AddHomeworkScreen(
                     uiState = uiState,
                     handleIntent = viewModel::handleIntent

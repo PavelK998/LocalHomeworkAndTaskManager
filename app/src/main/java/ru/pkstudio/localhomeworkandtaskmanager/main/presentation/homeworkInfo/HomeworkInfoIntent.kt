@@ -28,4 +28,44 @@ sealed interface HomeworkInfoIntent {
     data class OnHomeworkEditNameChange(val text: String): HomeworkInfoIntent
 
     data class OnHomeworkEditDescriptionChange(val text: String): HomeworkInfoIntent
+
+    data object UpdateConfirm: HomeworkInfoIntent
+
+    data object UpdateDismiss: HomeworkInfoIntent
+
+    data object CloseUpdateAlertDialog: HomeworkInfoIntent
+
+
+    //edit text
+    data object ToggleNameBold: HomeworkInfoIntent
+
+    data object ToggleNameItalic: HomeworkInfoIntent
+
+    data object ToggleNameLineThrough: HomeworkInfoIntent
+
+    data object ToggleNameUnderline: HomeworkInfoIntent
+
+    data object ToggleNameExtraOptions: HomeworkInfoIntent
+
+    data object ToggleDescriptionBold: HomeworkInfoIntent
+
+    data object ToggleDescriptionItalic: HomeworkInfoIntent
+
+    data object ToggleDescriptionLineThrough: HomeworkInfoIntent
+
+    data object ToggleDescriptionUnderline: HomeworkInfoIntent
+
+    data object ToggleDescriptionExtraOptions: HomeworkInfoIntent
+
+    data class NameFontSizeChange(val font: Int): HomeworkInfoIntent
+
+    data class DescriptionFontSizeChange(val font: Int): HomeworkInfoIntent
+
+    data object OnNameChangeClick: HomeworkInfoIntent
+
+    data object CloseNameChangeCard: HomeworkInfoIntent
+
+    data object CloseDescriptionChangeCard: HomeworkInfoIntent
+
+    data object OnDescriptionChangeClick: HomeworkInfoIntent
 }

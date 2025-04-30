@@ -1,52 +1,72 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.mohamedrejeb.richeditor.model.RichTextState
+import com.mohamedrejeb.richeditor.ui.material3.RichText
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
+import kotlinx.coroutines.delay
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DeleteDialog
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.EditTextPanel
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.Loading
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.TopAppBarAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo.components.MenuItemCard
@@ -58,38 +78,39 @@ fun HomeworkInfoScreen(
     uiState: HomeworkInfoState,
     handleIntent: (HomeworkInfoIntent) -> Unit,
 ) {
+    BackHandler {
+        handleIntent(HomeworkInfoIntent.NavigateUp)
+    }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
-    val windowInsets = WindowInsets
-    val imeHeight = windowInsets.ime.getBottom(density)
-    var isOpen by remember {
-        mutableStateOf(false)
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(
+        uiState.isNameCardVisible
+    ) {
+        if (uiState.isNameCardVisible) {
+            delay(100)
+            focusRequester.requestFocus()
+        }
     }
-    isOpen = imeHeight > 0
+    LaunchedEffect(
+        uiState.isDescriptionCardVisible
+    ) {
+        if (uiState.isDescriptionCardVisible) {
+            delay(100)
+            focusRequester.requestFocus()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            if (!uiState.isEditMode) {
-                InfoTopBar(
-                    isMenuOpened = uiState.isSettingsMenuOpened,
-                    navigateUp = { handleIntent(HomeworkInfoIntent.NavigateUp) },
-                    onSettingsClicked = { handleIntent(HomeworkInfoIntent.OnSettingsClicked) },
-                    closeSettingsMenu = { handleIntent(HomeworkInfoIntent.CloseSettingsMenu) },
-                    onEditClick = { handleIntent(HomeworkInfoIntent.OnEditClick) },
-                    onDeleteBtnClick = { handleIntent(HomeworkInfoIntent.OnDeleteBtnClick) }
-                )
-            } else {
-                EditTopBar(
-                    saveResult = {
-                        handleIntent(HomeworkInfoIntent.ConfirmEditResult)
-                    },
-                    dismissEditMode = {
-                        handleIntent(HomeworkInfoIntent.DismissEditMode)
-                    }
-                )
-            }
-
+            InfoTopBar(
+                isMenuOpened = uiState.isSettingsMenuOpened,
+                navigateUp = { handleIntent(HomeworkInfoIntent.NavigateUp) },
+                onSettingsClicked = { handleIntent(HomeworkInfoIntent.OnSettingsClicked) },
+                closeSettingsMenu = { handleIntent(HomeworkInfoIntent.CloseSettingsMenu) },
+                onDeleteBtnClick = { handleIntent(HomeworkInfoIntent.OnDeleteBtnClick) }
+            )
         }
     ) { paddingValues ->
         if (uiState.isLoading) {
@@ -99,12 +120,30 @@ fun HomeworkInfoScreen(
                 DeleteDialog(
                     title = uiState.deleteDialogTitle,
                     comment = uiState.deleteDialogDescription,
-                    onDismiss = {
+                    onDismissRequest = {
                         handleIntent(HomeworkInfoIntent.CloseDeleteAlertDialog)
                     },
                     onConfirm = {
                         handleIntent(HomeworkInfoIntent.DeleteConfirm)
                         handleIntent(HomeworkInfoIntent.CloseDeleteAlertDialog)
+                    },
+                    onDismiss = {
+                        handleIntent(HomeworkInfoIntent.CloseDeleteAlertDialog)
+                    }
+                )
+            }
+            if (uiState.isUpdateDialogOpened) {
+                DeleteDialog(
+                    title = uiState.updateDialogTitle,
+                    comment = uiState.updateDialogDescription,
+                    onDismissRequest = {
+                        handleIntent(HomeworkInfoIntent.CloseUpdateAlertDialog)
+                    },
+                    onConfirm = {
+                        handleIntent(HomeworkInfoIntent.UpdateConfirm)
+                    },
+                    onDismiss = {
+                        handleIntent(HomeworkInfoIntent.UpdateDismiss)
                     }
                 )
             }
@@ -116,9 +155,6 @@ fun HomeworkInfoScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .verticalScroll(scrollState)
-                    .imePadding()
-
-
             ) {
                 Column(
                     modifier = Modifier
@@ -193,32 +229,286 @@ fun HomeworkInfoScreen(
                         }
                     }
                 }
-                when (uiState.isEditMode) {
-                    true -> {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        EditMode(
-                            homeworkName = uiState.homeworkEditName,
-                            homeworkDescription = uiState.homeworkEditDescription,
-                            onHomeworkNameChange = {
-                                handleIntent(HomeworkInfoIntent.OnHomeworkEditNameChange(it))
-                            },
-                            onHomeworkDescriptionChange = {
-                                handleIntent(HomeworkInfoIntent.OnHomeworkEditDescriptionChange(it))
-                            }
-                        )
-                    }
+                InfoContent(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 8.dp, horizontal = 16.dp),
+                    uiState = uiState,
+                    handleIntent = handleIntent,
+                )
+            }
+        }
+    }
+    AnimatedVisibility(
+        visible = uiState.isNameCardVisible,
+        enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+        exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut()
+    ) {
+        SetName(
+            modifier = Modifier.fillMaxSize(),
+            nameRichTextState = uiState.nameRichTextState,
+            handleIntent = handleIntent,
+            focusRequester = focusRequester,
+            isExtraOptionsVisible = uiState.isNameExtraOptionsVisible
+        )
+    }
 
-                    false -> {
-                        InfoMode(
-                            modifier = Modifier
-                                .padding(top = 16.dp)
-                                .padding(horizontal = 16.dp),
-                            homeworkName = uiState.homeworkUiModel?.name ?: "",
-                            homeworkDescription = uiState.homeworkUiModel?.description ?: ""
-                        )
+    AnimatedVisibility(
+        visible = uiState.isDescriptionCardVisible,
+        enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+        exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut()
+    ) {
+
+        SetDescription(
+            modifier = Modifier.fillMaxSize(),
+            descriptionRichTextState = uiState.descriptionRichTextState,
+            handleIntent = handleIntent,
+            focusRequester = focusRequester,
+            isExtraOptionsVisible = uiState.isDescriptionExtraOptionsVisible
+        )
+    }
+}
+
+@Composable
+fun InfoContent(
+    modifier: Modifier = Modifier,
+    uiState: HomeworkInfoState,
+    handleIntent: (HomeworkInfoIntent) -> Unit,
+) {
+    Column(
+        modifier = modifier
+    ) {
+        RichText(
+            modifier = Modifier
+                .clickable {
+                    handleIntent(HomeworkInfoIntent.OnNameChangeClick)
+                },
+            state = uiState.nameRichTextState,
+            style = TextStyle(fontSize = uiState.nameRichTextState.currentSpanStyle.fontSize)
+        )
+        if (uiState.descriptionRichTextState.annotatedString.text.isNotBlank()) {
+            RichText(
+                modifier = Modifier
+                    .padding(top = 12.dp)
+                    .heightIn(min = 100.dp)
+                    .clickable {
+                        handleIntent(HomeworkInfoIntent.OnDescriptionChangeClick)
+                    },
+                state = uiState.descriptionRichTextState,
+                style = TextStyle(fontSize = uiState.descriptionRichTextState.currentSpanStyle.fontSize)
+            )
+        } else {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 300.dp),
+                onClick = {
+                    handleIntent(HomeworkInfoIntent.OnDescriptionChangeClick)
+                }
+            )
+            {
+
+                Text(
+                    modifier = Modifier.padding(top = 16.dp),
+                    style = MaterialTheme.typography.titleLarge,
+                    text = stringResource(R.string.description)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SetName(
+    modifier: Modifier = Modifier,
+    nameRichTextState: RichTextState,
+    isExtraOptionsVisible: Boolean,
+    handleIntent: (HomeworkInfoIntent) -> Unit,
+    focusRequester: FocusRequester
+) {
+
+    BackHandler {
+        handleIntent(HomeworkInfoIntent.CloseNameChangeCard)
+    }
+    Scaffold { paddingValues ->
+        val density = LocalDensity.current
+        val imeInsets = WindowInsets.ime.getBottom(density)
+        val defaultBottomPadding = paddingValues.calculateBottomPadding()
+        var bottomPadding by remember {
+            mutableStateOf(defaultBottomPadding)
+        }
+
+        LaunchedEffect(imeInsets) {
+            val imeInsetsToDp = with(density) { imeInsets.toDp() }
+            if (imeInsetsToDp <= defaultBottomPadding) {
+                bottomPadding = defaultBottomPadding
+            } else {
+                bottomPadding = with(density) { imeInsets.toDp() }
+            }
+        }
+        Column(
+            modifier = modifier
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = bottomPadding
+                )
+        ) {
+            Card(
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 24.dp),
+                colors = CardDefaults.cardColors().copy(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        style = MaterialTheme.typography.titleLarge,
+                        text = stringResource(R.string.name)
+                    )
+                    IconButton(
+                        onClick = {
+                            handleIntent(HomeworkInfoIntent.CloseNameChangeCard)
+                        }
+                    ) {
+                        Icon(imageVector = Icons.Filled.Check, contentDescription = "")
                     }
                 }
+                RichTextEditor(
+                    textStyle = TextStyle(fontSize = nameRichTextState.currentSpanStyle.fontSize),
+                    modifier = Modifier.focusRequester(focusRequester),
+                    state = nameRichTextState,
+                    colors = RichTextEditorDefaults.richTextEditorColors(
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        containerColor = Color.Transparent
+                    ),
+                    placeholder = {
+                        Text(
+                            fontSize = 20.sp,
+                            text = stringResource(R.string.add_homework_title_label)
+                        )
+                    },
+                )
             }
+
+            EditTextPanel(
+                textState = nameRichTextState,
+                isExtraOptionsVisible = isExtraOptionsVisible,
+                onBoldBtnClick = {
+                    handleIntent(HomeworkInfoIntent.ToggleNameBold)
+                },
+                onItalicBtnClick = {
+                    handleIntent(HomeworkInfoIntent.ToggleNameItalic)
+                },
+                onLineThroughBtnClick = {
+                    handleIntent(HomeworkInfoIntent.ToggleNameLineThrough)
+                },
+                onUnderlinedBtnClick = {
+                    handleIntent(HomeworkInfoIntent.ToggleNameUnderline)
+                },
+                onFontSizeChange = {
+                    handleIntent(HomeworkInfoIntent.NameFontSizeChange(it))
+                },
+                onExtraOptionsBtnClick = {
+                    handleIntent(HomeworkInfoIntent.ToggleNameExtraOptions)
+                },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SetDescription(
+    modifier: Modifier = Modifier,
+    descriptionRichTextState: RichTextState,
+    isExtraOptionsVisible: Boolean,
+    handleIntent: (HomeworkInfoIntent) -> Unit,
+    focusRequester: FocusRequester
+) {
+    BackHandler {
+        handleIntent(HomeworkInfoIntent.CloseDescriptionChangeCard)
+    }
+    Scaffold { paddingValues ->
+        Column(
+            modifier = modifier
+                .imePadding()
+                .padding(paddingValues),
+        ) {
+            Card(
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 24.dp),
+                colors = CardDefaults.cardColors().copy(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        style = MaterialTheme.typography.titleLarge,
+                        text = stringResource(R.string.description)
+                    )
+                    IconButton(
+                        onClick = {
+                            handleIntent(HomeworkInfoIntent.CloseDescriptionChangeCard)
+                        }
+                    ) {
+                        Icon(imageVector = Icons.Filled.Check, contentDescription = "")
+                    }
+                }
+                RichTextEditor(
+                    modifier = Modifier.focusRequester(focusRequester),
+                    state = descriptionRichTextState,
+                    colors = RichTextEditorDefaults.richTextEditorColors(
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        containerColor = Color.Transparent
+                    ),
+                    placeholder = {
+                        Text(text = stringResource(id = R.string.add_homework_description_label))
+                    }
+                )
+            }
+            EditTextPanel(
+                textState = descriptionRichTextState,
+                isExtraOptionsVisible = isExtraOptionsVisible,
+                onBoldBtnClick = {
+                    handleIntent(HomeworkInfoIntent.ToggleDescriptionBold)
+                },
+                onItalicBtnClick = {
+                    handleIntent(HomeworkInfoIntent.ToggleDescriptionItalic)
+                },
+                onUnderlinedBtnClick = {
+                    handleIntent(HomeworkInfoIntent.ToggleDescriptionUnderline)
+                },
+                onLineThroughBtnClick = {
+                    handleIntent(HomeworkInfoIntent.ToggleDescriptionLineThrough)
+                },
+                onFontSizeChange = {
+                    handleIntent(HomeworkInfoIntent.DescriptionFontSizeChange(it))
+                },
+                onExtraOptionsBtnClick = {
+                    handleIntent(HomeworkInfoIntent.ToggleDescriptionExtraOptions)
+                }
+            )
         }
     }
 }
@@ -230,7 +520,6 @@ private fun InfoTopBar(
     navigateUp: () -> Unit,
     onSettingsClicked: () -> Unit,
     closeSettingsMenu: () -> Unit,
-    onEditClick: () -> Unit,
     onDeleteBtnClick: () -> Unit,
 ) {
     DefaultTopAppBar(
@@ -259,18 +548,6 @@ private fun InfoTopBar(
             ) {
                 DropdownMenuItem(
                     text = {
-                        Text(text = stringResource(id = R.string.edit))
-                    },
-                    trailingIcon = {
-                        Icon(imageVector = Icons.Default.Edit, contentDescription = "")
-                    },
-                    onClick = {
-                        onEditClick()
-                    }
-                )
-
-                DropdownMenuItem(
-                    text = {
                         Text(text = stringResource(id = R.string.delete))
                     },
                     trailingIcon = {
@@ -283,112 +560,6 @@ private fun InfoTopBar(
             }
         }
     )
-}
-
-@Composable
-private fun EditTopBar(
-    modifier: Modifier = Modifier,
-    dismissEditMode: () -> Unit,
-    saveResult: () -> Unit,
-) {
-    DefaultTopAppBar(
-        modifier = modifier,
-        title = stringResource(id = R.string.edit),
-        navigationIcon = Icons.AutoMirrored.Default.ArrowBack,
-        navigationAction = {
-            dismissEditMode()
-        },
-        actions = listOf(
-            TopAppBarAction(
-                image = Icons.Default.Done,
-                contentDescription = "",
-                action = {
-                    saveResult()
-                },
-                tint = MaterialTheme.colorScheme.onBackground
-            )
-        )
-    )
-}
-
-@Composable
-private fun InfoMode(
-    modifier: Modifier = Modifier,
-    homeworkName: String,
-    homeworkDescription: String,
-) {
-    Column(
-        modifier = modifier
-    ) {
-        Text(
-            style = MaterialTheme.typography.headlineMedium,
-            text = homeworkName
-        )
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            style = MaterialTheme.typography.bodyLarge,
-            text = homeworkDescription
-        )
-    }
-}
-
-@Composable
-private fun EditMode(
-    homeworkName: String,
-    homeworkDescription: String,
-    onHomeworkNameChange: (String) -> Unit,
-    onHomeworkDescriptionChange: (String) -> Unit,
-) {
-    var homeworkDescriptionValue by remember { mutableStateOf(TextFieldValue(homeworkDescription)) }
-        TextField(
-            textStyle = MaterialTheme.typography.bodyLarge,
-            colors = TextFieldDefaults.colors().copy(
-                unfocusedContainerColor = Color.Transparent,
-                focusedContainerColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedLabelColor = MaterialTheme.colorScheme.onSurface,
-                focusedLabelColor = MaterialTheme.colorScheme.onSurface,
-            ),
-            value = homeworkName,
-            onValueChange = {
-                onHomeworkNameChange(it)
-            },
-            label = {
-                Text(text = stringResource(id = R.string.add_homework_title_label))
-            }
-        )
-        TextField(
-            textStyle = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 16.dp)
-                .padding(top = 8.dp),
-            value = homeworkDescriptionValue,
-            colors = TextFieldDefaults.colors().copy(
-                unfocusedContainerColor = Color.Transparent,
-                focusedContainerColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedLabelColor = MaterialTheme.colorScheme.onSurface,
-                focusedLabelColor = MaterialTheme.colorScheme.onSurface,
-            ),
-            onValueChange = { newValue ->
-                homeworkDescriptionValue = newValue
-                onHomeworkDescriptionChange(newValue.text)
-            },
-            label = {
-                Text(text = stringResource(id = R.string.add_homework_description_label))
-            }
-        )
-
 }
 
 @Preview
