@@ -1,5 +1,8 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList
 
+import android.util.Log
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,10 +22,12 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.Constants
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkUiModelList
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toImportance
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toListHomeworkModels
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.HomeworkUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.StageUiModel
 import javax.inject.Inject
 
@@ -39,6 +44,8 @@ class HomeworkListViewModel @Inject constructor(
 
     private var subjectId = 0L
 
+    private var selectedCardToChangeColor = -1
+
     private var isBackButtonClicked = false
 
     private var selectedHomeworkForDelete: HomeworkModel? = null
@@ -46,7 +53,12 @@ class HomeworkListViewModel @Inject constructor(
 
     fun parseArguments(subjectId: Long) {
         this.subjectId = subjectId
-        getHomework(subjectId)
+        checkFilterActions()
+        getHomework(
+            subjectId = subjectId,
+            sortByAscendingId = _uiState.value.isSortAddAscending,
+            sortByAscendingImportance = _uiState.value.isSortImportanceAscending
+        )
     }
 
     private val _uiState = MutableStateFlow(
@@ -237,7 +249,8 @@ class HomeworkListViewModel @Inject constructor(
                     intent.oldRowId in _uiState.value.kanbanItemsList.indices
                     && intent.oldColumnId in _uiState.value.kanbanItemsList[intent.oldRowId].columnItems.indices
                 ) {
-                    selectedHomeworkForDelete = _uiState.value.kanbanItemsList[intent.oldRowId].columnItems[intent.oldColumnId].toHomeworkModel()
+                    selectedHomeworkForDelete =
+                        _uiState.value.kanbanItemsList[intent.oldRowId].columnItems[intent.oldColumnId].toHomeworkModel()
                     _uiState.update {
                         it.copy(
                             isDeleteDialogOpen = true
@@ -262,10 +275,202 @@ class HomeworkListViewModel @Inject constructor(
                     )
                 }
             }
+
+            is HomeworkListIntent.OnCardColorPaletteClicked -> {
+                selectedCardToChangeColor = intent.modelIndex
+                _uiState.update {
+                    it.copy(
+                        isColorPaletteDialogOpen = true
+                    )
+                }
+            }
+
+            is HomeworkListIntent.CloseCardColorPaletteDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isColorPaletteDialogOpen = false
+                    )
+                }
+            }
+
+            is HomeworkListIntent.SelectColor -> {
+                if (selectedCardToChangeColor in _uiState.value.homeworkList.indices) {
+                    updateCardColor(
+                        color = intent.color,
+                        homeworkModel = _uiState.value.homeworkList[selectedCardToChangeColor].toHomeworkModel()
+                    )
+                }
+            }
+
+            is HomeworkListIntent.OnSortAddAscendingClick -> {
+                deviceManager.setFilterAddDate(Constants.FILTER_ADD_DATE_ASCENDING.ordinal)
+                _uiState.update {
+                    it.copy(
+                        isSortAddAscending = true
+                    )
+                }
+                sortHomework(
+                    sortByAscendingImportance = _uiState.value.isSortImportanceAscending,
+                    sortByAscendingId = _uiState.value.isSortAddAscending
+                )
+//                getHomework(
+//                    subjectId = subjectId,
+//                    sortByAscendingId = _uiState.value.isSortAddAscending,
+//                    sortByAscendingImportance = _uiState.value.isSortImportanceAscending
+//                )
+            }
+
+            is HomeworkListIntent.OnSortAddDescendingClick -> {
+                deviceManager.setFilterAddDate(Constants.FILTER_ADD_DATE_DESCENDING.ordinal)
+                _uiState.update {
+                    it.copy(
+                        isSortAddAscending = false
+                    )
+                }
+                sortHomework(
+                    sortByAscendingImportance = _uiState.value.isSortImportanceAscending,
+                    sortByAscendingId = _uiState.value.isSortAddAscending
+                )
+//                getHomework(
+//                    subjectId = subjectId,
+//                    sortByAscendingId = _uiState.value.isSortAddAscending,
+//                    sortByAscendingImportance = _uiState.value.isSortImportanceAscending
+//                )
+            }
+
+            is HomeworkListIntent.OnSortImportanceAscendingClick -> {
+                deviceManager.setFilterImportance(Constants.FILTER_IMPORTANCE_ASCENDING.ordinal)
+                _uiState.update {
+                    it.copy(
+                        isSortImportanceAscending = true
+                    )
+                }
+                sortHomework(
+                    sortByAscendingImportance = _uiState.value.isSortImportanceAscending,
+                    sortByAscendingId = _uiState.value.isSortAddAscending
+                )
+            }
+
+            is HomeworkListIntent.OnSortImportanceDescendingClick -> {
+                deviceManager.setFilterImportance(Constants.FILTER_IMPORTANCE_DESCENDING.ordinal)
+                _uiState.update {
+                    it.copy(
+                        isSortImportanceAscending = false
+                    )
+                }
+                sortHomework(
+                    sortByAscendingImportance = _uiState.value.isSortImportanceAscending,
+                    sortByAscendingId = _uiState.value.isSortAddAscending
+                )
+            }
+
+            is HomeworkListIntent.OnOpenBottomSheetClick -> {
+                _uiState.update {
+                    it.copy(
+                        isSortBottomSheetOpen = true
+                    )
+                }
+            }
+
+            is HomeworkListIntent.CloseBottomSheet -> {
+                _uiState.update {
+                    it.copy(
+                        isSortBottomSheetOpen = false
+                    )
+                }
+            }
         }
     }
 
-    private fun deleteSingleHomework(homeworkModel: HomeworkModel)  = viewModelScope.execute(
+    private fun checkFilterActions() {
+        val addDateFilter = deviceManager.getFilterAddDate()
+        val importanceFilter = deviceManager.getFilterImportance()
+        if (addDateFilter == -1) {
+            deviceManager.setFilterAddDate(Constants.FILTER_ADD_DATE_DESCENDING.ordinal)
+        }
+        if (importanceFilter == -1) {
+            deviceManager.setFilterImportance(Constants.FILTER_IMPORTANCE_DESCENDING.ordinal)
+        }
+        if (addDateFilter == Constants.FILTER_ADD_DATE_ASCENDING.ordinal) {
+            _uiState.update {
+                it.copy(
+                    isSortAddAscending = true
+                )
+            }
+        } else {
+            _uiState.update {
+                it.copy(
+                    isSortAddAscending = false
+                )
+            }
+        }
+
+        if (importanceFilter == Constants.FILTER_IMPORTANCE_ASCENDING.ordinal) {
+            _uiState.update {
+                it.copy(
+                    isSortImportanceAscending = true
+                )
+            }
+        } else {
+            _uiState.update {
+                it.copy(
+                    isSortImportanceAscending = false
+                )
+            }
+        }
+    }
+
+    private fun sortHomework(
+        sortByAscendingImportance: Boolean,
+        sortByAscendingId: Boolean
+    ) {
+        val homeworkList = _uiState.value.homeworkList
+        val newList = homeworkList.sortedWith(
+            compareBy<HomeworkUiModel> { homework ->
+                if (sortByAscendingImportance) homework.importance else -homework.importance
+            }.thenBy { homework ->
+                if (sortByAscendingId) homework.id else -homework.id
+            }
+        )
+        val kanbanItemsList = _uiState.value.kanbanItemsList.map {
+            it.copy(
+                columnItems = it.columnItems.sortedWith(
+                    compareBy<HomeworkUiModel> { homework ->
+                        if (sortByAscendingImportance) homework.importance else -homework.importance
+                    }.thenBy { homework ->
+                        if (sortByAscendingId) homework.id else -homework.id
+                    }
+                )
+            )
+        }
+        _uiState.update {
+            it.copy(
+                homeworkList = newList,
+                kanbanItemsList = kanbanItemsList
+            )
+        }
+    }
+
+    private fun updateCardColor(color: Color, homeworkModel: HomeworkModel) =
+        viewModelScope.execute(
+            source = {
+                homeworkRepository.updateHomework(
+                    homeworkModel.copy(
+                        color = color.toArgb(),
+                        importance = color.toImportance()
+                    )
+                )
+            },
+            onSuccess = {
+                _uiState.update {
+                    it.copy(
+                        isColorPaletteDialogOpen = false
+                    )
+                }
+            }
+        )
+
+    private fun deleteSingleHomework(homeworkModel: HomeworkModel) = viewModelScope.execute(
         source = {
             homeworkRepository.deleteHomework(homeworkModel)
         },
@@ -406,7 +611,11 @@ class HomeworkListViewModel @Inject constructor(
         deviceManager.setSelectedDisplayMethod(displayMethod)
     }
 
-    private fun getHomework(subjectId: Long) {
+    private fun getHomework(
+        subjectId: Long,
+        sortByAscendingImportance: Boolean,
+        sortByAscendingId: Boolean,
+    ) {
         viewModelScope.execute(
             source = {
                 homeworkRepository.getHomeworkWithSubjectById(
@@ -431,11 +640,13 @@ class HomeworkListViewModel @Inject constructor(
                                     StageUiModel(
                                         id = stage.id ?: 0L,
                                         stageName = stage.stageName,
+                                        color = stage.color,
                                         itemsCount = subjectWithHomework.homework.filter { homework ->
                                             homework.stageId == stage.id
                                         }.size.toString()
                                     )
                                 }
+                                Log.d("gfdgdfgdfg", "getHomework: ${subjectWithHomework.homework}")
                                 _uiState.update {
                                     it.copy(
                                         subjectName = subjectWithHomework.subject.subjectName,
@@ -444,10 +655,22 @@ class HomeworkListViewModel @Inject constructor(
                                                 rowItem = stage,
                                                 columnItems = subjectWithHomework.homework.filter { homeworkModel ->
                                                     homeworkModel.stageId == stage.id
-                                                }.toHomeworkUiModelList()
+                                                }.toHomeworkUiModelList().sortedWith(
+                                                    compareBy<HomeworkUiModel> { homework ->
+                                                        if (sortByAscendingImportance) homework.importance else -homework.importance
+                                                    }.thenBy { homework ->
+                                                        if (sortByAscendingId) homework.id else -homework.id
+                                                    }
+                                                )
                                             )
                                         },
-                                        homeworkList = subjectWithHomework.homework.toHomeworkUiModelList(),
+                                        homeworkList = subjectWithHomework.homework.toHomeworkUiModelList().sortedWith(
+                                            compareBy<HomeworkUiModel> { homework ->
+                                                if (sortByAscendingImportance) homework.importance else -homework.importance
+                                            }.thenBy { homework ->
+                                                if (sortByAscendingId) homework.id else -homework.id
+                                            }
+                                        ),
                                         isLoading = false,
                                         isScreenEmpty = false
                                     )

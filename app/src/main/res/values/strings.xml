@@ -5,8 +5,15 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="select">Select</string>
+    <string name="sort">Sort by:</string>
+    <string name="sort_by_add_date">By date added</string>
+    <string name="sort_by_importance">By importance</string>
+    <string name="ascending">Ascending order</string>
+    <string name="descending">Descending order</string>
     <string name="selectColor">Select color:</string>
+    <string name="selectStage">Select stage:</string>
     <string name="importance_info">The colors are arranged in importance from left to right</string>
+    <string name="add_stage">Add stage</string>
 
 
 
@@ -83,9 +90,12 @@
     //add homework
     <string name="name">Name:</string>
     <string name="description">Description:</string>
+    <string name="importace">Importance:</string>
+    <string name="stage">Stage:</string>
 
     //info
     <string name="update_info_dialog_title">Your data has been changed</string>
     <string name="update_info_dialog_comment">Do you want to update data?</string>
     <string name="update_info_toast">Updated successfully</string>
+    <string name="add_description">Tap here to add description</string>
 </resources>

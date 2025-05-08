@@ -2,6 +2,8 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.u
 
 data class HomeworkUiModel(
     val id: Long,
+    val color: Int,
+    val importance: Int,
     val addDate: String,
     val name: String,
     val description: String,

@@ -1,6 +1,7 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
 import android.net.Uri
+import androidx.compose.ui.graphics.Color
 
 sealed interface AddHomeworkIntent {
     data class OnTitleHomeworkChange(val text:String): AddHomeworkIntent
@@ -48,6 +49,21 @@ sealed interface AddHomeworkIntent {
     data class NameFontSizeChange(val font: Int): AddHomeworkIntent
 
     data class DescriptionFontSizeChange(val font: Int): AddHomeworkIntent
+
+    data object OpenImportanceColorDialog: AddHomeworkIntent
+
+    data object CloseImportanceColorDialog: AddHomeworkIntent
+
+    data object OpenStagePickerDialog: AddHomeworkIntent
+
+    data object CloseStagePickerDialog: AddHomeworkIntent
+
+    data object NavigateToEditStages: AddHomeworkIntent
+
+    data class SelectStage(val index: Int): AddHomeworkIntent
+
+    data class SelectImportanceColor(val color: Color): AddHomeworkIntent
+
 
 
 

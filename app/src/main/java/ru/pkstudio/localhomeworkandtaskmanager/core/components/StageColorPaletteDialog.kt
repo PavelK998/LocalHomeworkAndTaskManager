@@ -8,8 +8,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cancel
@@ -31,21 +32,31 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance1
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance10
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance2
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance3
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance4
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance5
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance6
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance7
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance8
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance9
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant1
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant10
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant11
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant12
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant13
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant14
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant15
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant16
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant17
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant18
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant19
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant2
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant20
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant3
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant4
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant5
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant6
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant7
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant8
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant9
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImportanceColorPaletteDialog(
+fun StageColorPaletteDialog(
     modifier: Modifier = Modifier,
     colorList: List<Color>,
     onSelectClick: (Color) -> Unit,
@@ -53,7 +64,7 @@ fun ImportanceColorPaletteDialog(
     onDismiss: () -> Unit,
 ) {
     BasicAlertDialog(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.background),
         onDismissRequest = {
@@ -69,29 +80,24 @@ fun ImportanceColorPaletteDialog(
                 style = MaterialTheme.typography.headlineSmall,
                 text = stringResource(R.string.selectColor)
             )
-            Text(
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(top = 8.dp),
-                style = MaterialTheme.typography.titleMedium,
-                text = stringResource(R.string.importance_info)
-            )
-            LazyRow(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                itemsIndexed(colorList) { _, color ->
-                    Box(
-                        modifier = Modifier
-                            .background(color)
-                            .size(50.dp)
-                            .clickable {
-                                onSelectClick(color)
-                            }
-                    )
+            LazyVerticalGrid(
+                modifier = Modifier.padding(top = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                columns = GridCells.Fixed(5),
+                content = {
+                    itemsIndexed(colorList) { _, color ->
+                        Box(
+                            modifier = Modifier
+                                .background(color)
+                                .size(50.dp)
+                                .clickable {
+                                    onSelectClick(color)
+                                }
+                        )
+                    }
                 }
-            }
+            )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,20 +128,30 @@ fun ImportanceColorPaletteDialog(
 @Composable
 private fun Preview() {
     LocalHomeworkAndTaskManagerTheme {
-        ImportanceColorPaletteDialog(
+        StageColorPaletteDialog(
             colorList = remember {
                 mutableStateOf(
                     listOf(
-                        importance1,
-                        importance2,
-                        importance3,
-                        importance4,
-                        importance5,
-                        importance6,
-                        importance7,
-                        importance8,
-                        importance9,
-                        importance10,
+                        stageVariant1,
+                        stageVariant2,
+                        stageVariant3,
+                        stageVariant4,
+                        stageVariant5,
+                        stageVariant6,
+                        stageVariant7,
+                        stageVariant8,
+                        stageVariant9,
+                        stageVariant10,
+                        stageVariant11,
+                        stageVariant12,
+                        stageVariant13,
+                        stageVariant14,
+                        stageVariant15,
+                        stageVariant16,
+                        stageVariant17,
+                        stageVariant18,
+                        stageVariant19,
+                        stageVariant20
                     )
                 )
             }.value,

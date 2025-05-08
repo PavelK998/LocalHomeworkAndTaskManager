@@ -1,6 +1,7 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
 import android.util.Log
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -21,14 +22,17 @@ import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
+import ru.pkstudio.localhomeworkandtaskmanager.core.util.Constants
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 @HiltViewModel
 class HomeworkInfoViewModel @Inject constructor(
@@ -44,6 +48,7 @@ class HomeworkInfoViewModel @Inject constructor(
     private val defaultDescriptionState = RichTextState()
     private var isUpdateClicked = false
     private var isDeleteClicked = false
+    private var isFontSizeSet = false
 
     fun parseArguments(homeworkId: Long, subjectId: Long) {
         this.homeworkId = homeworkId
@@ -80,26 +85,6 @@ class HomeworkInfoViewModel @Inject constructor(
                             isStageMenuOpened = true
                         )
                     }
-                }
-            }
-
-            is HomeworkInfoIntent.CloseStageMenu -> {
-                _uiState.update {
-                    it.copy(
-                        isStageMenuOpened = false
-                    )
-                }
-            }
-
-            is HomeworkInfoIntent.OnMenuItemClick -> {
-                if (
-                    intent.index in _uiState.value.stagesList.indices
-                    && _uiState.value.homeworkUiModel != null
-                ) {
-                    changeStage(
-                        homeworkModel = _uiState.value.homeworkUiModel!!.toHomeworkModel(),
-                        newStageId = intent.stageId
-                    )
                 }
             }
 
@@ -178,35 +163,6 @@ class HomeworkInfoViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isSettingsMenuOpened = true
-                    )
-                }
-            }
-
-            is HomeworkInfoIntent.OnEditClick -> {
-                _uiState.update {
-                    it.copy(
-                        isEditMode = true,
-                        isSettingsMenuOpened = false,
-                        homeworkEditName = _uiState.value.homeworkUiModel?.name ?: "",
-                        homeworkEditDescription = _uiState.value.homeworkUiModel?.description ?: ""
-                    )
-                }
-            }
-
-            is HomeworkInfoIntent.DismissEditMode -> {
-                _uiState.update {
-                    it.copy(
-                        isEditMode = false
-                    )
-                }
-            }
-
-            is HomeworkInfoIntent.ConfirmEditResult -> {
-                _uiState.value.homeworkUiModel?.let {
-                    updateHomework(
-                        homeworkModel = it.toHomeworkModel(),
-                        newName = _uiState.value.homeworkEditName.trimEnd(),
-                        newDescription = _uiState.value.homeworkEditDescription.trimEnd()
                     )
                 }
             }
@@ -353,9 +309,92 @@ class HomeworkInfoViewModel @Inject constructor(
                     navigator.navigateUp()
                 }
             }
+
+            is HomeworkInfoIntent.CloseImportanceColorDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isColorPickerVisible = false
+                    )
+                }
+            }
+
+            is HomeworkInfoIntent.CloseStagePickerDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isStagePickerVisible = false
+                    )
+                }
+            }
+
+            is HomeworkInfoIntent.OpenImportanceColorDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isColorPickerVisible = true
+                    )
+                }
+            }
+
+            is HomeworkInfoIntent.OpenStagePickerDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isStagePickerVisible = true
+                    )
+                }
+            }
+
+            is HomeworkInfoIntent.SelectImportanceColor -> {
+                selectImportanceColor(intent.color)
+            }
+
+            is HomeworkInfoIntent.SelectStage -> {
+                if (intent.index in _uiState.value.stageList.indices){
+                    selectStage(_uiState.value.stageList[intent.index])
+                }
+
+            }
         }
     }
 
+    private fun toggleFontSize(nameFontSize: Int, descriptionFontSize: Int) {
+        if (nameFontSize < Constants.MIN_FONT_VALUE) {
+            _uiState.value.nameRichTextState.toggleSpanStyle(
+                SpanStyle(fontSize = Constants.MIN_FONT_VALUE.roundToInt().sp)
+            )
+        } else {
+            _uiState.value.nameRichTextState.toggleSpanStyle(
+                SpanStyle(fontSize = nameFontSize.sp)
+            )
+        }
+
+        if (descriptionFontSize < Constants.MIN_FONT_VALUE) {
+            _uiState.value.descriptionRichTextState.toggleSpanStyle(
+                SpanStyle(fontSize = Constants.MIN_FONT_VALUE.roundToInt().sp)
+            )
+        } else {
+            _uiState.value.descriptionRichTextState.toggleSpanStyle(
+                SpanStyle(fontSize = descriptionFontSize.sp)
+            )
+        }
+
+    }
+
+    private fun selectStage(model: StageModel) {
+        _uiState.update {
+            it.copy(
+                currentSelectedStage = model,
+                isStagePickerVisible = false
+            )
+        }
+    }
+
+    private fun selectImportanceColor(color: Color) {
+        _uiState.update {
+            it.copy(
+                currentColor = color,
+                isColorPickerVisible = false
+            )
+        }
+    }
 
     private fun changeFontSize(textState: RichTextState, fontSize: Int) {
         if (textState.currentSpanStyle.fontSize != fontSize.sp) {
@@ -426,7 +465,7 @@ class HomeworkInfoViewModel @Inject constructor(
         )
 
     private fun changeStage(homeworkModel: HomeworkModel, newStageId: Long) {
-        val stage = _uiState.value.stagesList.find { it.id == newStageId }
+        val stage = _uiState.value.stageList.find { it.id == newStageId }
         viewModelScope.execute(
             source = {
                 homeworkRepository.updateHomework(
@@ -439,37 +478,14 @@ class HomeworkInfoViewModel @Inject constructor(
             onSuccess = {
                 _uiState.update {
                     it.copy(
-                        currentSelectStageName = _uiState.value.stagesList.find { stage ->
-                            stage.id == newStageId
-                        }?.stageName ?: ""
+                        isStagePickerVisible = false
                     )
                 }
-                Log.d("gdfgdfgdfgdf", "changeStage: success")
             }
         )
     }
 
-    private fun getHomework(homeworkId: Long) {
-        _uiState.update {
-            it.copy(
-                isLoading = true
-            )
-        }
-        viewModelScope.execute(
-            source = {
-                homeworkRepository.getHomeworkById(homeworkId)
-            },
-            onSuccess = { homeworkModel ->
-                _uiState.update {
-                    it.copy(
-                        homeworkUiModel = homeworkModel.toHomeworkUiModel(),
-                        isLoading = false
-                    )
-                }
-                handleIntent(HomeworkInfoIntent.DismissEditMode)
-            }
-        )
-    }
+
 
     private fun getInitialData(homeworkId: Long, subjectId: Long) {
         val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
@@ -493,13 +509,6 @@ class HomeworkInfoViewModel @Inject constructor(
 
             val homeworkResult = homework.await().toHomeworkUiModel()
             val stagesResult = stages.await()
-            val currentStageName = if (stagesResult.isNotEmpty()) {
-                stagesResult.find { stageModel ->
-                    stageModel.id == homeworkResult.stageId
-                }?.stageName
-            } else {
-                ""
-            }
             val subjectResult = subject.await().toSubjectUiModel()
             Log.d("nbcvnvbnbvn", "getInitialData: stages $stagesResult")
             defaultNameState.setHtml(homeworkResult.name)
@@ -511,13 +520,23 @@ class HomeworkInfoViewModel @Inject constructor(
                         homeworkResult.description
                     ),
                     homeworkUiModel = homeworkResult,
-                    addDateText = "${resourceManager.getString(R.string.add_date)} ${homeworkResult.addDate}",
-                    currentSelectStageName = currentStageName ?: "",
+                    addDateText = homeworkResult.addDate,
                     subjectUiModel = subjectResult,
-                    subjectNameText = "${resourceManager.getString(R.string.subject_name)} ${subjectResult.subjectName}",
-                    stagesList = stagesResult,
+                    subjectNameText = subjectResult.subjectName,
+                    stageList = stagesResult,
+                    currentColor = Color(homeworkResult.color),
+                    currentSelectedStage = if (stagesResult.isNotEmpty()){
+                        stagesResult.find { stage -> stage.id == homeworkResult.stageId }
+                    } else null,
                     isLoading = false
                 )
+            }
+            if (!isFontSizeSet) {
+                toggleFontSize(
+                    nameFontSize = 24,
+                    descriptionFontSize = 16
+                )
+                isFontSizeSet = true
             }
         }
     }

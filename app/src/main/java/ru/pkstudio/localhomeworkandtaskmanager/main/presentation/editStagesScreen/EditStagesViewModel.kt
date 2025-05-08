@@ -1,5 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen
 
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,6 +23,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.EditStageResult
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant10
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,6 +37,8 @@ class EditStagesViewModel @Inject constructor(
     private var isNavigateBtnClicked = false
 
     private var stageIndexForDelete = -1
+
+    private var stageIndexForUpdate = -1
 
     private val _renameFlow = MutableStateFlow(EditStageResult())
 
@@ -119,7 +123,44 @@ class EditStagesViewModel @Inject constructor(
                     )
                 }
             }
+
+            is EditStagesIntent.CloseColorPickerDialog -> {
+                stageIndexForUpdate = -1
+                _uiState.update {
+                    it.copy(
+                        isColorAlertDialogOpened = false
+                    )
+                }
+            }
+
+            is EditStagesIntent.ConfirmColorChange -> {
+                updateStageColor(intent.color.toArgb())
+            }
+
+            is EditStagesIntent.OnColorPaletteClicked -> {
+                stageIndexForUpdate = intent.index
+                _uiState.update {
+                    it.copy(
+                        isColorAlertDialogOpened = true
+                    )
+                }
+            }
         }
+    }
+
+    private fun updateStageColor(color: Int) {
+        if (stageIndexForUpdate in _uiState.value.stagesList.indices){
+            viewModelScope.execute(
+                source = {
+                    stageRepository.updateStage(
+                        stage = _uiState.value.stagesList[stageIndexForUpdate].copy(
+                            color = color
+                        )
+                    )
+                }
+            )
+        }
+
     }
 
     @OptIn(FlowPreview::class)
@@ -170,9 +211,17 @@ class EditStagesViewModel @Inject constructor(
             stageRepository.insertStageToPosition(
                 stage = StageModel(
                     stageName = resourceManager.getString(R.string.default_stage),
-                    position = position
+                    position = position,
+                    color = stageVariant10.toArgb()
                 )
             )
+        },
+        onSuccess = {
+            _uiState.update {
+                it.copy(
+                    isColorAlertDialogOpened = false
+                )
+            }
         }
     )
 

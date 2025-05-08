@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 data class StageEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long? = null,
+    val color: Int,
     val stageName: String,
     val position: Int,
 )

@@ -39,5 +39,13 @@ interface DeviceManager {
 
     fun getLastAuthAction(): Int
 
+    fun setFilterAddDate(filterAction: Int)
+
+    fun getFilterAddDate(): Int
+
+    fun setFilterImportance(filterAction: Int)
+
+    fun getFilterImportance(): Int
+
 
 }

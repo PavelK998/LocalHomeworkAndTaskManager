@@ -5,6 +5,8 @@ import java.time.LocalDateTime
 
 data class HomeworkModel(
     val id: Long?,
+    val color: Int,
+    val importance: Int,
     val subjectId: Long,
     val addDate: LocalDateTime?,
     val name: String,

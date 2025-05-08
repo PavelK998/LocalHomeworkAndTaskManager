@@ -1,5 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers
 
+import androidx.compose.ui.graphics.Color
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.model.HomeworkEntity
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.model.StageEntity
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.model.SubjectWithHomeworkData
@@ -10,6 +11,22 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.SubjectModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.SubjectWithHomework
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.HomeworkUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.uiModel.SubjectUiModel
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance1
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance10
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance2
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance3
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance4
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance5
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance6
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance7
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance8
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance9
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.inversePrimaryDarkMediumContrast
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.inversePrimaryLightMediumContrast
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.onDarkCardText
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.onLightCardText
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.primaryContainerDarkMediumContrast
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.primaryContainerLightMediumContrast
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -78,6 +95,8 @@ fun HomeworkEntity.toHomeworkModel(): HomeworkModel {
     }
     return HomeworkModel(
         id = id,
+        color = color,
+        importance = importance,
         subjectId = subjectId,
         addDate = addDate,
         name = name,
@@ -111,6 +130,8 @@ fun HomeworkModel.toHomeworkEntity(): HomeworkEntity {
     }
     return HomeworkEntity(
         id = id,
+        color = color,
+        importance = importance,
         subjectId = subjectId,
         addDate = addDate ?: "",
         name = name,
@@ -130,7 +151,7 @@ fun List<HomeworkModel>.toListHomeworkEntity(): List<HomeworkEntity> {
 }
 
 fun List<HomeworkUiModel>.toListHomeworkModels(): List<HomeworkModel> {
-    return  this.map {
+    return this.map {
         it.toHomeworkModel()
     }
 }
@@ -176,11 +197,13 @@ fun HomeworkModel.toHomeworkUiModel(): HomeworkUiModel {
         ""
     }
     return HomeworkUiModel(
-        id = id?: 0L,
-        addDate = addDate?: "",
+        id = id ?: 0L,
+        color = color,
+        importance = importance,
+        addDate = addDate ?: "",
         description = description,
-        endDate = endDate?: "",
-        startDate = startDate?: "",
+        endDate = endDate ?: "",
+        startDate = startDate ?: "",
         imageUrl = imageUrl,
         isCheckBoxVisible = false,
         isChecked = false,
@@ -212,6 +235,8 @@ fun HomeworkUiModel.toHomeworkModel(): HomeworkModel {
     }
     return HomeworkModel(
         id = id,
+        color = color,
+        importance = importance,
         addDate = addDate,
         description = description,
         endDate = endDate,
@@ -234,6 +259,7 @@ fun List<HomeworkModel>.toHomeworkUiModelList(): List<HomeworkUiModel> {
 fun StageEntity.toStageModel(): StageModel {
     return StageModel(
         id = id,
+        color = color,
         stageName = stageName,
         position = position
     )
@@ -242,6 +268,7 @@ fun StageEntity.toStageModel(): StageModel {
 fun StageModel.toStageEntity(): StageEntity {
     return StageEntity(
         id = id,
+        color = color,
         stageName = stageName,
         position = position
     )
@@ -251,9 +278,64 @@ fun List<StageEntity>.toStageModelList(): List<StageModel> {
     return map {
         StageModel(
             id = it.id,
+            color = it.color,
             stageName = it.stageName,
             position = it.position
         )
+    }
+}
+
+fun Color.toImportance(): Int {
+    return when (this) {
+        importance1 -> 1
+        importance2 -> 2
+        importance3 -> 3
+        importance4 -> 4
+        importance5 -> 5
+        importance6 -> 6
+        importance7 -> 7
+        importance8 -> 8
+        importance9 -> 9
+        importance10 -> 10
+        else -> {
+            0
+        }
+    }
+}
+
+fun Color.toTextColor(): Color {
+    return when (this) {
+        importance10, importance9, importance8, importance7 -> onDarkCardText
+        else -> onLightCardText
+    }
+}
+
+fun Color.toStageNameInCardColor(isSystemInDarkMode: Boolean): Color {
+    return if (isSystemInDarkMode) {
+        when (this) {
+            importance10, importance9, importance8, importance7 -> inversePrimaryDarkMediumContrast
+            else -> primaryContainerLightMediumContrast
+        }
+    } else {
+        when (this) {
+            importance10, importance9, importance8, importance7 -> inversePrimaryLightMediumContrast
+            else -> primaryContainerDarkMediumContrast
+        }
+    }
+
+}
+
+fun Color.toStageNameTextColor(): Color {
+    return when (this) {
+        importance10, importance9, importance8, importance7 -> onDarkCardText
+        else -> onLightCardText
+    }
+}
+
+fun Color.toStageBackground(): Color {
+    return when (this) {
+        importance10, importance9, importance8, importance7 -> onDarkCardText
+        else -> onLightCardText
     }
 }
 

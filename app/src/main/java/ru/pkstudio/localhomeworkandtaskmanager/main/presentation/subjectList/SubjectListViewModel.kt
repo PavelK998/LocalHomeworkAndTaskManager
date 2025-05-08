@@ -1,6 +1,7 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList
 
 import android.net.Uri
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -28,6 +29,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.SubjectModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.ImportExportDbRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant10
 import javax.inject.Inject
 
 @HiltViewModel
@@ -328,7 +330,8 @@ class SubjectListViewModel @Inject constructor(
                 stageRepository.insertStage(
                     stage = StageModel(
                         stageName = resourceManager.getString(R.string.default_stage),
-                        position = 0
+                        position = 0,
+                        color = stageVariant10.toArgb()
                     )
                 )
             }

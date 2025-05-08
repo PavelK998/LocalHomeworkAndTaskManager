@@ -2,6 +2,8 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -15,6 +17,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
@@ -26,9 +29,12 @@ import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.data.util.SingleSharedFlow
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
+import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.Constants
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toImportance
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import java.time.LocalDateTime
@@ -51,6 +57,7 @@ class AddHomeworkViewModel @Inject constructor(
     private var stageId = 0L
     private var stageName = ""
     private var isNavigateUp = false
+    private var isNavigateToEditStages = false
 
 
     fun parseArguments(subjectId: Long) {
@@ -60,6 +67,7 @@ class AddHomeworkViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AddHomeworkState())
     val uiState = _uiState
         .onStart {
+            isNavigateToEditStages = false
             getStages()
             if (!isFontSizeSet) {
                 toggleFontSize(
@@ -237,6 +245,66 @@ class AddHomeworkViewModel @Inject constructor(
             is AddHomeworkIntent.ToggleDescriptionUnderline -> {
                 toggleUnderlined(_uiState.value.descriptionRichTextState)
             }
+
+            is AddHomeworkIntent.CloseImportanceColorDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isColorPickerVisible = false
+                    )
+                }
+            }
+
+            is AddHomeworkIntent.CloseStagePickerDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isStagePickerVisible = false
+                    )
+                }
+            }
+
+            is AddHomeworkIntent.OpenImportanceColorDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isColorPickerVisible = true
+                    )
+                }
+            }
+
+            is AddHomeworkIntent.OpenStagePickerDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isStagePickerVisible = true
+                    )
+                }
+            }
+
+            is AddHomeworkIntent.SelectImportanceColor -> {
+                selectImportanceColor(intent.color)
+            }
+
+            is AddHomeworkIntent.SelectStage -> {
+                if (intent.index in _uiState.value.stageList.indices){
+                    selectStage(_uiState.value.stageList[intent.index])
+                }
+
+            }
+
+            is AddHomeworkIntent.NavigateToEditStages -> {
+                if (!isNavigateToEditStages) {
+                    viewModelScope.launch {
+                        _uiState.update {
+                            it.copy(
+                                isStagePickerVisible = false
+                            )
+                        }
+                        delay(200)
+                        isNavigateToEditStages = true
+                        navigator.navigate(
+                            Destination.StageEditScreen
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -318,14 +386,43 @@ class AddHomeworkViewModel @Inject constructor(
             }
         }
 
+    private fun selectStage(model: StageModel) {
+        _uiState.update {
+            it.copy(
+                currentSelectedStage = model,
+                isStagePickerVisible = false
+            )
+        }
+    }
+
+    private fun selectImportanceColor(color: Color) {
+        _uiState.update {
+            it.copy(
+                currentColor = color,
+                isColorPickerVisible = false
+            )
+        }
+    }
+
     private fun getStages() = viewModelScope.execute(
         source = {
             stageRepository.getAllStages()
         },
         onSuccess = { stageFlow ->
+
             viewModelScope.launch {
                 stageFlow.collect { stageList ->
+                    _uiState.update {
+                        it.copy(
+                            stageList = stageList
+                        )
+                    }
                     if (stageList.isNotEmpty()) {
+                        _uiState.update {
+                            it.copy(
+                                currentSelectedStage = stageList[0]
+                            )
+                        }
                         stageId = stageList[0].id ?: 0L
                         stageName = stageList[0].stageName
                     }
@@ -363,15 +460,17 @@ class AddHomeworkViewModel @Inject constructor(
                 homeworkRepository.insertHomework(
                     HomeworkModel(
                         id = null,
+                        color = _uiState.value.currentColor.toArgb(),
+                        importance = _uiState.value.currentColor.toImportance(),
                         subjectId = subjectId,
                         addDate = LocalDateTime.now(),
                         name = _uiState.value.nameRichTextState.toHtml(),
-                        stage = stageName,
+                        stage = _uiState.value.currentSelectedStage?.stageName ?: "",
                         description = _uiState.value.descriptionRichTextState.toHtml(),
                         startDate = null,
                         endDate = null,
                         imageUrl = "",
-                        stageId = stageId
+                        stageId = _uiState.value.currentSelectedStage?.id ?: 0L
                     )
                 )
             },

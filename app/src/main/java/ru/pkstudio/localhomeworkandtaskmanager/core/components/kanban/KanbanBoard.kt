@@ -78,6 +78,7 @@ fun <M, A> KanbanBoard(
     onColumnFillerClicked: (rowIndex: Int, columnIndex: Int) -> Unit,
     borderWidth: Dp = 1.dp,
     borderColor: Color = MaterialTheme.colorScheme.primary,
+    borderColorFromItem: ((M) -> Color)? = null,
     borderShape: Shape = RoundedCornerShape(8.dp),
     columnWidth: Dp = 200.dp,
     columnBackgroundColor: Color = Color.White,
@@ -356,7 +357,9 @@ fun <M, A> KanbanBoard(
                         .width(if (columnWidth == 0.dp) Dp.Infinity else columnWidth)
                         .border(
                             width = borderWidth,
-                            color = borderColor,
+                            color = borderColorFromItem?.invoke(
+                                rowItem.rowItem
+                            ) ?: borderColor,
                             shape = borderShape
                         )
                         .background(columnBackgroundColor)

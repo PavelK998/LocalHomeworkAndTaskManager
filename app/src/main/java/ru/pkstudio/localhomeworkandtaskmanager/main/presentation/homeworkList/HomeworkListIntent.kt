@@ -1,5 +1,7 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList
 
+import androidx.compose.ui.graphics.Color
+
 sealed interface HomeworkListIntent {
     data object NavigateToAddHomework : HomeworkListIntent
 
@@ -37,6 +39,12 @@ sealed interface HomeworkListIntent {
 
     data object TurnFabInvisible : HomeworkListIntent
 
+    data class OnCardColorPaletteClicked(val modelIndex: Int) : HomeworkListIntent
+
+    data object CloseCardColorPaletteDialog : HomeworkListIntent
+
+    data class SelectColor(val color: Color) : HomeworkListIntent
+
     data class OnItemMoved(
         val oldRowId: Int,
         val oldColumnId: Int,
@@ -47,4 +55,17 @@ sealed interface HomeworkListIntent {
         val oldRowId: Int,
         val oldColumnId: Int,
     ) : HomeworkListIntent
+
+
+    data object OnSortAddAscendingClick : HomeworkListIntent
+
+    data object OnSortAddDescendingClick : HomeworkListIntent
+
+    data object OnSortImportanceAscendingClick : HomeworkListIntent
+
+    data object OnSortImportanceDescendingClick : HomeworkListIntent
+
+    data object OnOpenBottomSheetClick : HomeworkListIntent
+
+    data object CloseBottomSheet : HomeworkListIntent
 }
