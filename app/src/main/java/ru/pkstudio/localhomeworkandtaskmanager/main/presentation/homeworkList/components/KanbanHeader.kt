@@ -6,16 +6,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.StageUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.kanbanHeaderText
 
 @Composable
 fun KanbanHeader(
@@ -26,7 +27,7 @@ fun KanbanHeader(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),
         colors = CardDefaults.cardColors().copy(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = Color(model.color)
         )
     ) {
         Row(
@@ -38,20 +39,20 @@ fun KanbanHeader(
                     .weight(7f)
                     .padding(horizontal = 8.dp),
                 text = model.stageName,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = kanbanHeaderText
             )
             Text(
                 modifier = Modifier.weight(2f),
                 textAlign = TextAlign.Center,
                 text = model.itemsCount,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = kanbanHeaderText
             )
         }
         HorizontalDivider(
             modifier = Modifier
                 .padding(horizontal = 8.dp)
                 .padding(top = 4.dp, bottom = 8.dp),
-            color = MaterialTheme.colorScheme.onPrimaryContainer
+            color = kanbanHeaderText
         )
     }
 }
@@ -65,7 +66,8 @@ private fun KanbanHeaderPreview() {
             model = StageUiModel(
                 stageName = "first",
                 itemsCount = "20",
-                id = 0L
+                id = 0L,
+                color = -0
             )
         )
     }

@@ -1,7 +1,9 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -30,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
 import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toStageNameInCardColor
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toTextColor
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.HomeworkUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 
@@ -40,9 +46,11 @@ fun HomeworkCard(
     turnEditModeOn: () -> Unit,
     goToDetails: () -> Unit,
     onCheckCardClicked: (Boolean) -> Unit,
+    onColorPaletteClicked: () -> Unit,
 ) {
+    Log.d("fshhgfhgfdhfgdh", "HomeworkCard: ${homeworkUiModel.color}")
     Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        color = Color(homeworkUiModel.color),
         contentColor = MaterialTheme.colorScheme.onSurface,
         shape = RoundedCornerShape(8.dp),
         modifier = modifier
@@ -50,7 +58,7 @@ fun HomeworkCard(
             .pointerInput(homeworkUiModel.isChecked) {
                 detectTapGestures(
                     onTap = {
-                        if (homeworkUiModel.isCheckBoxVisible){
+                        if (homeworkUiModel.isCheckBoxVisible) {
                             onCheckCardClicked(homeworkUiModel.isChecked)
                         } else {
                             goToDetails()
@@ -58,7 +66,7 @@ fun HomeworkCard(
 
                     },
                     onLongPress = {
-                        if (!homeworkUiModel.isCheckBoxVisible){
+                        if (!homeworkUiModel.isCheckBoxVisible) {
                             turnEditModeOn()
                         }
 
@@ -77,13 +85,17 @@ fun HomeworkCard(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = stringResource(id = R.string.add_date))
+                Text(
+                    text = stringResource(id = R.string.add_date),
+                    color = Color(homeworkUiModel.color).toTextColor()
+                )
                 Text(
                     modifier = Modifier
                         .padding(start = 8.dp, end = 8.dp),
                     style = MaterialTheme.typography.titleSmall,
                     text = homeworkUiModel.addDate,
-                    textAlign = TextAlign.End
+                    textAlign = TextAlign.End,
+                    color = Color(homeworkUiModel.color).toTextColor()
                 )
             }
 
@@ -100,7 +112,8 @@ fun HomeworkCard(
                             .padding(start = 8.dp, top = 8.dp),
                         state = rememberRichTextState().setHtml(homeworkUiModel.name),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = Color(homeworkUiModel.color).toTextColor()
                     )
                     RichText(
                         modifier = Modifier
@@ -109,7 +122,8 @@ fun HomeworkCard(
                         state = rememberRichTextState().setHtml(homeworkUiModel.description),
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = Color(homeworkUiModel.color).toTextColor()
                     )
                 }
                 if (homeworkUiModel.isChecked) {
@@ -117,21 +131,20 @@ fun HomeworkCard(
                         modifier = Modifier.padding(end = 14.dp),
                         imageVector = Icons.Default.Check,
                         contentDescription = "check",
-                        tint = MaterialTheme.colorScheme.tertiary
+                        tint = Color(homeworkUiModel.color).toTextColor()
                     )
-
-//                    Checkbox(
-//                        colors = CheckboxDefaults.colors().copy(
-//                            uncheckedBorderColor = MaterialTheme.colorScheme.secondaryContainer,
-//                            checkedBorderColor = MaterialTheme.colorScheme.secondaryContainer
-//                        ),
-//                        checked = homeworkUiModel.isChecked,
-//                        onCheckedChange = {
-//                            onCheckCardClicked(
-//                                homeworkUiModel.isChecked
-//                            )
-//                        }
-//                    )
+                } else {
+                    IconButton(
+                        onClick = {
+                            onColorPaletteClicked()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Palette,
+                            contentDescription = "check",
+                            tint = Color(homeworkUiModel.color).toTextColor()
+                        )
+                    }
                 }
             }
             Box(
@@ -144,7 +157,7 @@ fun HomeworkCard(
                     style = MaterialTheme.typography.titleSmall,
                     text = homeworkUiModel.stageName,
                     textAlign = TextAlign.End,
-                    color = MaterialTheme.colorScheme.primaryContainer
+                    color = Color(homeworkUiModel.color).toStageNameInCardColor(isSystemInDarkMode = isSystemInDarkTheme())
                 )
 
             }
@@ -166,14 +179,17 @@ private fun HomeworkCardPreview() {
                 endDate = "",
                 imageUrl = "",
                 isChecked = false,
-                isCheckBoxVisible = true,
+                isCheckBoxVisible = false,
                 stageName = "",
                 stageId = 0L,
-                subjectId = 0L
+                subjectId = 0L,
+                color = -998220,
+                importance = 1
             ),
             onCheckCardClicked = { _ -> },
             goToDetails = {},
             turnEditModeOn = {},
+            onColorPaletteClicked = {}
         )
     }
 }

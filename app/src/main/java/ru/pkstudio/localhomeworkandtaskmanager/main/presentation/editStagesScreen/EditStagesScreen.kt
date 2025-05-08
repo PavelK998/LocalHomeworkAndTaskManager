@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DeleteDialog
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.StageColorPaletteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.components.EditStageCard
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 
@@ -37,6 +38,20 @@ fun EditStagesScreen(
             )
         }
     ) { paddingValues ->
+        if (uiState.isColorAlertDialogOpened){
+            StageColorPaletteDialog(
+                colorList = uiState.colorList,
+                onSelectClick = {
+                    handleIntent(EditStagesIntent.ConfirmColorChange(color = it))
+                },
+                onBtnDismissClick = {
+                    handleIntent(EditStagesIntent.CloseColorPickerDialog)
+                },
+                onDismiss = {
+                    handleIntent(EditStagesIntent.CloseColorPickerDialog)
+                }
+            )
+        }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -59,6 +74,9 @@ fun EditStagesScreen(
                     },
                     onDeleteBtnClick = {
                         handleIntent(EditStagesIntent.OnDeleteStageBtmClick(index = index))
+                    },
+                    onColorPaletteClick = {
+                        handleIntent(EditStagesIntent.OnColorPaletteClicked(index))
                     }
                 )
             }

@@ -125,6 +125,26 @@ class DeviceManagerImpl @Inject constructor(
         return sharedPreferences.getInt(KEY_LAST_AUTH_ACTION, -1)
     }
 
+    override fun setFilterAddDate(filterAction: Int) {
+        sharedPreferences.edit() {
+            putInt(KEY_FILTER_ADD_DATE, filterAction)
+        }
+    }
+
+    override fun getFilterAddDate(): Int {
+        return sharedPreferences.getInt(KEY_FILTER_ADD_DATE, -1)
+    }
+
+    override fun setFilterImportance(filterAction: Int) {
+        sharedPreferences.edit() {
+            putInt(KEY_FILTER_IMPORTANCE, filterAction)
+        }
+    }
+
+    override fun getFilterImportance(): Int {
+        return sharedPreferences.getInt(KEY_FILTER_IMPORTANCE, -1)
+    }
+
     companion object {
         private const val KEY_PREFERENCES = "prefs"
         private const val KEY_USER_ID = "userId"
@@ -136,5 +156,7 @@ class DeviceManagerImpl @Inject constructor(
         private const val KEY_FIRST_LAUNCH = "first_launch"
         private const val KEY_USAGE = "usage"
         private const val KEY_LAST_AUTH_ACTION = "last_auth_action"
+        private const val KEY_FILTER_ADD_DATE = "filter_action_add_date"
+        private const val KEY_FILTER_IMPORTANCE = "filter_action_importance"
     }
 }

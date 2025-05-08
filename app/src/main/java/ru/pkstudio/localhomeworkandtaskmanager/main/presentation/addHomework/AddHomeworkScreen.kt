@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -30,10 +31,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,10 +51,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mohamedrejeb.richeditor.model.RichTextState
@@ -64,8 +66,12 @@ import kotlinx.coroutines.delay
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.EditTextPanel
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.ImportanceAndStageSelector
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.ImportanceColorPaletteDialog
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.StagePickerDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.TopAppBarAction
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant8
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -147,6 +153,34 @@ fun AddHomeworkScreen(
                 )
             }
         ) { paddingValues ->
+            if (uiState.isColorPickerVisible) {
+                ImportanceColorPaletteDialog(
+                    colorList = uiState.colorList,
+                    onSelectClick = {
+                        handleIntent(AddHomeworkIntent.SelectImportanceColor(it))
+                    },
+                    onBtnDismissClick = {
+                        handleIntent(AddHomeworkIntent.CloseImportanceColorDialog)
+                    },
+                    onDismiss = {
+                        handleIntent(AddHomeworkIntent.CloseImportanceColorDialog)
+                    }
+                )
+            }
+            if (uiState.isStagePickerVisible) {
+                StagePickerDialog(
+                    stageList = uiState.stageList,
+                    onSelectStageClick = {
+                        handleIntent(AddHomeworkIntent.SelectStage(it))
+                    },
+                    onDismiss = {
+                        handleIntent(AddHomeworkIntent.CloseStagePickerDialog)
+                    },
+                    onCreateStageBtnClick = {
+                        handleIntent(AddHomeworkIntent.NavigateToEditStages)
+                    }
+                )
+            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -159,78 +193,90 @@ fun AddHomeworkScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.Top
                 ) {
-                    Row(
+                    ImportanceAndStageSelector(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp)
-                            .clickable {
-                                handleIntent(AddHomeworkIntent.OnNameChangeClick)
-                            },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(
-                            onClick = {
-                                handleIntent(AddHomeworkIntent.OnNameChangeClick)
-                            }
-                        ) {
-                            Icon(imageVector = Icons.Filled.Edit, contentDescription = "")
-                        }
-                        Text(
-                            modifier = Modifier
-                                .padding(start = 4.dp),
-                            style = MaterialTheme.typography.titleLarge,
-                            text = stringResource(R.string.name)
-                        )
-                    }
-                    RichText(
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp)
-                            .padding(top = 4.dp)
-                            .clickable {
-                                handleIntent(AddHomeworkIntent.OnNameChangeClick)
-                            },
-                        state = uiState.nameRichTextState,
-                        style = TextStyle(fontSize = uiState.nameRichTextState.currentSpanStyle.fontSize)
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 4.dp, bottom = 12.dp),
+                        currentStageName = uiState.currentSelectedStage?.stageName ?: "",
+                        currentColor = uiState.currentColor,
+                        onColorSelectClick = {
+                            handleIntent(AddHomeworkIntent.OpenImportanceColorDialog)
+                        },
+                        onStageSelectClick = {
+                            handleIntent(AddHomeworkIntent.OpenStagePickerDialog)
+                        },
+                        currentStageColor = uiState.currentSelectedStage?.color ?: stageVariant8.toArgb()
                     )
-
-
-                    Row(
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        thickness = 2.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp)
-                            .padding(top = 12.dp)
+                            .padding(top = 16.dp)
+                            .heightIn(
+                                min = 100.dp
+                            )
+                            .padding(horizontal = 16.dp)
+
                             .clickable {
-                                handleIntent(AddHomeworkIntent.OnDescriptionChangeClick)
-                            },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(
-                            onClick = {
-                                handleIntent(AddHomeworkIntent.OnDescriptionChangeClick)
+                                handleIntent(AddHomeworkIntent.OnNameChangeClick)
                             }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Edit,
-                                contentDescription = ""
+                    ) {
+                        if (uiState.nameRichTextState.annotatedString.text.isNotBlank()) {
+                            RichText(
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp)
+                                    .padding(top = 4.dp)
+                                    .clickable {
+                                        handleIntent(AddHomeworkIntent.OnNameChangeClick)
+                                    },
+                                state = uiState.nameRichTextState,
+                                style = TextStyle(fontSize = uiState.nameRichTextState.currentSpanStyle.fontSize)
+                            )
+                        } else {
+                            Text(
+                                modifier = Modifier
+                                    .padding(start = 4.dp, top = 8.dp),
+                                style = MaterialTheme.typography.titleLarge,
+                                text = stringResource(R.string.add_homework_title_label),
+                                color = Color.Gray
                             )
                         }
-                        Text(
-                            modifier = Modifier
-                                .padding(start = 4.dp),
-                            style = MaterialTheme.typography.titleLarge,
-                            text = stringResource(R.string.description),
-                        )
+
                     }
-                    RichText(
+                    Column(
                         modifier = Modifier
-                            .padding(horizontal = 8.dp)
-                            .padding(top = 4.dp)
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(horizontal = 16.dp)
                             .clickable {
-                                handleIntent(AddHomeworkIntent.OnNameChangeClick)
-                            },
-                        state = uiState.descriptionRichTextState,
-                        style = TextStyle(fontSize = uiState.nameRichTextState.currentSpanStyle.fontSize)
-                    )
+                                handleIntent(AddHomeworkIntent.OnDescriptionChangeClick)
+                            }
+                    ) {
+                        if (uiState.descriptionRichTextState.annotatedString.text.isNotBlank()) {
+                            RichText(
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp)
+                                    .padding(top = 4.dp)
+                                    .clickable {
+                                        handleIntent(AddHomeworkIntent.OnDescriptionChangeClick)
+                                    },
+                                state = uiState.descriptionRichTextState,
+                                style = TextStyle(fontSize = uiState.nameRichTextState.currentSpanStyle.fontSize)
+                            )
+                        } else {
+                            Text(
+                                modifier = Modifier
+                                    .padding(start = 4.dp, top = 8.dp),
+                                style = MaterialTheme.typography.titleMedium,
+                                text = stringResource(R.string.add_homework_description_label),
+                                color = Color.Gray
+                            )
+                        }
+                    }
 
                 }
                 AnimatedVisibility(uiState.imagesList.isNotEmpty()) {
@@ -320,7 +366,7 @@ private fun SetName(
             if (imeInsetsToDp <= defaultBottomPadding) {
                 bottomPadding = defaultBottomPadding
             } else {
-                bottomPadding = with(density) {imeInsets.toDp()}
+                bottomPadding = with(density) { imeInsets.toDp() }
             }
         }
         Column(
@@ -341,7 +387,9 @@ private fun SetName(
                 )
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -430,7 +478,9 @@ private fun SetDescription(
                 )
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -470,7 +520,7 @@ private fun SetDescription(
                 },
                 onUnderlinedBtnClick = {
                     handleIntent(AddHomeworkIntent.ToggleDescriptionUnderline)
-                                       },
+                },
                 onLineThroughBtnClick = {
                     handleIntent(AddHomeworkIntent.ToggleDescriptionLineThrough)
                 },
@@ -485,7 +535,7 @@ private fun SetDescription(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun Preview() {
     LocalHomeworkAndTaskManagerTheme {

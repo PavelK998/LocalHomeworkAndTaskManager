@@ -20,6 +20,8 @@ import androidx.room.PrimaryKey
 data class HomeworkEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long? = null,
+    val color: Int,
+    val importance: Int,
     val subjectId: Long,
     val addDate: String,
     val name: String,

@@ -1,13 +1,13 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
+import androidx.compose.ui.graphics.Color
+
 sealed interface HomeworkInfoIntent {
     data object NavigateUp: HomeworkInfoIntent
 
     data object OnStageSelectClick: HomeworkInfoIntent
 
     data object OnSettingsClicked: HomeworkInfoIntent
-
-    data object CloseStageMenu: HomeworkInfoIntent
 
     data object CloseSettingsMenu: HomeworkInfoIntent
 
@@ -16,14 +16,6 @@ sealed interface HomeworkInfoIntent {
     data object DeleteConfirm: HomeworkInfoIntent
 
     data object CloseDeleteAlertDialog: HomeworkInfoIntent
-
-    data object OnEditClick: HomeworkInfoIntent
-
-    data object ConfirmEditResult: HomeworkInfoIntent
-
-    data object DismissEditMode: HomeworkInfoIntent
-
-    data class OnMenuItemClick(val index: Int, val stageId: Long): HomeworkInfoIntent
 
     data class OnHomeworkEditNameChange(val text: String): HomeworkInfoIntent
 
@@ -34,6 +26,19 @@ sealed interface HomeworkInfoIntent {
     data object UpdateDismiss: HomeworkInfoIntent
 
     data object CloseUpdateAlertDialog: HomeworkInfoIntent
+
+    data object OpenImportanceColorDialog: HomeworkInfoIntent
+
+    data object CloseImportanceColorDialog: HomeworkInfoIntent
+
+    data object OpenStagePickerDialog: HomeworkInfoIntent
+
+    data object CloseStagePickerDialog: HomeworkInfoIntent
+
+
+    data class SelectStage(val index: Int): HomeworkInfoIntent
+
+    data class SelectImportanceColor(val color: Color): HomeworkInfoIntent
 
 
     //edit text

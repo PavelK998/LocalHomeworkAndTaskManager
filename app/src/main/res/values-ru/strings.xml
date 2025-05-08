@@ -4,10 +4,17 @@
 
     <string name="edit">Редактировать</string>
     <string name="delete">Удалить</string>
+    <string name="sort">Сортировка:</string>
+    <string name="sort_by_add_date">По дате добавления</string>
+    <string name="sort_by_importance">По важности</string>
+    <string name="ascending">По возрастанию</string>
+    <string name="descending">По убыванию</string>
     <string name="select">Выбрать</string>
 
     <string name="selectColor">Выберите цвет:</string>
+    <string name="selectStage">Выберите этап:</string>
     <string name="importance_info">Цвета расположены по важности слева направо</string>
+    <string name="add_stage">Добавить этап</string>
 
     <string name="create_password">Придумайте пин-код</string>
     <string name="enter_password">Введите пин-код</string>
@@ -74,8 +81,11 @@
     //add homework
     <string name="name">Название:</string>
     <string name="description">Описание:</string>
+    <string name="importace">Важность:</string>
+    <string name="stage">Этап:</string>
 
     <string name="update_info_dialog_title">Ваши данные были изменены</string>
     <string name="update_info_dialog_comment">Вы хотите обновить данные?</string>
     <string name="update_info_toast">Успешно обновлено</string>
+    <string name="add_description">Нажмите здесь, чтобы добавить описание</string>
 </resources>

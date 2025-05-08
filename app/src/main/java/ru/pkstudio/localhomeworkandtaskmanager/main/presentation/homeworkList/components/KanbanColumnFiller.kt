@@ -10,6 +10,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,8 +29,8 @@ fun KanbanColumnFiller(
             containerColor = MaterialTheme.colorScheme.background
         ),
         border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outline
+            width = 3.dp,
+            color = Color(model.color)
         ),
         shape = RoundedCornerShape(4.dp)
     ) {
@@ -40,12 +41,12 @@ fun KanbanColumnFiller(
                 RichText(
                     state = rememberRichTextState().setHtml(model.name),
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
                 RichText(
                     state = rememberRichTextState().setHtml(model.description),
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
@@ -68,7 +69,9 @@ private fun KanbanColumnFillerPreview() {
             isCheckBoxVisible = false,
             isChecked = false,
             stageName = "",
-            subjectId = 0L
+            subjectId = 0L,
+            color = 0,
+            importance = 1
 
         )
     )

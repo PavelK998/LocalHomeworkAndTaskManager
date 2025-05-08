@@ -8,7 +8,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -32,6 +30,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,13 +48,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mohamedrejeb.richeditor.model.RichTextState
@@ -67,10 +64,11 @@ import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DeleteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.EditTextPanel
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.ImportanceAndStageSelector
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.Loading
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.TopAppBarAction
-import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo.components.MenuItemCard
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant8
 
 
 @Composable
@@ -82,7 +80,6 @@ fun HomeworkInfoScreen(
         handleIntent(HomeworkInfoIntent.NavigateUp)
     }
     val scrollState = rememberScrollState()
-    val density = LocalDensity.current
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(
         uiState.isNameCardVisible
@@ -147,9 +144,6 @@ fun HomeworkInfoScreen(
                     }
                 )
             }
-            var menuWidth by remember {
-                mutableStateOf(0.dp)
-            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -160,74 +154,54 @@ fun HomeworkInfoScreen(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                 ) {
-                    Text(
+                    ImportanceAndStageSelector(
+                        modifier = Modifier
+                            .padding(vertical = 4.dp),
+                        currentStageName = uiState.currentSelectedStage?.stageName ?: "",
+                        currentColor = uiState.currentColor,
+                        onColorSelectClick = {
+                            handleIntent(HomeworkInfoIntent.OpenImportanceColorDialog)
+                        },
+                        onStageSelectClick = {
+                            handleIntent(HomeworkInfoIntent.OpenStagePickerDialog)
+                        },
+                        currentStageColor = uiState.currentSelectedStage?.color ?: stageVariant8.toArgb()
+                    )
+                    Row(
                         modifier = Modifier.padding(top = 12.dp),
-                        style = MaterialTheme.typography.bodyLarge,
-                        text = uiState.subjectNameText
-                    )
-                    Text(
-                        modifier = Modifier
-                            .padding(top = 8.dp),
-                        style = MaterialTheme.typography.bodyLarge,
-                        text = uiState.addDateText
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp),
-                        contentAlignment = Alignment.TopEnd
                     ) {
-                        Box {
-                            MenuItemCard(
-                                modifier = Modifier
-                                    .onGloballyPositioned { layoutCoordinates ->
-                                        menuWidth = with(density) {
-                                            layoutCoordinates.size.width.toDp()
-                                        }
-                                    },
-                                stageName = uiState.currentSelectStageName,
-                                onCLick = {
-                                    handleIntent(HomeworkInfoIntent.OnStageSelectClick)
-                                },
-                                isActive = uiState.isStageMenuOpened
-                            )
-                            DropdownMenu(
-                                modifier = Modifier
-                                    .width(menuWidth)
-                                    .heightIn(
-                                        min = Dp.Unspecified,
-                                        max = 250.dp
-                                    ),
-                                expanded = uiState.isStageMenuOpened,
-                                onDismissRequest = {
-                                    handleIntent(HomeworkInfoIntent.CloseStageMenu)
-                                },
-                            ) {
-                                uiState.stagesList.forEachIndexed { index, stage ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                text = stage.stageName,
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                textAlign = TextAlign.Center
-                                            )
-                                        },
-                                        onClick = {
-                                            handleIntent(
-                                                HomeworkInfoIntent.OnMenuItemClick(
-                                                    index = index,
-                                                    stageId = stage.id ?: 0L
-                                                )
-                                            )
-                                            handleIntent(HomeworkInfoIntent.CloseStageMenu)
-                                        }
-                                    )
-                                }
-                            }
-                        }
+                        Text(
+                            style = MaterialTheme.typography.bodyLarge,
+                            text = stringResource(R.string.subject_name),
+                            color = Color.Gray
+                        )
+                        Text(
+                            modifier = Modifier.padding(start = 4.dp),
+                            style = MaterialTheme.typography.bodyLarge,
+                            text = uiState.subjectNameText,
+                        )
                     }
+
+                    Row(
+                        modifier = Modifier.padding(top = 4.dp),
+                    ) {
+                        Text(
+                            style = MaterialTheme.typography.bodyLarge,
+                            text = stringResource(R.string.add_date),
+                            color = Color.Gray
+                        )
+                        Text(
+                            modifier = Modifier.padding(start = 4.dp),
+                            style = MaterialTheme.typography.bodyLarge,
+                            text = uiState.addDateText,
+                        )
+                    }
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
                 InfoContent(
                     modifier = Modifier
@@ -309,9 +283,10 @@ fun InfoContent(
             {
 
                 Text(
-                    modifier = Modifier.padding(top = 16.dp),
-                    style = MaterialTheme.typography.titleLarge,
-                    text = stringResource(R.string.description)
+                    modifier = Modifier.padding(top = 24.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    text = stringResource(R.string.add_description),
+                    color = Color.Gray
                 )
             }
         }
@@ -567,7 +542,9 @@ private fun InfoTopBar(
 private fun Preview() {
     LocalHomeworkAndTaskManagerTheme {
         HomeworkInfoScreen(
-            uiState = HomeworkInfoState(),
+            uiState = HomeworkInfoState(
+                isLoading = false
+            ),
             handleIntent = {}
         )
     }
