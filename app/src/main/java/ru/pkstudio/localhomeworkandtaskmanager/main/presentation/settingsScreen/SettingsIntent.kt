@@ -13,4 +13,14 @@ sealed interface SettingsIntent {
 
     data object SetDynamicColors : SettingsIntent
 
+    data object SetMainScreen : SettingsIntent
+
+    data object OnSetThemeClicked : SettingsIntent
+
+    data object OnKanbanSettingsClicked : SettingsIntent
+
+    data object OnChangePasswordClicked : SettingsIntent
+
+    data class OnKeyboardClicked(val text: String) : SettingsIntent
+
 }

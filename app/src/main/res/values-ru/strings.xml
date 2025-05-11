@@ -35,7 +35,7 @@
     <string name="import_database">Импорт базы</string>
     <string name="export_database">Экспорт базы</string>
     <string name="settings">Настройки</string>
-    <string name="edit_stages">Настройка этапов</string>
+    <string name="edit_stages">Настройка канбан доски</string>
     <string name="subject_name_empty">Имя предмета не может быть пустым</string>
     <string name="category_name_empty">Имя категории не может быть пустым</string>
     <string name="name_subject">Название</string>
@@ -88,4 +88,14 @@
     <string name="update_info_dialog_comment">Вы хотите обновить данные?</string>
     <string name="update_info_toast">Успешно обновлено</string>
     <string name="add_description">Нажмите здесь, чтобы добавить описание</string>
+
+
+    //settings
+    <string name="personalization">Персонализация</string>
+    <string name="security">Безопасность</string>
+    <string name="theme_settings">Настройка темы</string>
+    <string name="change_password">Сменить пин-код</string>
+    <string name="change_theme_toolbar_title">Выберите тему</string>
+    <string name="enter_current_password">Введите текущий пин-код</string>
+    <string name="password_changed">Ваш пин-код успешно изменен</string>
 </resources>

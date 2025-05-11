@@ -8,4 +8,12 @@ data class SettingsState(
     val isSystemTheme: Boolean = false,
     val isDynamicColor: Boolean = false,
     val isDynamicColorAvailable: Boolean = false,
+    val currentScreen: String = "",
+    val toolbarTitle: String = "",
+    val text: String = "",
+    val isCreatePin: Boolean = true,
+    val isError: Boolean = false,
+    val isSuccess: Boolean = false,
+    val titleText: String = "",
+    val shouldEnterPassword: Boolean = true,
 )
