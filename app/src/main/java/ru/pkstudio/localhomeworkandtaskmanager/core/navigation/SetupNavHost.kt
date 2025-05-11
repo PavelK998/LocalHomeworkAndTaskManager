@@ -39,8 +39,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo.Ho
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo.HomeworkInfoViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListViewModel
-import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsIntent
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsScreen
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsUIAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListIntent
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListScreen
@@ -231,7 +231,14 @@ fun SetupNavHost(
                 )
             }
 
-            composable<Destination.HomeworkAddScreen> { navBackStackEntry ->
+            composable<Destination.HomeworkAddScreen>(
+                enterTransition = {
+                    EnterTransition.None
+                },
+                exitTransition = {
+                    ExitTransition.None
+                }
+            ) { navBackStackEntry ->
                 val context = LocalContext.current
                 val args = navBackStackEntry.toRoute<Destination.HomeworkAddScreen>()
                 val viewModel = hiltViewModel<AddHomeworkViewModel>()
@@ -255,7 +262,14 @@ fun SetupNavHost(
                 )
             }
 
-            composable<Destination.DetailsHomeworkScreen> { navBackStackEntry ->
+            composable<Destination.DetailsHomeworkScreen>(
+                enterTransition = {
+                    EnterTransition.None
+                },
+                exitTransition = {
+                    ExitTransition.None
+                }
+            ) { navBackStackEntry ->
                 val args = navBackStackEntry.toRoute<Destination.DetailsHomeworkScreen>()
                 val viewModel = hiltViewModel<HomeworkInfoViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
@@ -271,41 +285,54 @@ fun SetupNavHost(
                 )
             }
 
-            composable<Destination.SettingsScreen> {
+            composable<Destination.SettingsScreen>(
+                enterTransition = {
+                    EnterTransition.None
+                },
+                exitTransition = {
+                    ExitTransition.None
+                }
+            ) {
                 val viewModel = hiltViewModel<SettingsViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
-                fun handleIntent(intent: SettingsIntent) {
-                    when (intent) {
-                        is SettingsIntent.SetDarkTheme -> {
+                val context = LocalContext.current
+                ObserveAsActions(flow = viewModel.uiAction) { action ->
+                    when (action) {
+                        is SettingsUIAction.ShowError -> {
+                            Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
+                        }
+
+                        is SettingsUIAction.SetDarkTheme -> {
                             activityViewModel.toggleDarkTheme()
-                            viewModel.handleIntent(SettingsIntent.SetDarkTheme)
                         }
 
-                        is SettingsIntent.SetDynamicColors -> {
+                        is SettingsUIAction.SetDynamicColors -> {
                             activityViewModel.toggleDynamicColors()
-                            viewModel.handleIntent(SettingsIntent.SetDynamicColors)
                         }
 
-                        is SettingsIntent.SetLightTheme -> {
+                        is SettingsUIAction.SetLightTheme -> {
                             activityViewModel.toggleLightTheme()
-                            viewModel.handleIntent(SettingsIntent.SetLightTheme)
                         }
 
-                        is SettingsIntent.SetSystemTheme -> {
-                            activityViewModel.toggleSystemTheme(intent.isSystemInDarkMode)
-                            viewModel.handleIntent(SettingsIntent.SetSystemTheme(intent.isSystemInDarkMode))
+                        is SettingsUIAction.SetSystemTheme -> {
+                            activityViewModel.toggleSystemTheme(action.isSystemInDarkMode)
                         }
-
-                        else -> viewModel.handleIntent(intent)
                     }
                 }
                 SettingsScreen(
                     uiState = uiState,
-                    handleIntent = ::handleIntent
+                    handleIntent = viewModel::handleIntent
                 )
             }
 
-            composable<Destination.StageEditScreen> {
+            composable<Destination.StageEditScreen>(
+                enterTransition = {
+                    EnterTransition.None
+                },
+                exitTransition = {
+                    ExitTransition.None
+                }
+            ) {
                 val viewModel = hiltViewModel<EditStagesViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
                 val context = LocalContext.current
