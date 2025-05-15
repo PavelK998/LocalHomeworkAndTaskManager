@@ -1,10 +1,12 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList
 
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,18 +30,25 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -65,8 +74,18 @@ fun HomeworkListScreen(
     uiState: HomeworkListState,
     handleIntent: (HomeworkListIntent) -> Unit,
 ) {
+    var screenSize by rememberSaveable {
+        mutableIntStateOf(0)
+    }
+    val density = LocalDensity.current
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .onGloballyPositioned {
+                screenSize = it.size.width
+            },
         topBar = {
             if (uiState.isEditModeEnabled) {
                 DefaultTopAppBar(
@@ -181,19 +200,13 @@ fun HomeworkListScreen(
         if (uiState.isSortBottomSheetOpen) {
             SortModalBottomSheet(
                 sheetState = sheetState,
-                isSortAddAscending = uiState.isSortAddAscending,
-                isSortImportanceAscending = uiState.isSortImportanceAscending,
-                onSortAddAscendingClick = {
-                    handleIntent(HomeworkListIntent.OnSortAddAscendingClick)
+                isSortImportance = uiState.isSortImportance,
+                isSortAdd = uiState.isSortAdd,
+                onSortImportanceClick = {
+                    handleIntent(HomeworkListIntent.OnSortImportanceClick(it))
                 },
-                onSortAddDescendingClick = {
-                    handleIntent(HomeworkListIntent.OnSortAddDescendingClick)
-                },
-                onSortImportanceAscendingClick = {
-                    handleIntent(HomeworkListIntent.OnSortImportanceAscendingClick)
-                },
-                onSortImportanceDescendingClick = {
-                    handleIntent(HomeworkListIntent.OnSortImportanceDescendingClick)
+                onSortAddClick = {
+                    handleIntent(HomeworkListIntent.OnSortAddClick(it))
                 },
                 onDismissRequest = {
                     handleIntent(HomeworkListIntent.CloseBottomSheet)
@@ -239,6 +252,7 @@ fun HomeworkListScreen(
                     .fillMaxWidth()
                     .padding(paddingValues)
             ) {
+               if (isPortrait) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.CenterEnd
@@ -273,6 +287,7 @@ fun HomeworkListScreen(
                     thickness = 1.dp,
                     color = MaterialTheme.colorScheme.outline
                 )
+                   }
                 if (uiState.isKanbanScreenVisible) {
                     KanbanBoard(
                         modifier = Modifier.fillMaxSize(),
@@ -286,24 +301,24 @@ fun HomeworkListScreen(
                         borderColorFromItem = { model ->
                             Color(model.color)
                         },
-                        footer = { model ->
-                            HorizontalDivider(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                thickness = 1.dp,
-                                color = Color(model.color)
-                            )
-                        },
+                        footer = {},
                         columnFiller = {
                             KanbanColumnFiller(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 8.dp, vertical = 4.dp),
-                                model = it
+                                model = it,
+                                onColorPaletteClicked = {
+                                    handleIntent(HomeworkListIntent.OnKanbanCardColorPaletteClicked(it.id))
+                                }
                             )
                         },
-                        columnWidth = 240.dp,
+                        columnWidth = if (isPortrait) {
+                            with (density) {screenSize.toDp() - (screenSize / 7).toDp()}
+                        } else {
+                            uiState.kanbanItemsList.size
+                            270.dp
+                        },
                         columnBackgroundColor = Color.Transparent,
                         onColumnFillerClicked = { rowIndex, columnIndex ->
                             handleIntent(
@@ -399,12 +414,10 @@ fun HomeworkListScreen(
 fun SortModalBottomSheet(
     modifier: Modifier = Modifier,
     sheetState: SheetState,
-    isSortAddAscending: Boolean,
-    isSortImportanceAscending: Boolean,
-    onSortAddAscendingClick: () -> Unit,
-    onSortAddDescendingClick: () -> Unit,
-    onSortImportanceAscendingClick: () -> Unit,
-    onSortImportanceDescendingClick: () -> Unit,
+    isSortAdd: Boolean,
+    isSortImportance: Boolean,
+    onSortAddClick: (Boolean) -> Unit,
+    onSortImportanceClick: (Boolean) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
     ModalBottomSheet(
@@ -431,32 +444,17 @@ fun SortModalBottomSheet(
                 fontWeight = FontWeight.W700
             )
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = stringResource(R.string.ascending))
-                    RadioButton(
-                        selected = isSortImportanceAscending,
-                        onClick = {
-                            onSortImportanceAscendingClick()
-                        }
-                    )
-                }
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = stringResource(R.string.descending))
-                    RadioButton(
-                        selected = !isSortImportanceAscending,
-                        onClick = {
-                            onSortImportanceDescendingClick()
-                        }
-                    )
-                }
+                Text(text = stringResource(R.string.sort_by_descending_importance))
+                Switch(
+                    checked = isSortImportance,
+                    onCheckedChange = {
+                        onSortImportanceClick(it)
+                    }
+                )
             }
 
             Text(
@@ -466,32 +464,17 @@ fun SortModalBottomSheet(
                 fontWeight = FontWeight.W700
             )
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = stringResource(R.string.ascending))
-                    RadioButton(
-                        selected = isSortAddAscending,
-                        onClick = {
-                            onSortAddAscendingClick()
-                        }
-                    )
-                }
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = stringResource(R.string.descending))
-                    RadioButton(
-                        selected = !isSortAddAscending,
-                        onClick = {
-                            onSortAddDescendingClick()
-                        }
-                    )
-                }
+                Text(text = stringResource(R.string.sort_by_descending_add_date))
+                Switch(
+                    checked = isSortAdd,
+                    onCheckedChange = {
+                        onSortAddClick(it)
+                    }
+                )
             }
         }
     }
@@ -502,7 +485,10 @@ fun SortModalBottomSheet(
 private fun Preview() {
     LocalHomeworkAndTaskManagerTheme {
         HomeworkListScreen(
-            uiState = HomeworkListState(),
+            uiState = HomeworkListState(
+                isLoading = false,
+                isSortBottomSheetOpen = true
+            ),
             handleIntent = {}
         )
     }

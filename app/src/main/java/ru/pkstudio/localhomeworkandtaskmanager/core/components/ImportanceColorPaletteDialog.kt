@@ -27,9 +27,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toImportance
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toTextColor
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance1
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance10
@@ -88,8 +91,16 @@ fun ImportanceColorPaletteDialog(
                             .size(50.dp)
                             .clickable {
                                 onSelectClick(color)
-                            }
-                    )
+                            },
+                        contentAlignment = Alignment.Center
+                    ){
+                        Text(
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.W700,
+                            text = color.toImportance().toString(),
+                            color = color.toTextColor()
+                        )
+                    }
                 }
             }
             Box(

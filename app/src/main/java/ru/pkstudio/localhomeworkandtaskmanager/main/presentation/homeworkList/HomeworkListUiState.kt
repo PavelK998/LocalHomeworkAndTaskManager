@@ -37,6 +37,8 @@ data class HomeworkListState(
     val deleteDialogDescription: String = "",
 
     val isSortBottomSheetOpen: Boolean = false,
+    val isSortAdd: Boolean = false,
+    val isSortImportance: Boolean = false,
     val isSortAddAscending: Boolean = false,
     val isSortImportanceAscending: Boolean = false,
 

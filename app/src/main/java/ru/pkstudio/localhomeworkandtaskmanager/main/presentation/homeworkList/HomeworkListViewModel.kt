@@ -56,8 +56,8 @@ class HomeworkListViewModel @Inject constructor(
         checkFilterActions()
         getHomework(
             subjectId = subjectId,
-            sortByAscendingId = _uiState.value.isSortAddAscending,
-            sortByAscendingImportance = _uiState.value.isSortImportanceAscending
+            sortByDescendingId = _uiState.value.isSortAdd,
+            sortByDescendingImportance = _uiState.value.isSortImportance
         )
     }
 
@@ -310,8 +310,8 @@ class HomeworkListViewModel @Inject constructor(
                     )
                 }
                 sortHomework(
-                    sortByAscendingImportance = _uiState.value.isSortImportanceAscending,
-                    sortByAscendingId = _uiState.value.isSortAddAscending
+                    sortByDescendingImportance = _uiState.value.isSortImportanceAscending,
+                    sortByDescendingId = _uiState.value.isSortAddAscending
                 )
 //                getHomework(
 //                    subjectId = subjectId,
@@ -328,8 +328,8 @@ class HomeworkListViewModel @Inject constructor(
                     )
                 }
                 sortHomework(
-                    sortByAscendingImportance = _uiState.value.isSortImportanceAscending,
-                    sortByAscendingId = _uiState.value.isSortAddAscending
+                    sortByDescendingImportance = _uiState.value.isSortImportanceAscending,
+                    sortByDescendingId = _uiState.value.isSortAddAscending
                 )
 //                getHomework(
 //                    subjectId = subjectId,
@@ -346,8 +346,8 @@ class HomeworkListViewModel @Inject constructor(
                     )
                 }
                 sortHomework(
-                    sortByAscendingImportance = _uiState.value.isSortImportanceAscending,
-                    sortByAscendingId = _uiState.value.isSortAddAscending
+                    sortByDescendingImportance = _uiState.value.isSortImportanceAscending,
+                    sortByDescendingId = _uiState.value.isSortAddAscending
                 )
             }
 
@@ -359,8 +359,8 @@ class HomeworkListViewModel @Inject constructor(
                     )
                 }
                 sortHomework(
-                    sortByAscendingImportance = _uiState.value.isSortImportanceAscending,
-                    sortByAscendingId = _uiState.value.isSortAddAscending
+                    sortByDescendingImportance = _uiState.value.isSortImportanceAscending,
+                    sortByDescendingId = _uiState.value.isSortAddAscending
                 )
             }
 
@@ -379,66 +379,134 @@ class HomeworkListViewModel @Inject constructor(
                     )
                 }
             }
+
+            is HomeworkListIntent.OnKanbanCardColorPaletteClicked -> {
+                val model = _uiState.value.homeworkList.find { it.id == intent.modelId }
+                if (model != null) {
+                    selectedCardToChangeColor = _uiState.value.homeworkList.indexOf(model)
+                    _uiState.update {
+                        it.copy(
+                            isColorPaletteDialogOpen = true
+                        )
+                    }
+                }
+            }
+
+            is HomeworkListIntent.OnSortAddClick -> {
+                Log.d("cnbnvbnbcn", "OnSortAddClick: ${intent.isSelected}")
+                if (intent.isSelected) {
+                    deviceManager.setFilterAddDate(Constants.FILTER_ADD_DATE_DESCENDING.ordinal)
+                    _uiState.update {
+                        it.copy(
+                            isSortAdd = true
+                        )
+                    }
+                    sortHomework(
+                        sortByDescendingImportance = _uiState.value.isSortImportance,
+                        sortByDescendingId = _uiState.value.isSortAdd
+                    )
+                } else {
+                    deviceManager.setFilterAddDate(Constants.FILTER_ADD_DATE_ASCENDING.ordinal)
+                    _uiState.update {
+                        it.copy(
+                            isSortAdd = false
+                        )
+                    }
+                    sortHomework(
+                        sortByDescendingImportance = _uiState.value.isSortImportance,
+                        sortByDescendingId = _uiState.value.isSortAdd
+                    )
+                }
+            }
+
+            is HomeworkListIntent.OnSortImportanceClick -> {
+                if (intent.isSelected) {
+                    deviceManager.setFilterImportance(Constants.FILTER_IMPORTANCE_DESCENDING.ordinal)
+                    _uiState.update {
+                        it.copy(
+                            isSortImportance = true
+                        )
+                    }
+                    sortHomework(
+                        sortByDescendingImportance = _uiState.value.isSortImportance,
+                        sortByDescendingId = _uiState.value.isSortAdd
+                    )
+                } else {
+                    deviceManager.setFilterImportance(Constants.FILTER_IMPORTANCE_ASCENDING.ordinal)
+                    _uiState.update {
+                        it.copy(
+                            isSortImportance = false
+                        )
+                    }
+                    sortHomework(
+                        sortByDescendingImportance = _uiState.value.isSortImportance,
+                        sortByDescendingId = _uiState.value.isSortAdd
+                    )
+                }
+            }
         }
     }
 
     private fun checkFilterActions() {
         val addDateFilter = deviceManager.getFilterAddDate()
         val importanceFilter = deviceManager.getFilterImportance()
+        Log.d("ytutyuytutyu", "$importanceFilter ")
         if (addDateFilter == -1) {
             deviceManager.setFilterAddDate(Constants.FILTER_ADD_DATE_DESCENDING.ordinal)
         }
         if (importanceFilter == -1) {
             deviceManager.setFilterImportance(Constants.FILTER_IMPORTANCE_DESCENDING.ordinal)
         }
-        if (addDateFilter == Constants.FILTER_ADD_DATE_ASCENDING.ordinal) {
+        if (addDateFilter == Constants.FILTER_ADD_DATE_DESCENDING.ordinal) {
+            Log.d("ytutyuytutyu", "FILTER_ADD_DATE_DESCENDING ")
             _uiState.update {
                 it.copy(
-                    isSortAddAscending = true
+                    isSortAdd = true
                 )
             }
         } else {
             _uiState.update {
                 it.copy(
-                    isSortAddAscending = false
+                    isSortAdd = false
                 )
             }
         }
 
-        if (importanceFilter == Constants.FILTER_IMPORTANCE_ASCENDING.ordinal) {
+        if (importanceFilter == Constants.FILTER_IMPORTANCE_DESCENDING.ordinal) {
+            Log.d("ytutyuytutyu", "FILTER_IMPORTANCE_DESCENDING ")
             _uiState.update {
                 it.copy(
-                    isSortImportanceAscending = true
+                    isSortImportance = true
                 )
             }
         } else {
             _uiState.update {
                 it.copy(
-                    isSortImportanceAscending = false
+                    isSortImportance = false
                 )
             }
         }
     }
 
     private fun sortHomework(
-        sortByAscendingImportance: Boolean,
-        sortByAscendingId: Boolean
+        sortByDescendingImportance: Boolean,
+        sortByDescendingId: Boolean
     ) {
         val homeworkList = _uiState.value.homeworkList
         val newList = homeworkList.sortedWith(
             compareBy<HomeworkUiModel> { homework ->
-                if (sortByAscendingImportance) homework.importance else -homework.importance
+                if (sortByDescendingImportance) -homework.importance else homework.importance
             }.thenBy { homework ->
-                if (sortByAscendingId) homework.id else -homework.id
+                if (sortByDescendingId) -homework.id else homework.id
             }
         )
         val kanbanItemsList = _uiState.value.kanbanItemsList.map {
             it.copy(
                 columnItems = it.columnItems.sortedWith(
                     compareBy<HomeworkUiModel> { homework ->
-                        if (sortByAscendingImportance) homework.importance else -homework.importance
+                        if (sortByDescendingImportance) -homework.importance else homework.importance
                     }.thenBy { homework ->
-                        if (sortByAscendingId) homework.id else -homework.id
+                        if (sortByDescendingId) -homework.id else homework.id
                     }
                 )
             )
@@ -613,8 +681,8 @@ class HomeworkListViewModel @Inject constructor(
 
     private fun getHomework(
         subjectId: Long,
-        sortByAscendingImportance: Boolean,
-        sortByAscendingId: Boolean,
+        sortByDescendingImportance: Boolean,
+        sortByDescendingId: Boolean,
     ) {
         viewModelScope.execute(
             source = {
@@ -657,18 +725,18 @@ class HomeworkListViewModel @Inject constructor(
                                                     homeworkModel.stageId == stage.id
                                                 }.toHomeworkUiModelList().sortedWith(
                                                     compareBy<HomeworkUiModel> { homework ->
-                                                        if (sortByAscendingImportance) homework.importance else -homework.importance
+                                                        if (sortByDescendingImportance) -homework.importance else homework.importance
                                                     }.thenBy { homework ->
-                                                        if (sortByAscendingId) homework.id else -homework.id
+                                                        if (sortByDescendingId) -homework.id else homework.id
                                                     }
                                                 )
                                             )
                                         },
                                         homeworkList = subjectWithHomework.homework.toHomeworkUiModelList().sortedWith(
                                             compareBy<HomeworkUiModel> { homework ->
-                                                if (sortByAscendingImportance) homework.importance else -homework.importance
+                                                if (sortByDescendingImportance) -homework.importance else homework.importance
                                             }.thenBy { homework ->
-                                                if (sortByAscendingId) homework.id else -homework.id
+                                                if (sortByDescendingId) -homework.id else homework.id
                                             }
                                         ),
                                         isLoading = false,

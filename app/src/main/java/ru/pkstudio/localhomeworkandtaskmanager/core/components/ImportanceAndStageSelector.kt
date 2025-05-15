@@ -19,9 +19,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toImportance
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toTextColor
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.kanbanHeaderText
 
 @Composable
@@ -54,8 +57,16 @@ fun ImportanceAndStageSelector(
                     .border(width = 1.dp, color = Color.Gray)
                     .clickable {
                         onColorSelectClick()
-                    }
-            )
+                    },
+                contentAlignment = Alignment.Center
+            ){
+                Text(
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.W700,
+                    text = currentColor.toImportance().toString(),
+                    color = currentColor.toTextColor()
+                )
+            }
         }
         Row(
             modifier = Modifier.padding(start = 12.dp),

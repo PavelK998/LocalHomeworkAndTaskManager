@@ -2,6 +2,7 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
 import android.util.Log
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -21,16 +22,25 @@ import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
+import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.Constants
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkUiModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toImportance
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -46,13 +56,21 @@ class HomeworkInfoViewModel @Inject constructor(
 
     private val defaultNameState = RichTextState()
     private val defaultDescriptionState = RichTextState()
+    private var defaultColor: Color? = null
+    private var defaultStage: Long = 0L
     private var isUpdateClicked = false
     private var isDeleteClicked = false
+    private var isNavigateToStageEdit = false
     private var isFontSizeSet = false
+    private var isDateTimeSet = false
+    private var localFinishDate: LocalDate? = null
+    private var localFinishTime: LocalTime? = null
+
 
     fun parseArguments(homeworkId: Long, subjectId: Long) {
         this.homeworkId = homeworkId
         getInitialData(homeworkId = homeworkId, subjectId = subjectId)
+        isNavigateToStageEdit = false
     }
 
     private val _uiState = MutableStateFlow(
@@ -133,9 +151,18 @@ class HomeworkInfoViewModel @Inject constructor(
             }
 
             is HomeworkInfoIntent.NavigateUp -> {
+                val endDate = if(localFinishDate != null && localFinishTime != null) {
+                    LocalDateTime.of(
+                        localFinishDate,
+                        localFinishTime
+                    )
+                } else null
                 if (
                     _uiState.value.nameRichTextState.annotatedString != defaultNameState.annotatedString
                     || _uiState.value.descriptionRichTextState.annotatedString != defaultDescriptionState.annotatedString
+                    || _uiState.value.currentColor != defaultColor
+                    || (_uiState.value.currentSelectedStage?.id ?: -1L) != defaultStage
+                    || (isDateTimeSet)
                 ) {
                     isUpdateClicked = false
                     _uiState.update {
@@ -180,8 +207,9 @@ class HomeworkInfoViewModel @Inject constructor(
             }
 
             is HomeworkInfoIntent.DescriptionFontSizeChange -> {
-                _uiState.value.descriptionRichTextState.toggleSpanStyle(
-                    SpanStyle(fontSize = intent.font.sp)
+                changeFontSize(
+                    textState = _uiState.value.descriptionRichTextState,
+                    fontSize = intent.font
                 )
             }
 
@@ -288,11 +316,21 @@ class HomeworkInfoViewModel @Inject constructor(
             is HomeworkInfoIntent.UpdateConfirm -> {
                 if (!isUpdateClicked){
                     isUpdateClicked = true
+                    val endDate = if(localFinishDate != null && localFinishTime != null) {
+                        LocalDateTime.of(
+                            localFinishDate,
+                            localFinishTime
+                        )
+                    } else null
                     _uiState.value.homeworkUiModel?.let {
                         updateHomework(
                             homeworkModel = it.toHomeworkModel(),
                             newName = _uiState.value.nameRichTextState.toHtml(),
-                            newDescription = _uiState.value.descriptionRichTextState.toHtml()
+                            newDescription = _uiState.value.descriptionRichTextState.toHtml(),
+                            newImportanceColor = _uiState.value.currentColor,
+                            newStageId = _uiState.value.currentSelectedStage?.id ?: 0L,
+                            newStageName = _uiState.value.currentSelectedStage?.stageName ?: "",
+                            endDate = endDate
                         )
                     }
                 }
@@ -352,17 +390,86 @@ class HomeworkInfoViewModel @Inject constructor(
                 }
 
             }
+
+            is HomeworkInfoIntent.NavigateToEditStages -> {
+                if (!isNavigateToStageEdit) {
+                    viewModelScope.launch {
+                        navigator.navigate(Destination.StageEditScreen)
+                    }
+                    isNavigateToStageEdit = true
+                }
+
+            }
+
+            is HomeworkInfoIntent.CloseDatePickerDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isDatePickerVisible = false
+                    )
+                }
+            }
+
+            is HomeworkInfoIntent.CloseTimePickerDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isTimePickerVisible = false
+                    )
+                }
+            }
+
+            is HomeworkInfoIntent.DatePicked -> {
+                parseDate(intent.dateFromEpochMillis)
+                _uiState.update {
+                    it.copy(
+                        isDatePickerVisible = false,
+                        isTimePickerVisible = true
+                    )
+                }
+            }
+
+            is HomeworkInfoIntent.TimePicked -> {
+                parseTime(intent.timeString)
+            }
+
+            is HomeworkInfoIntent.SelectDateTime -> {
+                _uiState.update {
+                    it.copy(
+                        isDatePickerVisible = true
+                    )
+                }
+            }
         }
     }
 
-    private fun toggleFontSize(nameFontSize: Int, descriptionFontSize: Int) {
+    private fun parseDate(dateFromEpochMillis: Long) {
+        val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        val dateString = formatter.format(Date(dateFromEpochMillis))
+        val localDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        _uiState.update {
+            it.copy(
+                selectedFinishDate = dateString
+            )
+        }
+        localFinishDate = localDate
+    }
+
+    private fun parseTime(timeString: String) {
+        val localTime =
+            LocalTime.parse(timeString, DateTimeFormatter.ofPattern("HH:mm"))
+        _uiState.update {
+            it.copy(
+                selectedFinishTime = timeString
+            )
+        }
+        localFinishTime = localTime
+        isDateTimeSet = true
+    }
+
+    private fun toggleFontSize(nameFontSize: Float, descriptionFontSize: Float) {
         if (nameFontSize < Constants.MIN_FONT_VALUE) {
+            Log.d("nvbnbvvbnbn", "min value")
             _uiState.value.nameRichTextState.toggleSpanStyle(
                 SpanStyle(fontSize = Constants.MIN_FONT_VALUE.roundToInt().sp)
-            )
-        } else {
-            _uiState.value.nameRichTextState.toggleSpanStyle(
-                SpanStyle(fontSize = nameFontSize.sp)
             )
         }
 
@@ -370,12 +477,7 @@ class HomeworkInfoViewModel @Inject constructor(
             _uiState.value.descriptionRichTextState.toggleSpanStyle(
                 SpanStyle(fontSize = Constants.MIN_FONT_VALUE.roundToInt().sp)
             )
-        } else {
-            _uiState.value.descriptionRichTextState.toggleSpanStyle(
-                SpanStyle(fontSize = descriptionFontSize.sp)
-            )
         }
-
     }
 
     private fun selectStage(model: StageModel) {
@@ -397,6 +499,8 @@ class HomeworkInfoViewModel @Inject constructor(
     }
 
     private fun changeFontSize(textState: RichTextState, fontSize: Int) {
+        Log.d("vbnbvnvbnvbnvb", " state size: ${textState.currentSpanStyle.fontSize} ")
+        Log.d("vbnbvnvbnvbnvb", " font: $fontSize ")
         if (textState.currentSpanStyle.fontSize != fontSize.sp) {
             textState.toggleSpanStyle(
                 SpanStyle(fontSize = fontSize.sp)
@@ -440,17 +544,28 @@ class HomeworkInfoViewModel @Inject constructor(
     private fun updateHomework(
         homeworkModel: HomeworkModel,
         newName: String,
-        newDescription: String
+        newDescription: String,
+        newStageId: Long,
+        newStageName: String,
+        endDate: LocalDateTime?,
+        newImportanceColor: Color,
     ) =
         viewModelScope.execute(
             source = {
-                Log.d("gdfhfghfgh", "updateHomework: ")
+                Log.d("gdfhfghfgh", "color:$newImportanceColor")
+                Log.d("gdfhfghfgh", "stage:$newStageName")
                 homeworkRepository.updateHomework(
                     homework = homeworkModel.copy(
                         name = newName,
                         description = newDescription,
+                        stageId = newStageId,
+                        stage = newStageName,
+                        color = newImportanceColor.toArgb(),
+                        importance = newImportanceColor.toImportance(),
+                        endDate = endDate
                     )
                 )
+
             },
             onSuccess = {
                 _uiState.update {
@@ -513,6 +628,8 @@ class HomeworkInfoViewModel @Inject constructor(
             Log.d("nbcvnvbnbvn", "getInitialData: stages $stagesResult")
             defaultNameState.setHtml(homeworkResult.name)
             defaultDescriptionState.setHtml(homeworkResult.description)
+            defaultColor = Color(homeworkResult.color)
+            defaultStage = homeworkResult.stageId
             _uiState.update {
                 it.copy(
                     nameRichTextState = _uiState.value.nameRichTextState.setHtml(homeworkResult.name),
@@ -521,6 +638,7 @@ class HomeworkInfoViewModel @Inject constructor(
                     ),
                     homeworkUiModel = homeworkResult,
                     addDateText = homeworkResult.addDate,
+                    finishDateText = homeworkResult.endDate,
                     subjectUiModel = subjectResult,
                     subjectNameText = subjectResult.subjectName,
                     stageList = stagesResult,
@@ -532,9 +650,19 @@ class HomeworkInfoViewModel @Inject constructor(
                 )
             }
             if (!isFontSizeSet) {
+                val nameFontSize = if (_uiState.value.nameRichTextState.currentSpanStyle.fontSize.isSp){
+                    _uiState.value.nameRichTextState.currentSpanStyle.fontSize.value
+                } else {
+                    0f
+                }
+                val descriptionFontSize = if (_uiState.value.descriptionRichTextState.currentSpanStyle.fontSize.isSp){
+                    _uiState.value.descriptionRichTextState.currentSpanStyle.fontSize.value
+                } else {
+                    0f
+                }
                 toggleFontSize(
-                    nameFontSize = 24,
-                    descriptionFontSize = 16
+                    nameFontSize = nameFontSize,
+                    descriptionFontSize = descriptionFontSize
                 )
                 isFontSizeSet = true
             }

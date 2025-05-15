@@ -14,6 +14,6 @@ data class HomeworkModel(
     val stageId: Long,
     val description: String,
     val startDate: LocalDate?,
-    val endDate: LocalDate?,
+    val endDate: LocalDateTime?,
     val imageUrl: String
 )

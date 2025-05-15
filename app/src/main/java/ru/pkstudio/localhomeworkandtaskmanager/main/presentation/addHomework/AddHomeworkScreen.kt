@@ -1,11 +1,10 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -40,6 +39,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,6 +64,8 @@ import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 import kotlinx.coroutines.delay
 import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultDatePicker
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTimePicker
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.EditTextPanel
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.ImportanceAndStageSelector
@@ -72,6 +74,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.components.StagePickerDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.TopAppBarAction
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant8
+import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,18 +132,18 @@ fun AddHomeworkScreen(
                         handleIntent(AddHomeworkIntent.NavigateUp)
                     },
                     actions = listOf(
-                        TopAppBarAction(
-                            imageRes = R.drawable.icon_attach,
-                            contentDescription = "Select media",
-                            action = {
-                                launcherForMultiplyImages.launch(
-                                    PickVisualMediaRequest(
-                                        mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
-                                    )
-                                )
-                            },
-                            tint = MaterialTheme.colorScheme.onSurface
-                        ),
+//                        TopAppBarAction(
+//                            imageRes = R.drawable.icon_attach,
+//                            contentDescription = "Select media",
+//                            action = {
+//                                launcherForMultiplyImages.launch(
+//                                    PickVisualMediaRequest(
+//                                        mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+//                                    )
+//                                )
+//                            },
+//                            tint = MaterialTheme.colorScheme.onSurface
+//                        ),
                         TopAppBarAction(
                             image = Icons.Filled.Done,
                             contentDescription = "Done",
@@ -181,6 +184,32 @@ fun AddHomeworkScreen(
                     }
                 )
             }
+            if (uiState.isDatePickerVisible) {
+                DefaultDatePicker(
+                    onDismiss = {
+                        handleIntent(AddHomeworkIntent.CloseDatePickerDialog)
+                    },
+                    onConfirm = {
+                        Log.d("sdfsdfsdfsdf", "AddHomeworkScreen: $it")
+                        handleIntent(AddHomeworkIntent.DatePicked(it ?: 0L))
+                    }
+                )
+            }
+            if (uiState.isTimePickerVisible) {
+                DefaultTimePicker(
+                    onConfirm = { timePickerState ->
+                        handleIntent(
+                            AddHomeworkIntent.TimePicked(
+                                LocalTime.of(timePickerState.hour, timePickerState.minute)
+                                    .toString()
+                            )
+                        )
+                    },
+                    onDismiss = {
+                        handleIntent(AddHomeworkIntent.CloseTimePickerDialog)
+                    }
+                )
+            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -196,7 +225,7 @@ fun AddHomeworkScreen(
                     ImportanceAndStageSelector(
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
-                            .padding(top = 4.dp, bottom = 12.dp),
+                            .padding(top = 4.dp, bottom = 8.dp),
                         currentStageName = uiState.currentSelectedStage?.stageName ?: "",
                         currentColor = uiState.currentColor,
                         onColorSelectClick = {
@@ -205,8 +234,34 @@ fun AddHomeworkScreen(
                         onStageSelectClick = {
                             handleIntent(AddHomeworkIntent.OpenStagePickerDialog)
                         },
-                        currentStageColor = uiState.currentSelectedStage?.color ?: stageVariant8.toArgb()
+                        currentStageColor = uiState.currentSelectedStage?.color
+                            ?: stageVariant8.toArgb()
                     )
+                    Row(
+                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.finish_before)
+                        )
+                        TextButton(
+                            onClick = {
+                                handleIntent(AddHomeworkIntent.SelectDateTime)
+                            }
+                        ) {
+                            Text(
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                text = if (uiState.selectedFinishDate.isBlank() || uiState.selectedFinishTime.isBlank()) {
+                                    stringResource(R.string.select_date)
+                                } else {
+                                    "${uiState.selectedFinishDate} ${uiState.selectedFinishTime}"
+                                }
+
+                            )
+                        }
+
+                    }
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         thickness = 2.dp,
@@ -217,7 +272,7 @@ fun AddHomeworkScreen(
                             .fillMaxWidth()
                             .padding(top = 16.dp)
                             .heightIn(
-                                min = 100.dp
+                                min = 70.dp
                             )
                             .padding(horizontal = 16.dp)
 
@@ -309,7 +364,7 @@ fun AddHomeworkScreen(
         }
         AnimatedVisibility(
             visible = uiState.isNameCardVisible,
-            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+            enter = slideInVertically(initialOffsetY = { it / 2 }),
             exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut()
         ) {
             SetName(
@@ -323,7 +378,7 @@ fun AddHomeworkScreen(
 
         AnimatedVisibility(
             visible = uiState.isDescriptionCardVisible,
-            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+            enter = slideInVertically(initialOffsetY = { it / 2 }),
             exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut()
         ) {
 

@@ -1,8 +1,8 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -37,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,16 +62,22 @@ import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 import kotlinx.coroutines.delay
 import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultDatePicker
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTimePicker
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DeleteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.EditTextPanel
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.ImportanceAndStageSelector
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.ImportanceColorPaletteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.Loading
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.StagePickerDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.TopAppBarAction
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant8
+import java.time.LocalTime
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeworkInfoScreen(
     uiState: HomeworkInfoState,
@@ -113,6 +120,34 @@ fun HomeworkInfoScreen(
         if (uiState.isLoading) {
             Loading()
         } else {
+            if (uiState.isColorPickerVisible) {
+                ImportanceColorPaletteDialog(
+                    colorList = uiState.colorList,
+                    onSelectClick = {
+                        handleIntent(HomeworkInfoIntent.SelectImportanceColor(it))
+                    },
+                    onBtnDismissClick = {
+                        handleIntent(HomeworkInfoIntent.CloseImportanceColorDialog)
+                    },
+                    onDismiss = {
+                        handleIntent(HomeworkInfoIntent.CloseImportanceColorDialog)
+                    }
+                )
+            }
+            if (uiState.isStagePickerVisible) {
+                StagePickerDialog(
+                    stageList = uiState.stageList,
+                    onSelectStageClick = {
+                        handleIntent(HomeworkInfoIntent.SelectStage(it))
+                    },
+                    onDismiss = {
+                        handleIntent(HomeworkInfoIntent.CloseStagePickerDialog)
+                    },
+                    onCreateStageBtnClick = {
+                        handleIntent(HomeworkInfoIntent.NavigateToEditStages)
+                    }
+                )
+            }
             if (uiState.isDeleteDialogOpened) {
                 DeleteDialog(
                     title = uiState.deleteDialogTitle,
@@ -141,6 +176,32 @@ fun HomeworkInfoScreen(
                     },
                     onDismiss = {
                         handleIntent(HomeworkInfoIntent.UpdateDismiss)
+                    }
+                )
+            }
+            if (uiState.isDatePickerVisible) {
+                DefaultDatePicker(
+                    onDismiss = {
+                        handleIntent(HomeworkInfoIntent.CloseDatePickerDialog)
+                    },
+                    onConfirm = {
+                        Log.d("sdfsdfsdfsdf", "AddHomeworkScreen: $it")
+                        handleIntent(HomeworkInfoIntent.DatePicked(it ?: 0L))
+                    }
+                )
+            }
+            if (uiState.isTimePickerVisible) {
+                DefaultTimePicker(
+                    onConfirm = { timePickerState ->
+                        handleIntent(
+                            HomeworkInfoIntent.TimePicked(
+                                LocalTime.of(timePickerState.hour, timePickerState.minute)
+                                    .toString()
+                            )
+                        )
+                    },
+                    onDismiss = {
+                        handleIntent(HomeworkInfoIntent.CloseTimePickerDialog)
                     }
                 )
             }
@@ -197,6 +258,43 @@ fun HomeworkInfoScreen(
                         )
                     }
 
+                    Row(
+                        modifier = Modifier.padding(top = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            style = MaterialTheme.typography.bodyLarge,
+                            text = stringResource(R.string.finish_before),
+                            color = Color.Gray
+                        )
+
+                        if (uiState.finishDateText.isNotBlank()) {
+                            Text(
+                                modifier = Modifier.padding(start = 4.dp),
+                                style = MaterialTheme.typography.bodyLarge,
+                                text = uiState.finishDateText,
+                            )
+                        } else {
+                            TextButton(
+                                onClick = {
+                                    handleIntent(HomeworkInfoIntent.SelectDateTime)
+                                }
+                            ) {
+                                Text(
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    text = if (uiState.selectedFinishDate.isBlank() || uiState.selectedFinishTime.isBlank()) {
+                                        stringResource(R.string.select_date)
+                                    } else {
+                                        "${uiState.selectedFinishDate} ${uiState.selectedFinishTime}"
+                                    }
+
+                                )
+                            }
+                        }
+
+                    }
+
                     HorizontalDivider(
                         modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
                         thickness = 1.dp,
@@ -215,7 +313,7 @@ fun HomeworkInfoScreen(
     }
     AnimatedVisibility(
         visible = uiState.isNameCardVisible,
-        enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+        enter = slideInVertically(initialOffsetY = { it / 2 }),
         exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut()
     ) {
         SetName(
@@ -229,7 +327,7 @@ fun HomeworkInfoScreen(
 
     AnimatedVisibility(
         visible = uiState.isDescriptionCardVisible,
-        enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+        enter = slideInVertically(initialOffsetY = { it / 2 }),
         exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut()
     ) {
 

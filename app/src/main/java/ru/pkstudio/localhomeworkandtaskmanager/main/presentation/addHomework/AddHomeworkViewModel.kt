@@ -37,7 +37,13 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
+import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.roundToInt
 import kotlin.random.Random
@@ -58,6 +64,8 @@ class AddHomeworkViewModel @Inject constructor(
     private var stageName = ""
     private var isNavigateUp = false
     private var isNavigateToEditStages = false
+    private var localFinishDate: LocalDate? = null
+    private var localFinishTime: LocalTime? = null
 
 
     fun parseArguments(subjectId: Long) {
@@ -305,7 +313,84 @@ class AddHomeworkViewModel @Inject constructor(
                     }
                 }
             }
+
+            is AddHomeworkIntent.CloseDatePickerDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isDatePickerVisible = false
+                    )
+                }
+            }
+
+            is AddHomeworkIntent.CloseTimePickerDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isTimePickerVisible = false
+                    )
+                }
+            }
+
+            is AddHomeworkIntent.DatePicked -> {
+                parseDate(intent.dateFromEpochMillis)
+                _uiState.update {
+                    it.copy(
+                        isDatePickerVisible = false,
+                        isTimePickerVisible = true
+                    )
+                }
+            }
+
+            is AddHomeworkIntent.OpenDatePickerDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isDatePickerVisible = true
+                    )
+                }
+            }
+
+            is AddHomeworkIntent.OpenTimePickerDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isTimePickerVisible = true
+                    )
+                }
+            }
+
+            is AddHomeworkIntent.TimePicked -> {
+                parseTime(intent.timeString)
+            }
+
+            is AddHomeworkIntent.SelectDateTime -> {
+                _uiState.update {
+                    it.copy(
+                        isDatePickerVisible = true
+                    )
+                }
+            }
         }
+    }
+
+    private fun parseDate(dateFromEpochMillis: Long) {
+        val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        val dateString = formatter.format(Date(dateFromEpochMillis))
+        val localDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        _uiState.update {
+            it.copy(
+                selectedFinishDate = dateString
+            )
+        }
+        localFinishDate = localDate
+    }
+
+    private fun parseTime(timeString: String) {
+        val localTime =
+            LocalTime.parse(timeString, DateTimeFormatter.ofPattern("HH:mm"))
+        _uiState.update {
+            it.copy(
+                selectedFinishTime = timeString
+            )
+        }
+        localFinishTime = localTime
     }
 
     private fun changeFontSize(textState: RichTextState, fontSize: Int) {
@@ -455,6 +540,14 @@ class AddHomeworkViewModel @Inject constructor(
     }
 
     private fun addHomework(subjectId: Long) {
+        val endDate = if(localFinishDate != null && localFinishTime != null) {
+            LocalDateTime.of(
+                localFinishDate,
+                localFinishTime
+            )
+        } else null
+
+
         viewModelScope.execute(
             source = {
                 homeworkRepository.insertHomework(
@@ -468,7 +561,7 @@ class AddHomeworkViewModel @Inject constructor(
                         stage = _uiState.value.currentSelectedStage?.stageName ?: "",
                         description = _uiState.value.descriptionRichTextState.toHtml(),
                         startDate = null,
-                        endDate = null,
+                        endDate = endDate,
                         imageUrl = "",
                         stageId = _uiState.value.currentSelectedStage?.id ?: 0L
                     )

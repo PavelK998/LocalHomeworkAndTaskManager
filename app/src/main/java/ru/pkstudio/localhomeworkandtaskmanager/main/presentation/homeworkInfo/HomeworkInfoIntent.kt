@@ -73,4 +73,17 @@ sealed interface HomeworkInfoIntent {
     data object CloseDescriptionChangeCard: HomeworkInfoIntent
 
     data object OnDescriptionChangeClick: HomeworkInfoIntent
+
+    data object NavigateToEditStages: HomeworkInfoIntent
+
+    data object SelectDateTime: HomeworkInfoIntent
+
+    data object CloseDatePickerDialog: HomeworkInfoIntent
+
+    data object CloseTimePickerDialog: HomeworkInfoIntent
+
+    data class DatePicked(val dateFromEpochMillis: Long): HomeworkInfoIntent
+
+    data class TimePicked(val timeString: String): HomeworkInfoIntent
+
 }

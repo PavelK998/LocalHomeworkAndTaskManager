@@ -50,11 +50,13 @@ class HomeworkRepositoryImpl @Inject constructor(
 
     override suspend fun changeHomeworkStagesAfterDeleteStage(
         fromStageId: Long,
-        targetStageId: Long
+        targetStageId: Long,
+        targetStageName: String
     ) = withContext(Dispatchers.IO) {
         homeworkDao.changeHomeworkStagesAfterDeleteStage(
             fromStageId = fromStageId,
-            targetStageId = targetStageId
+            targetStageId = targetStageId,
+            targetStageName = targetStageName
         )
     }
 }

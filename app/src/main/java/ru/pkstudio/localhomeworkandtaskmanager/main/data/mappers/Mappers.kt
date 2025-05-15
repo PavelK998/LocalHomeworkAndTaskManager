@@ -89,7 +89,7 @@ fun HomeworkEntity.toHomeworkModel(): HomeworkModel {
     }
 
     val endDate = try {
-        LocalDate.parse(this.endDate, DateTimeFormatter.ISO_LOCAL_DATE)
+        LocalDateTime.parse(this.endDate, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
     } catch (e: Exception) {
         null
     }
@@ -180,13 +180,13 @@ fun List<SubjectWithHomeworkData>.toListSubjectWithHomework(): List<SubjectWithH
 
 fun HomeworkModel.toHomeworkUiModel(): HomeworkUiModel {
     val addDate = try {
-        this.addDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy   HH:mm"))
+        this.addDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy  HH:mm"))
     } catch (e: Exception) {
         ""
     }
 
     val endDate = try {
-        this.endDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+        this.endDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy  HH:mm"))
     } catch (e: Exception) {
         ""
     }
@@ -215,7 +215,7 @@ fun HomeworkModel.toHomeworkUiModel(): HomeworkUiModel {
 }
 
 fun HomeworkUiModel.toHomeworkModel(): HomeworkModel {
-    val dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy   HH:mm")
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy  HH:mm")
     val addDate = try {
         LocalDateTime.parse(this.addDate, dateTimeFormatter)
     } catch (e: Exception) {
@@ -223,7 +223,7 @@ fun HomeworkUiModel.toHomeworkModel(): HomeworkModel {
     }
 
     val endDate = try {
-        LocalDate.parse(this.endDate, dateTimeFormatter)
+        LocalDateTime.parse(this.endDate, dateTimeFormatter)
     } catch (e: Exception) {
         null
     }
