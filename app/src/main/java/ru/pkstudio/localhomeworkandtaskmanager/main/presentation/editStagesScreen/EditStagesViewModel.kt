@@ -119,7 +119,8 @@ class EditStagesViewModel @Inject constructor(
                     }
                     changeStagesInHomework(
                         fromStageId = _uiState.value.stagesList[stageIndexForDelete].id ?: 0L,
-                        targetStageId = _uiState.value.stagesList[0].id ?: 0L
+                        targetStageId = _uiState.value.stagesList[0].id ?: 0L,
+                        targetStageName = _uiState.value.stagesList[0].stageName
                     )
                 }
             }
@@ -190,12 +191,14 @@ class EditStagesViewModel @Inject constructor(
 
     private fun changeStagesInHomework(
         fromStageId: Long,
-        targetStageId: Long
+        targetStageId: Long,
+        targetStageName: String
     ) = viewModelScope.execute(
         source = {
             homeworkRepository.changeHomeworkStagesAfterDeleteStage(
                 fromStageId = fromStageId,
-                targetStageId = targetStageId
+                targetStageId = targetStageId,
+                targetStageName = targetStageName
             )
         },
         onSuccess = {

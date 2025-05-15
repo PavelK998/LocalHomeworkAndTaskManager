@@ -1,7 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.activity
 
 import android.annotation.SuppressLint
-import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -32,7 +31,6 @@ class MainActivity : ComponentActivity(){
                 !isReady
             }
         }
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(
                 lightScrim = context.getColor(R.color.black),

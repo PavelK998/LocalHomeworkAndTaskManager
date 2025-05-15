@@ -98,7 +98,28 @@ fun HomeworkCard(
                     color = Color(homeworkUiModel.color).toTextColor()
                 )
             }
-
+            if(homeworkUiModel.endDate.isNotBlank()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.finish_before),
+                        color = Color(homeworkUiModel.color).toTextColor()
+                    )
+                    Text(
+                        modifier = Modifier
+                            .padding(start = 8.dp, end = 8.dp),
+                        style = MaterialTheme.typography.titleSmall,
+                        text = homeworkUiModel.endDate,
+                        textAlign = TextAlign.End,
+                        color = Color(homeworkUiModel.color).toTextColor()
+                    )
+                }
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -176,7 +197,7 @@ private fun HomeworkCardPreview() {
                 name = "Сделать доклад",
                 description = "Важный доклад по важной теме",
                 startDate = "",
-                endDate = "",
+                endDate = "12.10.2024",
                 imageUrl = "",
                 isChecked = false,
                 isCheckBoxVisible = false,

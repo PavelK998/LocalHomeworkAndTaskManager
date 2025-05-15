@@ -64,6 +64,21 @@ sealed interface AddHomeworkIntent {
 
     data class SelectImportanceColor(val color: Color): AddHomeworkIntent
 
+    data object SelectDateTime: AddHomeworkIntent
+
+    data object OpenDatePickerDialog: AddHomeworkIntent
+
+    data object CloseDatePickerDialog: AddHomeworkIntent
+
+    data object OpenTimePickerDialog: AddHomeworkIntent
+
+    data object CloseTimePickerDialog: AddHomeworkIntent
+
+    data class DatePicked(val dateFromEpochMillis: Long): AddHomeworkIntent
+
+    data class TimePicked(val timeString: String): AddHomeworkIntent
+
+
 
 
 

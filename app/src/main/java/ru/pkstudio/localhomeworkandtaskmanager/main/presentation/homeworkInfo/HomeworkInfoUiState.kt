@@ -24,6 +24,7 @@ data class HomeworkInfoState(
     val isLoading: Boolean = true,
     val subjectNameText: String = "",
     val addDateText: String = "",
+    val finishDateText: String = "",
     val isStageMenuOpened: Boolean = false,
     val isSettingsMenuOpened: Boolean = false,
     val isEditMode: Boolean = false,
@@ -62,4 +63,8 @@ data class HomeworkInfoState(
     val currentColor: Color = importance1,
     val isColorPickerVisible: Boolean = false,
     val isStagePickerVisible: Boolean = false,
+    val isTimePickerVisible: Boolean = false,
+    val isDatePickerVisible: Boolean = false,
+    val selectedFinishDate: String = "",
+    val selectedFinishTime: String = "",
 )

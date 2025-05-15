@@ -34,6 +34,8 @@ data class AddHomeworkState(
     val currentColor: Color = importance1,
     val isColorPickerVisible: Boolean = false,
     val isStagePickerVisible: Boolean = false,
+    val isDatePickerVisible: Boolean = false,
+    val isTimePickerVisible: Boolean = false,
     val colorList: List<Color> =  listOf(
         importance1,
         importance2,
@@ -47,5 +49,7 @@ data class AddHomeworkState(
         importance10,
     ),
     val stageList: List<StageModel> = emptyList(),
-    val currentSelectedStage: StageModel? = null
+    val currentSelectedStage: StageModel? = null,
+    val selectedFinishDate: String = "",
+    val selectedFinishTime: String = "",
 )

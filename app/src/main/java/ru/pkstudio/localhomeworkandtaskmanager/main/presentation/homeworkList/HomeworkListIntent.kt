@@ -41,6 +41,8 @@ sealed interface HomeworkListIntent {
 
     data class OnCardColorPaletteClicked(val modelIndex: Int) : HomeworkListIntent
 
+    data class OnKanbanCardColorPaletteClicked(val modelId: Long) : HomeworkListIntent
+
     data object CloseCardColorPaletteDialog : HomeworkListIntent
 
     data class SelectColor(val color: Color) : HomeworkListIntent
@@ -58,6 +60,10 @@ sealed interface HomeworkListIntent {
 
 
     data object OnSortAddAscendingClick : HomeworkListIntent
+
+    data class OnSortAddClick(val isSelected: Boolean) : HomeworkListIntent
+
+    data class OnSortImportanceClick(val isSelected: Boolean) : HomeworkListIntent
 
     data object OnSortAddDescendingClick : HomeworkListIntent
 

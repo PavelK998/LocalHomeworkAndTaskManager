@@ -8,12 +8,16 @@
     <string name="sort">Sort by:</string>
     <string name="sort_by_add_date">By date added</string>
     <string name="sort_by_importance">By importance</string>
+    <string name="sort_by_descending_importance">The important ones first</string>
+    <string name="sort_by_descending_add_date">New ones first</string>
     <string name="ascending">Ascending order</string>
     <string name="descending">Descending order</string>
     <string name="selectColor">Select color:</string>
     <string name="selectStage">Select stage:</string>
     <string name="importance_info">The colors are arranged in importance from left to right</string>
     <string name="add_stage">Add stage</string>
+    <string name="cancel">Cancel</string>
+    <string name="choose_time">Choose a time</string>
 
 
 
@@ -28,7 +32,7 @@
     <string name="confirm_button">OK</string>
     <string name="dismiss_button">Cancel</string>
 
-    <string name="kanban">Kanban</string>
+    <string name="kanban">Board</string>
     <string name="list">List</string>
     <string name="add_homework_title_label">Enter name</string>
     <string name="add_homework_description_label">Enter description</string>
@@ -92,6 +96,8 @@
     <string name="description">Description:</string>
     <string name="importace">Importance:</string>
     <string name="stage">Stage:</string>
+    <string name="finish_before">Finish before:</string>
+    <string name="select_date">Select the date and time</string>
 
     //info
     <string name="update_info_dialog_title">Your data has been changed</string>

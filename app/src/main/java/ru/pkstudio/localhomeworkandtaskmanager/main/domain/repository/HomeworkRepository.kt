@@ -19,6 +19,10 @@ interface HomeworkRepository {
 
     suspend fun getHomeworkById(homeworkId: Long): HomeworkModel
 
-    suspend fun changeHomeworkStagesAfterDeleteStage(fromStageId: Long, targetStageId: Long)
+    suspend fun changeHomeworkStagesAfterDeleteStage(
+        fromStageId: Long,
+        targetStageId: Long,
+        targetStageName: String
+    )
 
 }
