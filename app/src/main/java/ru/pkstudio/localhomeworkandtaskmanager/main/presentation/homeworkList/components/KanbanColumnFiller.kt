@@ -150,7 +150,7 @@ private fun KanbanColumnFillerPreview() {
                 startDate = "",
                 id = 0L,
                 stageId = 0L,
-                imageUrl = "",
+                imageNameList = emptyList(),
                 isCheckBoxVisible = false,
                 isChecked = false,
                 stageName = "asdsad",

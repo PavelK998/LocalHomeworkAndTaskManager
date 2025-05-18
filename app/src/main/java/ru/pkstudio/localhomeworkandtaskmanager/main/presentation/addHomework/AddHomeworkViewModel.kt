@@ -2,6 +2,7 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
 import android.graphics.Bitmap
 import android.net.Uri
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.SpanStyle
@@ -9,6 +10,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mohamedrejeb.richeditor.model.RichTextState
@@ -27,6 +29,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.data.util.SingleSharedFlow
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
@@ -35,6 +38,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.util.Constants
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toImportance
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.FilesHandleRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import java.text.SimpleDateFormat
@@ -53,7 +57,9 @@ class AddHomeworkViewModel @Inject constructor(
     private val navigator: Navigator,
     private val homeworkRepository: HomeworkRepository,
     private val stageRepository: StageRepository,
-    private val resourceManager: ResourceManager
+    private val resourceManager: ResourceManager,
+    private val deviceManager: DeviceManager,
+    private val filesHandleRepository: FilesHandleRepository
 ) : ViewModel() {
 
 
@@ -291,7 +297,7 @@ class AddHomeworkViewModel @Inject constructor(
             }
 
             is AddHomeworkIntent.SelectStage -> {
-                if (intent.index in _uiState.value.stageList.indices){
+                if (intent.index in _uiState.value.stageList.indices) {
                     selectStage(_uiState.value.stageList[intent.index])
                 }
 
@@ -365,6 +371,32 @@ class AddHomeworkViewModel @Inject constructor(
                     it.copy(
                         isDatePickerVisible = true
                     )
+                }
+            }
+
+            is AddHomeworkIntent.OnSelectMediaClick -> {
+                val fileUri = deviceManager.getFilePathUri()
+                if (!fileUri.isNullOrEmpty()) {
+                    Log.d("dghdfgdfsgdfg", "handleIntent: $fileUri")
+                    viewModelScope.launch {
+                        val hasPermission = filesHandleRepository.checkUriPermission(fileUri.toUri())
+                        if (hasPermission) {
+                            _uiAction.tryEmit(AddHomeworkUIAction.LaunchPhotoPicker)
+                        } else {
+                            _uiState.update {
+                                it.copy(
+                                    isSelectFilePathDialogOpened = true
+                                )
+                            }
+                        }
+
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            isSelectFilePathDialogOpened = true
+                        )
+                    }
                 }
             }
         }
@@ -540,35 +572,102 @@ class AddHomeworkViewModel @Inject constructor(
     }
 
     private fun addHomework(subjectId: Long) {
-        val endDate = if(localFinishDate != null && localFinishTime != null) {
+        val endDate = if (localFinishDate != null && localFinishTime != null) {
             LocalDateTime.of(
                 localFinishDate,
                 localFinishTime
             )
         } else null
+        val folderUri = deviceManager.getFilePathUri()
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isLoading = true
+                )
+            }
+            viewModelScope.execute(
+                source = {
+                    homeworkRepository.insertHomework(
+                        HomeworkModel(
+                            id = null,
+                            color = _uiState.value.currentColor.toArgb(),
+                            importance = _uiState.value.currentColor.toImportance(),
+                            subjectId = subjectId,
+                            addDate = LocalDateTime.now(),
+                            name = _uiState.value.nameRichTextState.toHtml(),
+                            stage = _uiState.value.currentSelectedStage?.stageName ?: "",
+                            description = _uiState.value.descriptionRichTextState.toHtml(),
+                            startDate = null,
+                            endDate = endDate,
+                            imageNameList = emptyList(),
+                            stageId = _uiState.value.currentSelectedStage?.id ?: 0L
+                        )
+                    )
+                },
+                onSuccess = { id ->
+                    Log.d("gfgdfgdfgdfgdfg", "addHomework: name id $id")
+                    folderUri?.let { uriString ->
+                        viewModelScope.execute(
+                            source = {
+                                filesHandleRepository.uploadImageToUserFolder(
+                                    folderUri = uriString.toUri(),
+                                    bitmapList = _uiState.value.imagesList.map {
+                                        it.second
+                                    }
+                                )
+                            },
+                            onSuccess = { imageNamesList ->
+                                updateHomeworkWithImagesList(
+                                    homeworkId = id,
+                                    imageNamesList = imageNamesList
+                                )
+                                Log.d("fgdhgghgfh", "imagesList: $imageNamesList")
+                            },
+                            onError = {
+                                Log.d("fgdhgghgfh", "addHomework: $it")
+                            }
+                        )
 
+                    }
+                },
+                onError = {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false
+                        )
+                    }
+                }
+            )
+        }
 
+    }
+
+    private fun updateHomeworkWithImagesList(homeworkId: Long, imageNamesList: List<String>){
         viewModelScope.execute(
             source = {
-                homeworkRepository.insertHomework(
-                    HomeworkModel(
-                        id = null,
-                        color = _uiState.value.currentColor.toArgb(),
-                        importance = _uiState.value.currentColor.toImportance(),
-                        subjectId = subjectId,
-                        addDate = LocalDateTime.now(),
-                        name = _uiState.value.nameRichTextState.toHtml(),
-                        stage = _uiState.value.currentSelectedStage?.stageName ?: "",
-                        description = _uiState.value.descriptionRichTextState.toHtml(),
-                        startDate = null,
-                        endDate = endDate,
-                        imageUrl = "",
-                        stageId = _uiState.value.currentSelectedStage?.id ?: 0L
-                    )
+                homeworkRepository.getHomeworkById(homeworkId)
+            },
+            onSuccess = { homework ->
+                viewModelScope.execute(
+                    source = {
+                        homeworkRepository.updateHomework(
+                            homework.copy(
+                                imageNameList = imageNamesList
+                            )
+                        )
+                    },
+                    onSuccess = {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false
+                            )
+                        }
+                        navigateUp()
+                    }
                 )
             },
-            onSuccess = {
-                navigateUp()
+            onError = {
+
             }
         )
     }

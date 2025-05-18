@@ -5,17 +5,21 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
@@ -32,6 +36,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -43,19 +48,24 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mohamedrejeb.richeditor.model.RichTextState
@@ -67,12 +77,14 @@ import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultDatePicker
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTimePicker
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DeleteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.EditTextPanel
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.ImportanceAndStageSelector
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.ImportanceColorPaletteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.StagePickerDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.TopAppBarAction
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.loadingBackground
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant8
 import java.time.LocalTime
 
@@ -88,15 +100,6 @@ fun AddHomeworkScreen(
             uri?.let {
                 handleIntent(AddHomeworkIntent.OnImagePicked(it))
             }
-        }
-    )
-
-    val launcherForMultiplyImages = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickMultipleVisualMedia(
-            maxItems = 10
-        ),
-        onResult = { listUri ->
-            handleIntent(AddHomeworkIntent.OnMultiplyImagePicked(listUri))
         }
     )
     val focusRequester = remember { FocusRequester() }
@@ -132,18 +135,14 @@ fun AddHomeworkScreen(
                         handleIntent(AddHomeworkIntent.NavigateUp)
                     },
                     actions = listOf(
-//                        TopAppBarAction(
-//                            imageRes = R.drawable.icon_attach,
-//                            contentDescription = "Select media",
-//                            action = {
-//                                launcherForMultiplyImages.launch(
-//                                    PickVisualMediaRequest(
-//                                        mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
-//                                    )
-//                                )
-//                            },
-//                            tint = MaterialTheme.colorScheme.onSurface
-//                        ),
+                        TopAppBarAction(
+                            imageRes = R.drawable.icon_attach,
+                            contentDescription = "Select media",
+                            action = {
+                                handleIntent(AddHomeworkIntent.OnSelectMediaClick)
+                            },
+                            tint = MaterialTheme.colorScheme.onSurface
+                        ),
                         TopAppBarAction(
                             image = Icons.Filled.Done,
                             contentDescription = "Done",
@@ -156,6 +155,22 @@ fun AddHomeworkScreen(
                 )
             }
         ) { paddingValues ->
+            if (uiState.isSelectFilePathDialogOpened) {
+                DeleteDialog(
+                    title = stringResource(R.string.select_folder_dialog_title),
+                    comment = stringResource(R.string.select_folder_dialog_description),
+                    onConfirm = {
+
+                    },
+                    onDismissRequest = {
+
+                    },
+                    onDismiss = {
+
+                    }
+                )
+            }
+
             if (uiState.isColorPickerVisible) {
                 ImportanceColorPaletteDialog(
                     colorList = uiState.colorList,
@@ -391,7 +406,97 @@ fun AddHomeworkScreen(
             )
         }
 
+        AnimatedVisibility(
+            visible = uiState.isLoading,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            AddScreenLoading()
+        }
+
     }
+
+}
+
+@Composable
+fun AddScreenLoading(
+    color: Color = MaterialTheme.colorScheme.secondary,
+    trackColor: Color = MaterialTheme.colorScheme.onSecondary,
+    strokeWidth: Dp = 5.dp,
+    strokeCap: StrokeCap = StrokeCap.Round
+) {
+    val density = LocalDensity.current
+    var isFirstTextVisible by rememberSaveable {
+        mutableStateOf(true)
+    }
+    var isSecondTextVisible by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var spacerHeight by rememberSaveable {
+        mutableIntStateOf(0)
+    }
+    LaunchedEffect(true) {
+        delay(2500)
+        isFirstTextVisible = false
+        delay(500)
+        isSecondTextVisible = true
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize().background(loadingBackground),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator(
+            color = color,
+            strokeWidth = strokeWidth,
+            trackColor = trackColor,
+            strokeCap = strokeCap
+        )
+
+        Box(
+            contentAlignment = Alignment.Center
+        ) {
+            if (!isFirstTextVisible && !isSecondTextVisible) {
+                Spacer(
+                    modifier = Modifier.height(
+                        with(density) { spacerHeight.toDp() }
+                    )
+                )
+            }
+            androidx.compose.animation.AnimatedVisibility(
+                modifier = Modifier.onGloballyPositioned {
+                    if (spacerHeight != it.size.height) {
+                        spacerHeight = it.size.height
+                    }
+                },
+                visible = isFirstTextVisible,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Text(
+                    modifier = Modifier.padding(top = 16.dp),
+                    style = MaterialTheme.typography.titleLarge,
+                    text = stringResource(R.string.loading),
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+
+            androidx.compose.animation.AnimatedVisibility(
+                isSecondTextVisible,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Text(
+                    modifier = Modifier.padding(top = 16.dp),
+                    style = MaterialTheme.typography.titleLarge,
+                    text = stringResource(R.string.loading_more_time),
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+    }
+
 
 }
 

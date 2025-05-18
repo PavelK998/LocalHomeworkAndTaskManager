@@ -7,6 +7,7 @@ import android.os.Process
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -16,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -24,11 +26,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import kotlinx.coroutines.launch
+import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthScreen
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthUiAction
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.ObserveAsActions
 import ru.pkstudio.localhomeworkandtaskmanager.main.activity.ActivityViewModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkIntent
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkUIAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.AddHomeworkViewModel
@@ -130,19 +134,26 @@ fun SetupNavHost(
                 val viewModel = hiltViewModel<SubjectListViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
                 val launchSelectFilePath = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.StartActivityForResult(),
-                    onResult = { result ->
-                        if (result.resultCode == RESULT_OK) {
-                            result.data?.data?.let { uri ->
-                                Log.d("sadasdsadas", "SetupNavHost: export uri $uri")
-                                val takeFlags =
+                    contract = ActivityResultContracts.OpenDocumentTree(),
+                    onResult = { uri ->
+                        val appName = context.getString(R.string.app_name)
+                        uri?.let {
+                            try {
+                                val documentFile =  DocumentFile.fromTreeUri(context, it)
+                                val appFolder = documentFile?.createDirectory(appName)
+                                if (appFolder != null) {
+                                    val takeFlags =
                                     Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                                 context.contentResolver.takePersistableUriPermission(uri, takeFlags)
                                 viewModel.handleIntent(
                                     SubjectListIntent.OnFileExportPathSelected(
-                                        uri
+                                        appFolder.uri
                                     )
                                 )
+                                }
+
+                            } catch (e:Exception) {
+
                             }
                         }
                     }
@@ -181,8 +192,7 @@ fun SetupNavHost(
                         }
 
                         is SubjectListUiAction.OpenDocumentTree -> {
-                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                            launchSelectFilePath.launch(intent)
+                            launchSelectFilePath.launch(null)
                         }
 
                         is SubjectListUiAction.SelectDatabaseFile -> {
@@ -243,10 +253,26 @@ fun SetupNavHost(
                 val args = navBackStackEntry.toRoute<Destination.HomeworkAddScreen>()
                 val viewModel = hiltViewModel<AddHomeworkViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+                val launcherForMultiplyImages = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.PickMultipleVisualMedia(
+                        maxItems = 10
+                    ),
+                    onResult = { listUri ->
+                        viewModel.handleIntent(AddHomeworkIntent.OnMultiplyImagePicked(listUri))
+                    }
+                )
                 ObserveAsActions(flow = viewModel.uiAction) { action ->
                     when (action) {
                         is AddHomeworkUIAction.ShowError -> {
                             Toast.makeText(context, action.text, Toast.LENGTH_SHORT).show()
+                        }
+
+                        is AddHomeworkUIAction.LaunchPhotoPicker -> {
+                            launcherForMultiplyImages.launch(
+                                PickVisualMediaRequest(
+                                    mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+                                )
+                            )
                         }
                     }
                 }

@@ -104,7 +104,7 @@ fun HomeworkEntity.toHomeworkModel(): HomeworkModel {
         description = description,
         startDate = startDate,
         endDate = endDate,
-        imageUrl = imageUrl,
+        imageNameList = imageNameList,
         stageId = stageId
     )
 }
@@ -139,7 +139,7 @@ fun HomeworkModel.toHomeworkEntity(): HomeworkEntity {
         description = description,
         startDate = startDate,
         endDate = endDate,
-        imageUrl = imageUrl,
+        imageNameList = imageNameList,
         stageId = stageId
     )
 }
@@ -204,7 +204,7 @@ fun HomeworkModel.toHomeworkUiModel(): HomeworkUiModel {
         description = description,
         endDate = endDate ?: "",
         startDate = startDate ?: "",
-        imageUrl = imageUrl,
+        imageNameList = imageNameList,
         isCheckBoxVisible = false,
         isChecked = false,
         name = name,
@@ -241,7 +241,7 @@ fun HomeworkUiModel.toHomeworkModel(): HomeworkModel {
         description = description,
         endDate = endDate,
         startDate = startDate,
-        imageUrl = imageUrl,
+        imageNameList = imageNameList,
         name = name,
         stageId = stageId,
         stage = stageName,

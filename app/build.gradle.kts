@@ -62,6 +62,9 @@ dependencies {
     implementation(libs.core.splashscreen)
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.documentFile)
+    implementation(libs.google.gson)
+
 
     implementation(libs.richText)
     implementation(libs.iconsExtended)

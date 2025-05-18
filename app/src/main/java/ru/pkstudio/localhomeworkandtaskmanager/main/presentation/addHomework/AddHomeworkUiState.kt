@@ -16,6 +16,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance8
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance9
 
 data class AddHomeworkState(
+    val isLoading: Boolean = false,
     val title: String = "",
     val titleFontSize: Float = 17f,
     val descriptionFontSize: Float = 17f,
@@ -36,6 +37,7 @@ data class AddHomeworkState(
     val isStagePickerVisible: Boolean = false,
     val isDatePickerVisible: Boolean = false,
     val isTimePickerVisible: Boolean = false,
+    val isSelectFilePathDialogOpened: Boolean = false,
     val colorList: List<Color> =  listOf(
         importance1,
         importance2,

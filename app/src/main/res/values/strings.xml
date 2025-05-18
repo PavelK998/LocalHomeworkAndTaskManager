@@ -2,6 +2,8 @@
     <string name="app_name">MyHomeworkManager</string>
 
     //core
+    <string name="loading">Uploading it…</string>
+    <string name="loading_more_time">Just a little more…</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="select">Select</string>
@@ -18,6 +20,8 @@
     <string name="add_stage">Add stage</string>
     <string name="cancel">Cancel</string>
     <string name="choose_time">Choose a time</string>
+    <string name="select_folder_dialog_title">Select a folder</string>
+    <string name="select_folder_dialog_description">You need to select or create a folder to store attachments and copies of the database</string>
 
 
 

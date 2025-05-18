@@ -1,6 +1,7 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
@@ -214,7 +215,6 @@ class SubjectListViewModel @Inject constructor(
             is SubjectListIntent.OnFileExportPathSelected -> {
                 deviceManager.setFilePathUri(intent.uri.toString())
                 exportDb(intent.uri)
-
             }
 
             is SubjectListIntent.OnFileImportPathSelected -> {
@@ -259,6 +259,7 @@ class SubjectListViewModel @Inject constructor(
 
     private fun exportDb(uri: Uri) = viewModelScope.execute(
         source = {
+            Log.d("rtytrytryrtytryrt", "exportDb: $uri")
             importExportDbRepository.exportDatabase(uri)
         },
         onSuccess = {
@@ -271,7 +272,7 @@ class SubjectListViewModel @Inject constructor(
 
         },
         onError = {
-
+            Log.d("rtytrytryrtytryrt", "exportDb error: $it")
         }
     )
 

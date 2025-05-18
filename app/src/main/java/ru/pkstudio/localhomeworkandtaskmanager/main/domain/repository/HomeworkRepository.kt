@@ -5,7 +5,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.SubjectWithHomework
 
 interface HomeworkRepository {
-    suspend fun insertHomework(homework: HomeworkModel)
+    suspend fun insertHomework(homework: HomeworkModel): Long
 
     suspend fun deleteHomework(homework: HomeworkModel)
 
@@ -24,5 +24,4 @@ interface HomeworkRepository {
         targetStageId: Long,
         targetStageName: String
     )
-
 }

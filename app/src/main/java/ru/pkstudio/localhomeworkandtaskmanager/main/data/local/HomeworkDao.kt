@@ -13,7 +13,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.data.model.SubjectWithHomewo
 @Dao
 interface HomeworkDao {
     @Insert
-    suspend fun insertHomework(homework: HomeworkEntity)
+    suspend fun insertHomework(homework: HomeworkEntity): Long
 
     @Delete
     suspend fun deleteHomework(homework: HomeworkEntity)

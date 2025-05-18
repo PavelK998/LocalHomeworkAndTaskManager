@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import android.util.Log
+import androidx.documentfile.provider.DocumentFile
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.AppDb
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.ImportExportDbRepository
 import java.io.File
@@ -48,15 +50,20 @@ class ImportExportDbRepositoryImpl @Inject constructor(
         )
         context.contentResolver.query(
             childrenUri,
-            arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME),
+            arrayOf(
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME
+            ),
             null,
             null,
             null
         )?.use { cursor ->
             while (cursor.moveToNext()) {
-                val displayName = cursor.getString(cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME))
+                val displayName =
+                    cursor.getString(cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME))
                 if (displayName == fileName) {
-                    val documentId = cursor.getString(cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID))
+                    val documentId =
+                        cursor.getString(cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID))
                     return DocumentsContract.buildDocumentUriUsingTree(parentUri, documentId)
                 }
             }
@@ -68,42 +75,38 @@ class ImportExportDbRepositoryImpl @Inject constructor(
         if (appDb.isOpen) {
             appDb.close()
         }
-        val documentUri = DocumentsContract.buildDocumentUriUsingTree(
-            uri,
-            DocumentsContract.getTreeDocumentId(uri)
-        )
-        var targetFileUri = findFileInDirectory(documentUri, "homework.db")
-        if (targetFileUri == null) {
-            targetFileUri = DocumentsContract.createDocument(
-                context.contentResolver,
-                documentUri,
-                "application/x-sqlite3",
-                "homework.db"
-            )
+
+        val folder = DocumentFile.fromTreeUri(context, uri)
+            ?: throw IllegalArgumentException("Invalid folder Uri: $uri")
+        Log.d("uytutyuytuty", "exportDatabase: ${folder.name}")
+        if (!folder.isDirectory) {
+            throw IllegalArgumentException("Uri does not point to a directory: $uri")
         }
-        targetFileUri?.let { uri ->
+        var targetFile = folder.findFile("homework.db")
+        Log.d("uytutyuytuty", "exportDatabase: ${targetFile}")
+        if (targetFile == null) {
+            targetFile = folder.createFile("application/x-sqlite3", "homework.db")
+                ?: throw IllegalStateException("Failed to create file homework.db")
+        }
+
+        val mimeType = targetFile.uri.let { context.contentResolver.getType(it) }
+        if (mimeType != "application/x-sqlite3") {
+            println("Warning: MIME type is $mimeType instead of application/x-sqlite3")
+        }
+
+        // Копируем данные базы данных в новый файл
+        targetFile.uri.let { targetUri ->
             val databaseFile = context.getDatabasePath("homework.db")
-            if(databaseFile.exists()) {
-                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+            if (databaseFile.exists()) {
+                context.contentResolver.openOutputStream(targetUri)?.use { outputStream ->
                     FileInputStream(databaseFile).use { inputStream ->
                         inputStream.copyTo(outputStream)
                     }
-                }
+                } ?: throw IllegalStateException("Failed to open output stream for $targetUri")
+            } else {
+                throw IllegalStateException("Database file does not exist")
+            }
         }
-    }
-
-        //android  < 10
-//        if (appDb.isOpen){
-//            appDb.close()
-//        }
-//        val databasePath = context.getDatabasePath("homework.db")
-//        val externalStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-//        val appFolder = File(externalStorageDir, "MyHomeworkManager")
-//        if (!appFolder.exists()) {
-//            appFolder.mkdirs()
-//        }
-//        val targetFile = File(appFolder, "homework_backup.db")
-//        databasePath.copyTo(targetFile, overwrite = true)
     }
 
     override suspend fun importDatabase(uri: Uri) {
@@ -113,15 +116,5 @@ class ImportExportDbRepositoryImpl @Inject constructor(
         val databasePath = context.getDatabasePath("homework.db")
         val file = uriToFile(uri)
         file?.copyTo(databasePath, overwrite = true)
-
-        //android  < 10
-//        if (appDb.isOpen) {
-//            appDb.close()
-//        }
-//        val currentPath = context.getDatabasePath("homework.db")
-//        val externalStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-//        val appDir = File(externalStorageDir, "MyHomeworkManager")
-//        val dbFile = File(appDir, "homework_backup.db")
-//        dbFile.copyTo(currentPath, overwrite = true)
     }
 }
