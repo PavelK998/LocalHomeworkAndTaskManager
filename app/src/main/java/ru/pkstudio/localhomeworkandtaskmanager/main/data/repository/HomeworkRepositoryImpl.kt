@@ -18,6 +18,7 @@ class HomeworkRepositoryImpl @Inject constructor(
 ) : HomeworkRepository {
     override suspend fun insertHomework(homework: HomeworkModel) = withContext(Dispatchers.IO) {
         homeworkDao.insertHomework(homework.toHomeworkEntity())
+
     }
 
     override suspend fun deleteHomework(homework: HomeworkModel) = withContext(Dispatchers.IO) {

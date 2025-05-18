@@ -18,7 +18,9 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.AppDb
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.HomeworkDao
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.StageDao
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.SubjectsDao
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.FilesHandleRepositoryImpl
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.ImportExportDbRepositoryImpl
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.FilesHandleRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.ImportExportDbRepository
 import javax.inject.Singleton
 
@@ -88,6 +90,16 @@ class AppModule {
         return VideoPlayerRepositoryImpl(
             context = context,
             player = player,
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideFilesRepository(
+        @ApplicationContext context: Context
+    ): FilesHandleRepository {
+        return FilesHandleRepositoryImpl(
+            context = context
         )
     }
 

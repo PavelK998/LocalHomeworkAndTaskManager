@@ -198,7 +198,7 @@ private fun HomeworkCardPreview() {
                 description = "Важный доклад по важной теме",
                 startDate = "",
                 endDate = "12.10.2024",
-                imageUrl = "",
+                imageNameList = emptyList(),
                 isChecked = false,
                 isCheckBoxVisible = false,
                 stageName = "",

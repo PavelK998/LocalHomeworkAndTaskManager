@@ -10,6 +10,7 @@ val success = Color(0xFF08A70E)
 val filledColor = Color(0xFF636363)
 val emptyColor = Color(0xFFC4C4C4)
 val background = Color(0xFF1F1200)
+val loadingBackground = Color(0x65000000)
 
 val kanbanHeaderText = Color(0xFFEDEDED)
 val onDarkCardText = Color(0xFFD6D6D6)

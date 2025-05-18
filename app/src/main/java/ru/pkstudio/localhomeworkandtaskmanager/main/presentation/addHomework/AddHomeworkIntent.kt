@@ -74,6 +74,8 @@ sealed interface AddHomeworkIntent {
 
     data object CloseTimePickerDialog: AddHomeworkIntent
 
+    data object OnSelectMediaClick: AddHomeworkIntent
+
     data class DatePicked(val dateFromEpochMillis: Long): AddHomeworkIntent
 
     data class TimePicked(val timeString: String): AddHomeworkIntent
