@@ -47,5 +47,9 @@ interface DeviceManager {
 
     fun getFilterImportance(): Int
 
+    fun hideStatusBar()
+
+    fun showStatusBar()
+
 
 }

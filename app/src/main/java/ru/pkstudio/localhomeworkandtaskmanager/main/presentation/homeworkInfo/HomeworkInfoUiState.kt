@@ -1,6 +1,7 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import com.mohamedrejeb.richeditor.model.RichTextState
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.HomeworkUiModel
@@ -67,4 +68,9 @@ data class HomeworkInfoState(
     val isDatePickerVisible: Boolean = false,
     val selectedFinishDate: String = "",
     val selectedFinishTime: String = "",
+    val currentPagerPage: HomeworkInfoPagerState = HomeworkInfoPagerState.MAIN,
+    val photoList: List<ImageBitmap> = emptyList(),
+    val isPhotoOpened: Boolean = false,
+    val whichPhotoShouldBeOpenedFirst: Int = 0,
+    val isPhotoUiVisible: Boolean = false,
 )

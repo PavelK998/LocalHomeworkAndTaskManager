@@ -2,8 +2,10 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.data.repository
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.DocumentsContract
+import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +16,7 @@ import kotlinx.coroutines.withContext
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.FilesHandleRepository
 import java.io.IOException
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class FilesHandleRepositoryImpl @Inject constructor(
@@ -25,7 +28,9 @@ class FilesHandleRepositoryImpl @Inject constructor(
             val imageNamesList:MutableList<String> = mutableListOf()
             bitmapList.forEach { bitmap ->
                 val deferredResult = async {
-                    val documentName = "IMG_${LocalDateTime.now()}.jpg"
+                    val time = LocalDateTime.now()
+                    val timeStamp = time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH_mm_ss.SSS"))
+                    val documentName = "IMG_${timeStamp}.png"
                     imageNamesList.add(documentName)
                     val targetFileUri = DocumentsContract.createDocument(
                         context.contentResolver,
@@ -48,6 +53,34 @@ class FilesHandleRepositoryImpl @Inject constructor(
             imageNamesList
 
         }
+
+    override suspend fun findImagesInUserFolder(
+        folderUri: Uri,
+        namesList: List<String>
+    ): List<Bitmap> = withContext(Dispatchers.IO) {
+        val listBitmap: MutableList<Bitmap> = mutableListOf()
+        val folder = DocumentFile.fromTreeUri(context, folderUri)
+            ?: throw IllegalArgumentException("Invalid folder Uri: $folderUri")
+        Log.d("nbnbvnvbnvbn", "folder name: ${folder.name}")
+        if (!folder.isDirectory) {
+            throw IllegalArgumentException("Uri does not point to a directory: $folderUri")
+        }
+        namesList.forEach { displayName ->
+            Log.d("nbnbvnvbnvbn", "default file name: $displayName")
+            val documentFile= folder.findFile(displayName)
+            Log.d("nbnbvnvbnvbn", "findImageSInUserFolder: $documentFile")
+            documentFile?.let {
+                if (it.type == "image/png") {
+                    context.contentResolver.openInputStream(documentFile.uri)?.use { inputStream ->
+                        val bitmap = BitmapFactory.decodeStream(inputStream)
+                        listBitmap.add(bitmap)
+                    }
+                }
+
+            }
+        }
+        listBitmap
+    }
 
     override suspend fun checkUriPermission(folderUri: Uri) = withContext(Dispatchers.IO) {
         try {

@@ -2,12 +2,14 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
 import android.util.Log
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mohamedrejeb.richeditor.model.RichTextState
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
@@ -31,9 +34,11 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toImportance
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.FilesHandleRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.UtilsRepository
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -50,6 +55,9 @@ class HomeworkInfoViewModel @Inject constructor(
     private val subjectsRepository: SubjectsRepository,
     private val stageRepository: StageRepository,
     private val resourceManager: ResourceManager,
+    private val deviceManager: DeviceManager,
+    private val filesHandleRepository: FilesHandleRepository,
+    private val utilsRepository: UtilsRepository,
     private val navigator: Navigator
 ) : ViewModel() {
     private var homeworkId: Long = 0L
@@ -438,6 +446,40 @@ class HomeworkInfoViewModel @Inject constructor(
                     )
                 }
             }
+
+            is HomeworkInfoIntent.OnPhotoClicked -> {
+                _uiState.update {
+                    it.copy(
+                        isPhotoUiVisible = true,
+                        isPhotoOpened = true,
+                        whichPhotoShouldBeOpenedFirst = intent.index
+                    )
+                }
+            }
+
+            is HomeworkInfoIntent.HandlePhotoUi -> {
+                if (intent.isVisible) {
+                    _uiState.update {
+                        it.copy(
+                            isPhotoUiVisible = false
+                        )
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            isPhotoUiVisible = true
+                        )
+                    }
+                }
+            }
+
+            is HomeworkInfoIntent.ClosePhotoMode -> {
+                _uiState.update {
+                    it.copy(
+                        isPhotoOpened = false,
+                    )
+                }
+            }
         }
     }
 
@@ -612,6 +654,7 @@ class HomeworkInfoViewModel @Inject constructor(
                     isLoading = true
                 )
             }
+            val folder = utilsRepository.getAllUtils()
             val subject = async {
                 subjectsRepository.getSubjectById(subjectId)
             }
@@ -665,6 +708,30 @@ class HomeworkInfoViewModel @Inject constructor(
                     descriptionFontSize = descriptionFontSize
                 )
                 isFontSizeSet = true
+                if (folder.isNotEmpty() && homeworkResult.imageNameList.isNotEmpty()) {
+                    viewModelScope.execute(
+                        source = {
+                            filesHandleRepository.findImagesInUserFolder(
+                                folderUri = folder[0].pathUri.toUri(),
+                                namesList = homeworkResult.imageNameList
+                            )
+                        },
+                        onSuccess = { bitmapList ->
+                            _uiState.update {
+                                it.copy(
+                                    photoList = bitmapList.map { bitmap ->
+                                        bitmap.asImageBitmap()
+                                    }
+                                )
+                            }
+                            Log.d("nbnbvnvbnvbn", "findImageSInUserFolder: success ${bitmapList.size}")
+                        },
+                        onError = {
+                            Log.d("nbnbvnvbnvbn", "findImageSInUserFolder: error $it")
+                        }
+                    )
+
+                }
             }
         }
     }

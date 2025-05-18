@@ -1,22 +1,39 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
+import android.annotation.SuppressLint
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -25,6 +42,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -36,6 +55,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -43,24 +64,31 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultDatePicker
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTimePicker
@@ -73,6 +101,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.components.Loading
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.StagePickerDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.TopAppBarAction
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.onDarkCardText
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.photoUiBackground
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant8
 import java.time.LocalTime
 
@@ -88,6 +118,11 @@ fun HomeworkInfoScreen(
     }
     val scrollState = rememberScrollState()
     val focusRequester = remember { FocusRequester() }
+    val pagerState = rememberPagerState(
+        initialPage = uiState.currentPagerPage.ordinal,
+        pageCount = { HomeworkInfoPagerState.entries.size }
+    )
+    val scope = rememberCoroutineScope()
     LaunchedEffect(
         uiState.isNameCardVisible
     ) {
@@ -104,7 +139,6 @@ fun HomeworkInfoScreen(
             focusRequester.requestFocus()
         }
     }
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -209,108 +243,112 @@ fun HomeworkInfoScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .verticalScroll(scrollState)
             ) {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
+                TabRow(
+                    selectedTabIndex = pagerState.currentPage,
+//                indicator = { tabPosition ->
+//                    if(pagerState.currentPage < tabPosition.size) {
+//                        TabRowDefaults
+//                            .PrimaryIndicator(
+//                                modifier = Modifier
+//                                    .tabIndicatorOffset(
+//                                        tabPosition[pagerState.currentPage]
+//                                    ),
+//                                height = 4.dp,
+//                                width = 65.dp,
+//                                color = Depth400,
+//                                shape = RoundedCornerShape(
+//                                    topStart = 10.dp,
+//                                    topEnd = 10.dp
+//                                )
+//                            )
+//                    }
+//                }
                 ) {
-                    ImportanceAndStageSelector(
-                        modifier = Modifier
-                            .padding(vertical = 4.dp),
-                        currentStageName = uiState.currentSelectedStage?.stageName ?: "",
-                        currentColor = uiState.currentColor,
-                        onColorSelectClick = {
-                            handleIntent(HomeworkInfoIntent.OpenImportanceColorDialog)
-                        },
-                        onStageSelectClick = {
-                            handleIntent(HomeworkInfoIntent.OpenStagePickerDialog)
-                        },
-                        currentStageColor = uiState.currentSelectedStage?.color ?: stageVariant8.toArgb()
-                    )
-                    Row(
-                        modifier = Modifier.padding(top = 12.dp),
-                    ) {
-                        Text(
-                            style = MaterialTheme.typography.bodyLarge,
-                            text = stringResource(R.string.subject_name),
-                            color = Color.Gray
-                        )
-                        Text(
-                            modifier = Modifier.padding(start = 4.dp),
-                            style = MaterialTheme.typography.bodyLarge,
-                            text = uiState.subjectNameText,
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 4.dp),
-                    ) {
-                        Text(
-                            style = MaterialTheme.typography.bodyLarge,
-                            text = stringResource(R.string.add_date),
-                            color = Color.Gray
-                        )
-                        Text(
-                            modifier = Modifier.padding(start = 4.dp),
-                            style = MaterialTheme.typography.bodyLarge,
-                            text = uiState.addDateText,
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            style = MaterialTheme.typography.bodyLarge,
-                            text = stringResource(R.string.finish_before),
-                            color = Color.Gray
-                        )
-
-                        if (uiState.finishDateText.isNotBlank()) {
-                            Text(
-                                modifier = Modifier.padding(start = 4.dp),
-                                style = MaterialTheme.typography.bodyLarge,
-                                text = uiState.finishDateText,
-                            )
-                        } else {
-                            TextButton(
-                                onClick = {
-                                    handleIntent(HomeworkInfoIntent.SelectDateTime)
+                    HomeworkInfoPagerState.entries.forEach { homeworkInfoPagerState ->
+                        Tab(
+                            modifier = Modifier
+                                .padding(horizontal = 10.dp)
+                                .padding(bottom = 5.dp),
+                            selected = pagerState.currentPage == homeworkInfoPagerState.ordinal,
+                            unselectedContentColor = Color.Black,
+                            selectedContentColor = Color.Black,
+                            onClick = {
+                                scope.launch {
+                                    pagerState.animateScrollToPage(homeworkInfoPagerState.ordinal)
                                 }
-                            ) {
-                                Text(
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    text = if (uiState.selectedFinishDate.isBlank() || uiState.selectedFinishTime.isBlank()) {
-                                        stringResource(R.string.select_date)
-                                    } else {
-                                        "${uiState.selectedFinishDate} ${uiState.selectedFinishTime}"
-                                    }
+                            }
+                        ) {
+                            when (homeworkInfoPagerState) {
+                                HomeworkInfoPagerState.MAIN -> {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Description,
+                                        contentDescription = "",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
 
-                                )
+                                HomeworkInfoPagerState.MEDIA -> {
+                                    Icon(
+                                        imageVector = Icons.Outlined.PhotoLibrary,
+                                        contentDescription = "",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                             }
                         }
-
                     }
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
-                        thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
                 }
-                InfoContent(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(vertical = 8.dp, horizontal = 16.dp),
-                    uiState = uiState,
-                    handleIntent = handleIntent,
-                )
+                HorizontalPager(
+                    state = pagerState
+                ) { index ->
+                    when (HomeworkInfoPagerState.entries[index]) {
+                        HomeworkInfoPagerState.MAIN -> {
+                            MainScreen(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(top = 8.dp)
+                                    .verticalScroll(scrollState),
+                                uiState = uiState,
+                                handleIntent = handleIntent
+                            )
+                        }
+
+                        HomeworkInfoPagerState.MEDIA -> {
+                            MediaScreen(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(top = 8.dp),
+                                uiState = uiState,
+                                onPhotoClicked = {
+                                    handleIntent(HomeworkInfoIntent.OnPhotoClicked(it))
+                                }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
+
+    AnimatedVisibility(
+        visible = uiState.isPhotoOpened,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        HandlePhotos(
+            whichPhotoShouldBeOpenFirst = uiState.whichPhotoShouldBeOpenedFirst,
+            listPhotos = uiState.photoList,
+            isUiVisible = uiState.isPhotoUiVisible,
+            onClick = {
+                handleIntent(HomeworkInfoIntent.HandlePhotoUi(isVisible = it))
+            },
+            onBackCLick = {
+                handleIntent(HomeworkInfoIntent.ClosePhotoMode)
+            }
+        )
+    }
+
     AnimatedVisibility(
         visible = uiState.isNameCardVisible,
         enter = slideInVertically(initialOffsetY = { it / 2 }),
@@ -337,6 +375,280 @@ fun HomeworkInfoScreen(
             handleIntent = handleIntent,
             focusRequester = focusRequester,
             isExtraOptionsVisible = uiState.isDescriptionExtraOptionsVisible
+        )
+    }
+}
+
+@Composable
+private fun MediaScreen(
+    modifier: Modifier = Modifier,
+    uiState: HomeworkInfoState,
+    onPhotoClicked: (Int) -> Unit
+) {
+    LazyVerticalGrid(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        columns = GridCells.Adaptive(100.dp),
+        content = {
+            itemsIndexed(uiState.photoList) { index, photo ->
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clickable {
+                            onPhotoClicked(index)
+                        }
+                ) {
+                    Image(
+                        contentScale = ContentScale.Crop,
+                        bitmap = photo,
+                        contentDescription = ""
+                    )
+                }
+            }
+        }
+    )
+}
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+private fun HandlePhotos(
+    whichPhotoShouldBeOpenFirst: Int,
+    isUiVisible: Boolean,
+    listPhotos: List<ImageBitmap>,
+    onClick: (Boolean) -> Unit,
+    onBackCLick: () -> Unit
+) {
+
+    val context = LocalContext.current
+    val activity by remember {
+        mutableStateOf(context as ComponentActivity)
+    }
+    val windowInsetsController by remember {
+        mutableStateOf(WindowCompat.getInsetsController(activity.window, activity.window.decorView))
+    }
+    var topPadding by remember {
+        mutableStateOf(0.dp)
+    }
+    val isDarkTheme = isSystemInDarkTheme()
+    BackHandler {
+        onBackCLick()
+        WindowCompat.getInsetsController(
+            activity.window,
+            activity.window.decorView
+        ).isAppearanceLightStatusBars = !isDarkTheme
+        windowInsetsController.show(androidx.core.view.WindowInsetsCompat.Type.statusBars())
+    }
+    LaunchedEffect(isUiVisible) {
+        if (isUiVisible) {
+            WindowCompat.getInsetsController(
+                activity.window,
+                activity.window.decorView
+            ).isAppearanceLightStatusBars = false
+            windowInsetsController.show(androidx.core.view.WindowInsetsCompat.Type.statusBars())
+        } else {
+            windowInsetsController.hide(androidx.core.view.WindowInsetsCompat.Type.statusBars())
+        }
+    }
+
+
+    val pagerState = rememberPagerState(
+        initialPage = whichPhotoShouldBeOpenFirst,
+        pageCount = {
+            listPhotos.size
+        }
+    )
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize()
+    ) { paddingValues ->
+        LaunchedEffect(true) {
+            topPadding = paddingValues.calculateTopPadding()
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(isUiVisible) {
+                    detectTapGestures(
+                        onTap = {
+                            onClick(isUiVisible)
+                        }
+                    )
+                },
+        ) {
+            HorizontalPager(
+                state = pagerState
+            ) { index ->
+                Image(
+                    modifier = Modifier.fillMaxSize(),
+                    bitmap = listPhotos[index],
+                    contentDescription = ""
+                )
+            }
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                AnimatedVisibility(
+                    visible = isUiVisible,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(53.dp + topPadding)
+                            .background(photoUiBackground),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            modifier = Modifier.padding(top = 30.dp),
+                            onClick = {
+                                onBackCLick()
+                                WindowCompat.getInsetsController(
+                                    activity.window,
+                                    activity.window.decorView
+                                ).isAppearanceLightStatusBars = !isDarkTheme
+                                windowInsetsController.show(androidx.core.view.WindowInsetsCompat.Type.statusBars())
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                contentDescription = "",
+                                tint = onDarkCardText
+                            )
+                        }
+//                        Text(
+//                            modifier = Modifier.padding(start = 4.dp),
+//                            style = MaterialTheme.typography.titleLarge,
+//                            color = onDarkCardText,
+//                            text = "${pagerState.currentPage + 1} ${stringResource(R.string.of)} ${listPhotos.size}"
+//                        )
+                    }
+                }
+                AnimatedVisibility(
+                    visible = isUiVisible,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(15.dp + paddingValues.calculateBottomPadding())
+                            .background(photoUiBackground)
+                    ) {}
+                }
+
+            }
+        }
+    }
+}
+
+@Composable
+private fun MainScreen(
+    modifier: Modifier = Modifier,
+    uiState: HomeworkInfoState,
+    handleIntent: (HomeworkInfoIntent) -> Unit,
+) {
+    Column(
+        modifier = modifier
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+        ) {
+            ImportanceAndStageSelector(
+                modifier = Modifier
+                    .padding(vertical = 4.dp),
+                currentStageName = uiState.currentSelectedStage?.stageName ?: "",
+                currentColor = uiState.currentColor,
+                onColorSelectClick = {
+                    handleIntent(HomeworkInfoIntent.OpenImportanceColorDialog)
+                },
+                onStageSelectClick = {
+                    handleIntent(HomeworkInfoIntent.OpenStagePickerDialog)
+                },
+                currentStageColor = uiState.currentSelectedStage?.color ?: stageVariant8.toArgb()
+            )
+            Row(
+                modifier = Modifier.padding(top = 12.dp),
+            ) {
+                Text(
+                    style = MaterialTheme.typography.bodyLarge,
+                    text = stringResource(R.string.subject_name),
+                    color = Color.Gray
+                )
+                Text(
+                    modifier = Modifier.padding(start = 4.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    text = uiState.subjectNameText,
+                )
+            }
+
+            Row(
+                modifier = Modifier.padding(top = 4.dp),
+            ) {
+                Text(
+                    style = MaterialTheme.typography.bodyLarge,
+                    text = stringResource(R.string.add_date),
+                    color = Color.Gray
+                )
+                Text(
+                    modifier = Modifier.padding(start = 4.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    text = uiState.addDateText,
+                )
+            }
+
+            Row(
+                modifier = Modifier.padding(top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    style = MaterialTheme.typography.bodyLarge,
+                    text = stringResource(R.string.finish_before),
+                    color = Color.Gray
+                )
+
+                if (uiState.finishDateText.isNotBlank()) {
+                    Text(
+                        modifier = Modifier.padding(start = 4.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        text = uiState.finishDateText,
+                    )
+                } else {
+                    TextButton(
+                        onClick = {
+                            handleIntent(HomeworkInfoIntent.SelectDateTime)
+                        }
+                    ) {
+                        Text(
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            text = if (uiState.selectedFinishDate.isBlank() || uiState.selectedFinishTime.isBlank()) {
+                                stringResource(R.string.select_date)
+                            } else {
+                                "${uiState.selectedFinishDate} ${uiState.selectedFinishTime}"
+                            }
+
+                        )
+                    }
+                }
+
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        InfoContent(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 8.dp, horizontal = 16.dp),
+            uiState = uiState,
+            handleIntent = handleIntent,
         )
     }
 }

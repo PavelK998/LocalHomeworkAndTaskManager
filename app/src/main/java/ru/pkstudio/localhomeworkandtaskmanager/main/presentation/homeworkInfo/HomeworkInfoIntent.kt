@@ -86,4 +86,11 @@ sealed interface HomeworkInfoIntent {
 
     data class TimePicked(val timeString: String): HomeworkInfoIntent
 
+    //photoHandler
+    data class OnPhotoClicked(val index: Int): HomeworkInfoIntent
+
+    data class HandlePhotoUi(val isVisible: Boolean): HomeworkInfoIntent
+
+    data object ClosePhotoMode: HomeworkInfoIntent
+
 }

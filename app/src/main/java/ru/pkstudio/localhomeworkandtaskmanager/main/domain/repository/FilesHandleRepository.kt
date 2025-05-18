@@ -7,6 +7,8 @@ interface FilesHandleRepository {
 
     suspend fun uploadImageToUserFolder(folderUri: Uri, bitmapList: List<Bitmap>): List<String>
 
+    suspend fun findImagesInUserFolder(folderUri: Uri, namesList: List<String>): List<Bitmap>
+
     suspend fun checkUriPermission(folderUri: Uri): Boolean
 
 }

@@ -98,6 +98,7 @@
     <string name="update_info_dialog_comment">Вы хотите обновить данные?</string>
     <string name="update_info_toast">Успешно обновлено</string>
     <string name="add_description">Нажмите здесь, чтобы добавить описание</string>
+    <string name="of">из</string>
 
 
     //settings

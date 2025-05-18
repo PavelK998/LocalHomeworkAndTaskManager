@@ -41,6 +41,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.FilesHandleRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.UtilsRepository
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -59,7 +60,8 @@ class AddHomeworkViewModel @Inject constructor(
     private val stageRepository: StageRepository,
     private val resourceManager: ResourceManager,
     private val deviceManager: DeviceManager,
-    private val filesHandleRepository: FilesHandleRepository
+    private val filesHandleRepository: FilesHandleRepository,
+    private val utilsRepository: UtilsRepository
 ) : ViewModel() {
 
 
@@ -68,6 +70,7 @@ class AddHomeworkViewModel @Inject constructor(
 
     private var stageId = 0L
     private var stageName = ""
+    private var folderUri = ""
     private var isNavigateUp = false
     private var isNavigateToEditStages = false
     private var localFinishDate: LocalDate? = null
@@ -137,7 +140,10 @@ class AddHomeworkViewModel @Inject constructor(
             is AddHomeworkIntent.Save -> {
                 if (subjectId != 0L) {
                     if (_uiState.value.nameRichTextState.annotatedString.text.isNotBlank()) {
-                        addHomework(subjectId = subjectId)
+                        addHomework(
+                            subjectId = subjectId,
+                            folderUri = folderUri
+                        )
                     } else {
                         _uiAction.tryEmit(
                             AddHomeworkUIAction.ShowError(resourceManager.getString(R.string.empty_homework_title))
@@ -375,29 +381,38 @@ class AddHomeworkViewModel @Inject constructor(
             }
 
             is AddHomeworkIntent.OnSelectMediaClick -> {
-                val fileUri = deviceManager.getFilePathUri()
-                if (!fileUri.isNullOrEmpty()) {
-                    Log.d("dghdfgdfsgdfg", "handleIntent: $fileUri")
-                    viewModelScope.launch {
-                        val hasPermission = filesHandleRepository.checkUriPermission(fileUri.toUri())
-                        if (hasPermission) {
-                            _uiAction.tryEmit(AddHomeworkUIAction.LaunchPhotoPicker)
+                viewModelScope.execute(
+                    source = {
+                        utilsRepository.getAllUtils()
+                    },
+                    onSuccess = { utilsList ->
+                        if (utilsList.isNotEmpty()) {
+                            viewModelScope.launch {
+                                val hasPermission =
+                                    filesHandleRepository.checkUriPermission(utilsList[0].pathUri.toUri())
+                                if (hasPermission) {
+                                    _uiAction.tryEmit(AddHomeworkUIAction.LaunchPhotoPicker)
+                                    folderUri = utilsList[0].pathUri
+                                } else {
+                                    _uiState.update {
+                                        it.copy(
+                                            isSelectFilePathDialogOpened = true
+                                        )
+                                    }
+                                }
+
+                            }
                         } else {
                             _uiState.update {
                                 it.copy(
                                     isSelectFilePathDialogOpened = true
                                 )
                             }
+
                         }
 
                     }
-                } else {
-                    _uiState.update {
-                        it.copy(
-                            isSelectFilePathDialogOpened = true
-                        )
-                    }
-                }
+                )
             }
         }
     }
@@ -571,14 +586,13 @@ class AddHomeworkViewModel @Inject constructor(
 
     }
 
-    private fun addHomework(subjectId: Long) {
+    private fun addHomework(subjectId: Long, folderUri: String) {
         val endDate = if (localFinishDate != null && localFinishTime != null) {
             LocalDateTime.of(
                 localFinishDate,
                 localFinishTime
             )
         } else null
-        val folderUri = deviceManager.getFilePathUri()
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -606,11 +620,11 @@ class AddHomeworkViewModel @Inject constructor(
                 },
                 onSuccess = { id ->
                     Log.d("gfgdfgdfgdfgdfg", "addHomework: name id $id")
-                    folderUri?.let { uriString ->
+                    if (folderUri.isNotBlank()) {
                         viewModelScope.execute(
                             source = {
                                 filesHandleRepository.uploadImageToUserFolder(
-                                    folderUri = uriString.toUri(),
+                                    folderUri = folderUri.toUri(),
                                     bitmapList = _uiState.value.imagesList.map {
                                         it.second
                                     }
@@ -627,7 +641,6 @@ class AddHomeworkViewModel @Inject constructor(
                                 Log.d("fgdhgghgfh", "addHomework: $it")
                             }
                         )
-
                     }
                 },
                 onError = {

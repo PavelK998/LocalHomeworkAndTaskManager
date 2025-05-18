@@ -27,9 +27,11 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.SubjectModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.UtilsModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.ImportExportDbRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.UtilsRepository
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant10
 import javax.inject.Inject
 
@@ -41,6 +43,7 @@ class SubjectListViewModel @Inject constructor(
     private val deviceManager: DeviceManager,
     private val stageRepository: StageRepository,
     private val importExportDbRepository: ImportExportDbRepository,
+    private val utilsRepository: UtilsRepository
 ) : ViewModel() {
 
     private var indexItemForDelete = -1
@@ -213,8 +216,24 @@ class SubjectListViewModel @Inject constructor(
             }
 
             is SubjectListIntent.OnFileExportPathSelected -> {
-                deviceManager.setFilePathUri(intent.uri.toString())
-                exportDb(intent.uri)
+                viewModelScope.execute(
+                    source = {
+                        utilsRepository.insertUtils(
+                            utils = UtilsModel(
+                                id = null,
+                                finalStageId = 0,
+                                pathUri = intent.uri.toString()
+                            )
+                        )
+                    },
+                    onSuccess = {
+                        Log.d("fghfgfghfgh", "insertUtils: success ${intent.uri}")
+                        exportDb(intent.uri)
+                    },
+                    onError = {
+                        Log.d("fghfgfghfgh", "insertUtils: error $it")
+                    }
+                )
             }
 
             is SubjectListIntent.OnFileImportPathSelected -> {
