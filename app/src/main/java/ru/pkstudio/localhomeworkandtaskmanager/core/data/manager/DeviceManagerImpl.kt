@@ -6,13 +6,16 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.core.content.edit
-import dagger.hilt.android.qualifiers.ApplicationContext
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import javax.inject.Inject
 
 class DeviceManagerImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    private val context: Context,
 ): DeviceManager {
 
     private val sharedPreferences =
@@ -66,7 +69,8 @@ class DeviceManagerImpl @Inject constructor(
     }
 
     override fun setFilePathUri(path: String) {
-        sharedPreferences.edit() {
+        Log.d("fghfgfghfgh", "setFilePathUri: ${path}")
+        sharedPreferences.edit {
             putString(KEY_FILE_PATH, path)
         }
     }
@@ -143,6 +147,20 @@ class DeviceManagerImpl @Inject constructor(
 
     override fun getFilterImportance(): Int {
         return sharedPreferences.getInt(KEY_FILTER_IMPORTANCE, -1)
+    }
+
+    override fun hideStatusBar() {
+        val activity = context as ComponentActivity
+        val windowInsetsController = WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+        windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            windowInsetsController.hide(androidx.core.view.WindowInsetsCompat.Type.statusBars())
+    }
+
+    override fun showStatusBar() {
+        val activity = context as ComponentActivity
+        val windowInsetsController = WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+        windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        windowInsetsController.show(androidx.core.view.WindowInsetsCompat.Type.statusBars())
     }
 
     companion object {

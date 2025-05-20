@@ -5,10 +5,12 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.data.model.HomeworkEntity
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.model.StageEntity
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.model.SubjectWithHomeworkData
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.model.SubjectsEntity
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.model.UtilsEntity
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.SubjectModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.SubjectWithHomework
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.UtilsModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.HomeworkUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.uiModel.SubjectUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance1
@@ -282,6 +284,29 @@ fun List<StageEntity>.toStageModelList(): List<StageModel> {
             stageName = it.stageName,
             position = it.position
         )
+    }
+}
+
+
+fun UtilsEntity.toUtilsModel(): UtilsModel {
+    return UtilsModel(
+        id = id,
+        finalStageId = finalStageId,
+        pathUri = pathUri
+    )
+}
+
+fun UtilsModel.toUtilsEntity(): UtilsEntity {
+    return UtilsEntity(
+        id = id,
+        finalStageId = finalStageId,
+        pathUri = pathUri
+    )
+}
+
+fun List<UtilsEntity>.toListUtilsModel(): List<UtilsModel> {
+    return this.map {
+        it.toUtilsModel()
     }
 }
 

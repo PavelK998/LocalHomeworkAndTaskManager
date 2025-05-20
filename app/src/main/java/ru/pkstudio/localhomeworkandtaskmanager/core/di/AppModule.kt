@@ -9,7 +9,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import ru.pkstudio.localhomeworkandtaskmanager.core.data.manager.DeviceManagerImpl
 import ru.pkstudio.localhomeworkandtaskmanager.core.data.manager.VideoPlayerRepositoryImpl
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.VideoPlayerRepository
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.DefaultNavigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
@@ -18,6 +20,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.AppDb
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.HomeworkDao
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.StageDao
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.SubjectsDao
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.UtilsDao
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.FilesHandleRepositoryImpl
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.ImportExportDbRepositoryImpl
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.FilesHandleRepository
@@ -62,6 +65,12 @@ class AppModule {
 
     @Provides
     @Singleton
+    fun provideUtilsDao(database: AppDb): UtilsDao {
+        return database.utilsDao
+    }
+
+    @Provides
+    @Singleton
     fun provideImportExportDbRepository(
         @ApplicationContext context: Context,
         appDb: AppDb
@@ -102,5 +111,15 @@ class AppModule {
             context = context
         )
     }
+
+    @Provides
+    @Singleton
+     fun provideDeviceManager(
+        @ApplicationContext context: Context,
+    ): DeviceManager {
+         return DeviceManagerImpl(
+             context = context
+         )
+     }
 
 }

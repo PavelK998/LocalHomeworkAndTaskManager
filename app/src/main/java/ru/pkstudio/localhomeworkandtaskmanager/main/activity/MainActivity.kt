@@ -26,6 +26,7 @@ class MainActivity : ComponentActivity(){
         var isReady = false
         super.onCreate(savedInstanceState)
         val context = this.applicationContext
+
         installSplashScreen().apply {
             setKeepOnScreenCondition{
                 !isReady

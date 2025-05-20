@@ -108,6 +108,7 @@
     <string name="update_info_dialog_comment">Do you want to update data?</string>
     <string name="update_info_toast">Updated successfully</string>
     <string name="add_description">Tap here to add description</string>
+    <string name="of">of</string>
 
 
     //settings
