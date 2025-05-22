@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -175,9 +176,10 @@ fun HomeworkCard(
                 Text(
                     modifier = Modifier
                         .padding(bottom = 16.dp, end = 24.dp),
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     text = homeworkUiModel.stageName,
                     textAlign = TextAlign.End,
+                    fontWeight = FontWeight.W500,
                     color = Color(homeworkUiModel.color).toStageNameInCardColor(isSystemInDarkMode = isSystemInDarkTheme())
                 )
 
@@ -201,10 +203,10 @@ private fun HomeworkCardPreview() {
                 imageNameList = emptyList(),
                 isChecked = false,
                 isCheckBoxVisible = false,
-                stageName = "",
+                stageName = "asdasdas",
                 stageId = 0L,
                 subjectId = 0L,
-                color = -998220,
+                color = 3424123,
                 importance = 1
             ),
             onCheckCardClicked = { _ -> },

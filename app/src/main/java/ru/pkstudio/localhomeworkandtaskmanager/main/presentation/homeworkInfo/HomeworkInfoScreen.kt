@@ -419,7 +419,6 @@ private fun HandlePhotos(
     onClick: (Boolean) -> Unit,
     onBackCLick: () -> Unit
 ) {
-
     val context = LocalContext.current
     val activity by remember {
         mutableStateOf(context as ComponentActivity)
@@ -450,14 +449,29 @@ private fun HandlePhotos(
             windowInsetsController.hide(androidx.core.view.WindowInsetsCompat.Type.statusBars())
         }
     }
-
-
+//    var scale by remember { mutableFloatStateOf(1f) }
+//    val animatedScale = animateFloatAsState(scale)
+//    var x by remember { mutableFloatStateOf(0f) }
+//    var y by remember { mutableFloatStateOf(0f) }
     val pagerState = rememberPagerState(
         initialPage = whichPhotoShouldBeOpenFirst,
         pageCount = {
             listPhotos.size
         }
     )
+//    val maxOffsetX by remember(key1 = pagerState.currentPage, key2 = scale) {
+//        mutableFloatStateOf((scale - 1) * listPhotos[pagerState.currentPage].width + 20f / 2)
+//    }
+//    val maxOffsetY by remember(key1 = pagerState.currentPage, key2 = scale) {
+//        mutableFloatStateOf((scale - 1) * listPhotos[pagerState.currentPage].height + 20f / 2)
+//    }
+//    val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
+//        scale = (scale * zoomChange).coerceIn(1f, 5f)
+//        x = (x + panChange.x).coerceIn(-maxOffsetX, maxOffsetX)
+//        y = (y + panChange.y).coerceIn(-maxOffsetY, maxOffsetY)
+//    }
+
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -472,6 +486,17 @@ private fun HandlePhotos(
                     detectTapGestures(
                         onTap = {
                             onClick(isUiVisible)
+                        },
+                        onDoubleTap = {
+//                            when (scale) {
+//                                1f -> scale = 2f
+//                                2f -> scale = 3f
+//                                else -> {
+//                                    x = 0f
+//                                    y = 0f
+//                                    scale = 1f
+//                                }
+//                            }
                         }
                     )
                 },
@@ -480,7 +505,15 @@ private fun HandlePhotos(
                 state = pagerState
             ) { index ->
                 Image(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize(),
+//                        .transformable(state = transformableState)
+//                        .graphicsLayer(
+//                            scaleX = animatedScale.value,
+//                            scaleY = animatedScale.value,
+//                            translationX = x,
+//                            translationY = y
+//                        ),
                     bitmap = listPhotos[index],
                     contentDescription = ""
                 )

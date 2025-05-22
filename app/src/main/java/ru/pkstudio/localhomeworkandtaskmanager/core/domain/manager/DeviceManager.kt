@@ -23,10 +23,6 @@ interface DeviceManager {
 
     fun startMicroVibrate()
 
-    fun setFilePathUri(path: String)
-
-    fun getFilePathUri(): String?
-
     fun getIsFirstLaunch(): Boolean
 
     fun setIsFirstLaunch(isFirstLaunch: Boolean)
@@ -47,9 +43,8 @@ interface DeviceManager {
 
     fun getFilterImportance(): Int
 
-    fun hideStatusBar()
+    suspend fun setFilePathUri(path: String)
 
-    fun showStatusBar()
-
+    suspend fun getFilePathUri(): String?
 
 }

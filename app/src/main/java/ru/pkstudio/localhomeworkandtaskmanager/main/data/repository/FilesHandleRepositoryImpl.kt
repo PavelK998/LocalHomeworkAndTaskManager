@@ -58,7 +58,7 @@ class FilesHandleRepositoryImpl @Inject constructor(
         folderUri: Uri,
         namesList: List<String>
     ): List<Bitmap> = withContext(Dispatchers.IO) {
-        val listBitmap: MutableList<Bitmap> = mutableListOf()
+        val listDeferredResult: MutableList<Deferred<Bitmap?>> = mutableListOf()
         val folder = DocumentFile.fromTreeUri(context, folderUri)
             ?: throw IllegalArgumentException("Invalid folder Uri: $folderUri")
         Log.d("nbnbvnvbnvbn", "folder name: ${folder.name}")
@@ -66,20 +66,22 @@ class FilesHandleRepositoryImpl @Inject constructor(
             throw IllegalArgumentException("Uri does not point to a directory: $folderUri")
         }
         namesList.forEach { displayName ->
-            Log.d("nbnbvnvbnvbn", "default file name: $displayName")
-            val documentFile= folder.findFile(displayName)
-            Log.d("nbnbvnvbnvbn", "findImageSInUserFolder: $documentFile")
-            documentFile?.let {
-                if (it.type == "image/png") {
-                    context.contentResolver.openInputStream(documentFile.uri)?.use { inputStream ->
-                        val bitmap = BitmapFactory.decodeStream(inputStream)
-                        listBitmap.add(bitmap)
+            val result = async {
+                var bitmapResult: Bitmap? = null
+                val documentFile= folder.findFile(displayName)
+                documentFile?.let {
+                    if (it.type == "image/png") {
+                        context.contentResolver.openInputStream(documentFile.uri)?.use { inputStream ->
+                            val bitmap = BitmapFactory.decodeStream(inputStream)
+                            bitmapResult = bitmap
+                        }
                     }
                 }
-
+                bitmapResult
             }
+            listDeferredResult.add(result)
         }
-        listBitmap
+        listDeferredResult.awaitAll().requireNoNulls()
     }
 
     override suspend fun checkUriPermission(folderUri: Uri) = withContext(Dispatchers.IO) {

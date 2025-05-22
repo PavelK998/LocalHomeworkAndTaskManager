@@ -2,8 +2,6 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -22,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -94,14 +91,6 @@ fun AddHomeworkScreen(
     uiState: AddHomeworkState,
     handleIntent: (AddHomeworkIntent) -> Unit
 ) {
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uri ->
-            uri?.let {
-                handleIntent(AddHomeworkIntent.OnImagePicked(it))
-            }
-        }
-    )
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(
@@ -160,13 +149,13 @@ fun AddHomeworkScreen(
                     title = stringResource(R.string.select_folder_dialog_title),
                     comment = stringResource(R.string.select_folder_dialog_description),
                     onConfirm = {
-
+                        handleIntent(AddHomeworkIntent.ConfirmPathSelect)
                     },
                     onDismissRequest = {
-
+                        handleIntent(AddHomeworkIntent.DismissPathSelectDialog)
                     },
                     onDismiss = {
-
+                        handleIntent(AddHomeworkIntent.DismissPathSelectDialog)
                     }
                 )
             }
@@ -523,10 +512,10 @@ private fun SetName(
 
         LaunchedEffect(imeInsets) {
             val imeInsetsToDp = with(density) { imeInsets.toDp() }
-            if (imeInsetsToDp <= defaultBottomPadding) {
-                bottomPadding = defaultBottomPadding
+            bottomPadding = if (imeInsetsToDp <= defaultBottomPadding) {
+                defaultBottomPadding
             } else {
-                bottomPadding = with(density) { imeInsets.toDp() }
+                with(density) { imeInsets.toDp() }
             }
         }
         Column(
@@ -622,10 +611,27 @@ private fun SetDescription(
         handleIntent(AddHomeworkIntent.CloseDescriptionChangeCard)
     }
     Scaffold { paddingValues ->
+        val density = LocalDensity.current
+        val imeInsets = WindowInsets.ime.getBottom(density)
+        val defaultBottomPadding = paddingValues.calculateBottomPadding()
+        var bottomPadding by remember {
+            mutableStateOf(defaultBottomPadding)
+        }
+
+        LaunchedEffect(imeInsets) {
+            val imeInsetsToDp = with(density) { imeInsets.toDp() }
+            bottomPadding = if (imeInsetsToDp <= defaultBottomPadding) {
+                defaultBottomPadding
+            } else {
+                with(density) { imeInsets.toDp() }
+            }
+        }
         Column(
             modifier = modifier
-                .imePadding()
-                .padding(paddingValues),
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = bottomPadding
+                ),
         ) {
             Card(
                 modifier = Modifier
