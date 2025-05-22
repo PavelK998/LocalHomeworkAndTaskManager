@@ -38,7 +38,6 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.FilesHandl
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
-import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.UtilsRepository
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -57,7 +56,6 @@ class HomeworkInfoViewModel @Inject constructor(
     private val resourceManager: ResourceManager,
     private val deviceManager: DeviceManager,
     private val filesHandleRepository: FilesHandleRepository,
-    private val utilsRepository: UtilsRepository,
     private val navigator: Navigator
 ) : ViewModel() {
     private var homeworkId: Long = 0L
@@ -654,7 +652,7 @@ class HomeworkInfoViewModel @Inject constructor(
                     isLoading = true
                 )
             }
-            val folder = utilsRepository.getAllUtils()
+            val folder = deviceManager.getFilePathUri()
             val subject = async {
                 subjectsRepository.getSubjectById(subjectId)
             }
@@ -708,11 +706,11 @@ class HomeworkInfoViewModel @Inject constructor(
                     descriptionFontSize = descriptionFontSize
                 )
                 isFontSizeSet = true
-                if (folder.isNotEmpty() && homeworkResult.imageNameList.isNotEmpty()) {
+                if (!folder.isNullOrBlank() && homeworkResult.imageNameList.isNotEmpty()) {
                     viewModelScope.execute(
                         source = {
                             filesHandleRepository.findImagesInUserFolder(
-                                folderUri = folder[0].pathUri.toUri(),
+                                folderUri = folder.toUri(),
                                 namesList = homeworkResult.imageNameList
                             )
                         },

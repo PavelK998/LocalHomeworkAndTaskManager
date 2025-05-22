@@ -2,7 +2,6 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.c
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -90,6 +89,7 @@ fun KanbanColumnFiller(
                     }
                 }
                 Row(
+                    modifier = Modifier.padding(bottom = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
@@ -117,20 +117,6 @@ fun KanbanColumnFiller(
                             contentDescription = "change color",
                         )
                     }
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.CenterEnd
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(end = 24.dp),
-                        style = MaterialTheme.typography.titleSmall,
-                        text = model.stageName,
-                        textAlign = TextAlign.End,
-                        color = MaterialTheme.colorScheme.primaryContainer
-                    )
                 }
             }
         }

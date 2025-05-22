@@ -76,9 +76,15 @@ sealed interface AddHomeworkIntent {
 
     data object OnSelectMediaClick: AddHomeworkIntent
 
+    data object ConfirmPathSelect: AddHomeworkIntent
+
+    data object DismissPathSelectDialog: AddHomeworkIntent
+
     data class DatePicked(val dateFromEpochMillis: Long): AddHomeworkIntent
 
     data class TimePicked(val timeString: String): AddHomeworkIntent
+
+    data class OnFileExportPathSelected(val uri: Uri): AddHomeworkIntent
 
 
 

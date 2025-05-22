@@ -41,7 +41,6 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.FilesHandleRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
-import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.UtilsRepository
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -61,7 +60,6 @@ class AddHomeworkViewModel @Inject constructor(
     private val resourceManager: ResourceManager,
     private val deviceManager: DeviceManager,
     private val filesHandleRepository: FilesHandleRepository,
-    private val utilsRepository: UtilsRepository
 ) : ViewModel() {
 
 
@@ -383,16 +381,22 @@ class AddHomeworkViewModel @Inject constructor(
             is AddHomeworkIntent.OnSelectMediaClick -> {
                 viewModelScope.execute(
                     source = {
-                        utilsRepository.getAllUtils()
+                        deviceManager.getFilePathUri()
                     },
-                    onSuccess = { utilsList ->
-                        if (utilsList.isNotEmpty()) {
+                    onSuccess = { filePathString ->
+                        if (filePathString.isNullOrBlank()) {
+                            _uiState.update {
+                                it.copy(
+                                    isSelectFilePathDialogOpened = true
+                                )
+                            }
+                        } else {
                             viewModelScope.launch {
                                 val hasPermission =
-                                    filesHandleRepository.checkUriPermission(utilsList[0].pathUri.toUri())
+                                    filesHandleRepository.checkUriPermission(folderUri = filePathString.toUri())
                                 if (hasPermission) {
                                     _uiAction.tryEmit(AddHomeworkUIAction.LaunchPhotoPicker)
-                                    folderUri = utilsList[0].pathUri
+                                    folderUri = filePathString
                                 } else {
                                     _uiState.update {
                                         it.copy(
@@ -400,19 +404,38 @@ class AddHomeworkViewModel @Inject constructor(
                                         )
                                     }
                                 }
-
                             }
-                        } else {
-                            _uiState.update {
-                                it.copy(
-                                    isSelectFilePathDialogOpened = true
-                                )
-                            }
-
                         }
-
                     }
                 )
+            }
+
+            is AddHomeworkIntent.OnFileExportPathSelected -> {
+                viewModelScope.execute(
+                    source = {
+                        deviceManager.setFilePathUri(intent.uri.toString())
+                    },
+                    onSuccess = {
+                        _uiAction.tryEmit(AddHomeworkUIAction.LaunchPhotoPicker)
+                    }
+                )
+            }
+
+            is AddHomeworkIntent.ConfirmPathSelect -> {
+                _uiState.update {
+                    it.copy(
+                        isSelectFilePathDialogOpened = false
+                    )
+                }
+                _uiAction.tryEmit(AddHomeworkUIAction.LaunchPathSelectorForSaveImages)
+            }
+
+            is AddHomeworkIntent.DismissPathSelectDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isSelectFilePathDialogOpened = false
+                    )
+                }
             }
         }
     }

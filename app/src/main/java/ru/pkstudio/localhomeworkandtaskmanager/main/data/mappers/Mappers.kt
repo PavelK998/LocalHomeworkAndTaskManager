@@ -13,6 +13,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.SubjectWithHome
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.UtilsModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.HomeworkUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.uiModel.SubjectUiModel
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.forImportance1_5
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.forImportance6_10
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance1
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance10
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance2
@@ -23,12 +25,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance6
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance7
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance8
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance9
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.inversePrimaryDarkMediumContrast
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.inversePrimaryLightMediumContrast
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.onDarkCardText
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.onLightCardText
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.primaryContainerDarkMediumContrast
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.primaryContainerLightMediumContrast
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -330,38 +328,24 @@ fun Color.toImportance(): Int {
 
 fun Color.toTextColor(): Color {
     return when (this) {
-        importance10, importance9, importance8, importance7 -> onDarkCardText
-        else -> onLightCardText
+        importance1, importance2, importance3, importance4, importance5 -> onLightCardText
+        else -> onDarkCardText
     }
 }
 
 fun Color.toStageNameInCardColor(isSystemInDarkMode: Boolean): Color {
     return if (isSystemInDarkMode) {
         when (this) {
-            importance10, importance9, importance8, importance7 -> inversePrimaryDarkMediumContrast
-            else -> primaryContainerLightMediumContrast
+            importance1, importance2, importance3, importance4, importance5 -> forImportance1_5
+            else -> forImportance6_10
         }
     } else {
         when (this) {
-            importance10, importance9, importance8, importance7 -> inversePrimaryLightMediumContrast
-            else -> primaryContainerDarkMediumContrast
+            importance1, importance2, importance3, importance4, importance5-> forImportance1_5
+            else -> forImportance6_10
         }
     }
 
-}
-
-fun Color.toStageNameTextColor(): Color {
-    return when (this) {
-        importance10, importance9, importance8, importance7 -> onDarkCardText
-        else -> onLightCardText
-    }
-}
-
-fun Color.toStageBackground(): Color {
-    return when (this) {
-        importance10, importance9, importance8, importance7 -> onDarkCardText
-        else -> onLightCardText
-    }
 }
 
 

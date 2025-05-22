@@ -4,4 +4,6 @@ sealed interface AddHomeworkUIAction {
     data class ShowError(val text: String) : AddHomeworkUIAction
 
     data object LaunchPhotoPicker : AddHomeworkUIAction
+
+    data object LaunchPathSelectorForSaveImages : AddHomeworkUIAction
 }
