@@ -39,7 +39,9 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework.Add
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStageUiAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStagesScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen.EditStagesViewModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo.HomeworkInfoIntent
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo.HomeworkInfoScreen
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo.HomeworkInfoUiAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo.HomeworkInfoViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListViewModel
@@ -329,11 +331,35 @@ fun SetupNavHost(
                 val args = navBackStackEntry.toRoute<Destination.DetailsHomeworkScreen>()
                 val viewModel = hiltViewModel<HomeworkInfoViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+                val context = LocalContext.current
                 LaunchedEffect(key1 = true) {
                     viewModel.parseArguments(
                         homeworkId = args.homeworkId,
                         subjectId = args.subjectId
                     )
+                }
+                val launcherForMultiplyImages = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.PickMultipleVisualMedia(
+                        maxItems = 10
+                    ),
+                    onResult = { listUri ->
+                        viewModel.handleIntent(HomeworkInfoIntent.OnMultiplyImagePicked(listUri))
+                    }
+                )
+                ObserveAsActions(flow = viewModel.uiAction) { action ->
+                    when (action) {
+                        is HomeworkInfoUiAction.ShowError -> {
+                            Toast.makeText(context, action.text, Toast.LENGTH_SHORT).show()
+                        }
+
+                        is HomeworkInfoUiAction.LaunchPhotoPicker -> {
+                            launcherForMultiplyImages.launch(
+                                PickVisualMediaRequest(
+                                    mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+                                )
+                            )
+                        }
+                    }
                 }
                 HomeworkInfoScreen(
                     uiState = uiState,

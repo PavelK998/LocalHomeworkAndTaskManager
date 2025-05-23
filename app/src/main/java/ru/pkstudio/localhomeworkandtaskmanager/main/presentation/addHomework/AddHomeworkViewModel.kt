@@ -1,7 +1,5 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
-import android.graphics.Bitmap
-import android.net.Uri
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -15,10 +13,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mohamedrejeb.richeditor.model.RichTextState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -50,7 +44,6 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 @HiltViewModel
 class AddHomeworkViewModel @Inject constructor(
@@ -124,7 +117,12 @@ class AddHomeworkViewModel @Inject constructor(
             }
 
             is AddHomeworkIntent.OnMultiplyImagePicked -> {
-                parseMultiplyImageToListBitmap(listUri = intent.listUri)
+                    _uiState.update {
+                        it.copy(
+                            imagesUriList = intent.listUri
+                        )
+                    }
+                //parseMultiplyImageToListBitmap(listUri = intent.listUri)
             }
 
             is AddHomeworkIntent.OnTitleHomeworkChange -> {
@@ -507,40 +505,6 @@ class AddHomeworkViewModel @Inject constructor(
         }
     }
 
-    private fun parseMultiplyImageToListBitmap(listUri: List<Uri>) =
-        viewModelScope.launch(
-            Dispatchers.Default
-        ) {
-            val bitmapList = mutableListOf<Deferred<Pair<Long, Bitmap>>>()
-            val listIds = mutableListOf<Long>()
-            repeat(listUri.size) {
-                var id: Long
-                do {
-                    id = Random.nextLong()
-                } while (listIds.any { it == id })
-                listIds.add(id)
-            }
-
-            listUri.forEachIndexed { index, uri ->
-                val result = async {
-
-                    val bitmap = resourceManager.parseBitmapFromUri(uri)!!
-                    Pair(
-                        first = listIds[index],
-                        second = bitmap
-                    )
-
-                }
-                bitmapList.add(result)
-            }
-
-            _uiState.update {
-                it.copy(
-                    imagesList = bitmapList.awaitAll()
-                )
-            }
-        }
-
     private fun selectStage(model: StageModel) {
         _uiState.update {
             it.copy(
@@ -646,11 +610,9 @@ class AddHomeworkViewModel @Inject constructor(
                     if (folderUri.isNotBlank()) {
                         viewModelScope.execute(
                             source = {
-                                filesHandleRepository.uploadImageToUserFolder(
+                                filesHandleRepository.uploadImageToUserFolderWithImageUriList(
                                     folderUri = folderUri.toUri(),
-                                    bitmapList = _uiState.value.imagesList.map {
-                                        it.second
-                                    }
+                                    imageUriList = _uiState.value.imagesUriList
                                 )
                             },
                             onSuccess = { imageNamesList ->

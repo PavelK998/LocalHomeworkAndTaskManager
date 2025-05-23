@@ -1,5 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
+import android.net.Uri
 import androidx.compose.ui.graphics.Color
 
 sealed interface HomeworkInfoIntent {
@@ -13,6 +14,8 @@ sealed interface HomeworkInfoIntent {
 
     data object OnDeleteBtnClick: HomeworkInfoIntent
 
+    data object OnAttachFileClicked: HomeworkInfoIntent
+
     data object DeleteConfirm: HomeworkInfoIntent
 
     data object CloseDeleteAlertDialog: HomeworkInfoIntent
@@ -20,6 +23,8 @@ sealed interface HomeworkInfoIntent {
     data class OnHomeworkEditNameChange(val text: String): HomeworkInfoIntent
 
     data class OnHomeworkEditDescriptionChange(val text: String): HomeworkInfoIntent
+
+    data class OnMultiplyImagePicked(val listUri: List<Uri>): HomeworkInfoIntent
 
     data object UpdateConfirm: HomeworkInfoIntent
 
@@ -91,6 +96,12 @@ sealed interface HomeworkInfoIntent {
 
     data class HandlePhotoUi(val isVisible: Boolean): HomeworkInfoIntent
 
+    data class OnDeletePhotoClick(val index: Int): HomeworkInfoIntent
+
     data object ClosePhotoMode: HomeworkInfoIntent
+
+    data object DismissPhotoDropDownMenu: HomeworkInfoIntent
+
+    data object ExpandPhotoDropDownMenu: HomeworkInfoIntent
 
 }

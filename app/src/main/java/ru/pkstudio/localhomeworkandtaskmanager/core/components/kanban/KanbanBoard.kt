@@ -51,6 +51,7 @@ import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
@@ -383,6 +384,23 @@ fun <M, A> KanbanBoard(
                             Box(
                                 modifier = Modifier
                                     .background(Color.Transparent)
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(
+                                            onTap = {
+                                                Log.d("adsfasdasdas", "KanbanBoard: touch")
+                                            }
+                                        )
+                                    }
+//                                    .dragAndDropSource { offset ->
+//                                        Log.d("zxczxczxcxzxz", "KanbanBoard: $offset")
+//                                        DragAndDropTransferData(
+//                                            clipData = ClipData
+//                                                .newPlainText(
+//                                                    "label",
+//                                                    columnIndex.toString()
+//                                                )
+//                                        )
+//                                    }
                                     .dragAndDropSource {
                                         detectTapGestures(
                                             onLongPress = {
