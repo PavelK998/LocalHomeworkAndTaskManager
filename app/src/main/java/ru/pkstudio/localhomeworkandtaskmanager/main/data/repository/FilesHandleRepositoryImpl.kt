@@ -2,7 +2,6 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.data.repository
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.util.Log
@@ -30,7 +29,7 @@ class FilesHandleRepositoryImpl @Inject constructor(
                 val deferredResult = async {
                     val time = LocalDateTime.now()
                     val timeStamp = time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH_mm_ss.SSS"))
-                    val documentName = "IMG_${timeStamp}.png"
+                    val documentName = "IMG_${timeStamp}.jpeg"
                     imageNamesList.add(documentName)
                     val targetFileUri = DocumentsContract.createDocument(
                         context.contentResolver,
@@ -54,11 +53,57 @@ class FilesHandleRepositoryImpl @Inject constructor(
 
         }
 
-    override suspend fun findImagesInUserFolder(
+    override suspend fun uploadImageToUserFolderWithImageUriList(
         folderUri: Uri,
-        namesList: List<String>
-    ): List<Bitmap> = withContext(Dispatchers.IO) {
-        val listDeferredResult: MutableList<Deferred<Bitmap?>> = mutableListOf()
+        imageUriList: List<Uri>
+    ) = withContext(Dispatchers.IO) {
+        val imageNamesList:MutableList<String> = mutableListOf()
+        imageUriList.forEach { imageUri ->
+            Log.d("nvbnvbnvbnbvnv", "uploadImage: $imageUri")
+            // Получаем InputStream из content:// Uri
+            context.contentResolver.openInputStream(imageUri)?.use { inputStream ->
+                Log.d("nvbnvbnvbnbvnv", "uploadImage: input stream open")
+                // Создаем новый файл в папке, выбранной через SAF
+                val documentFile = DocumentFile.fromTreeUri(context, folderUri)
+                val time = LocalDateTime.now()
+                val timeStamp = time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH_mm_ss.SSS"))
+                val documentName = "IMG_${timeStamp}.jpeg"
+                val newFile = documentFile?.createFile("image/jpeg", documentName)
+                newFile?.uri?.let { outputUri ->
+                    // Получаем OutputStream для нового файла
+                    context.contentResolver.openOutputStream(outputUri)?.use { outputStream ->
+                        // Копируем данные
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+                imageNamesList.add(documentName)
+            } ?: throw Exception("something went wrong when saving images")
+        }
+        imageNamesList
+    }
+
+
+
+
+    override suspend fun deleteImageInUserFolder(folderUri: Uri, imageName: String) = withContext(Dispatchers.IO) {
+        val folder = DocumentFile.fromTreeUri(context, folderUri)
+            ?: throw IllegalArgumentException("Invalid folder Uri: $folderUri")
+        if (!folder.isDirectory) {
+            throw IllegalArgumentException("Uri does not point to a directory: $folderUri")
+        }
+        val documentFile= folder.findFile(imageName)
+        documentFile?.let {
+            if (it.type == "image/jpeg") {
+                val result = documentFile.delete()
+                if (!result) {
+                    throw Exception("can not delete a file")
+                }
+            }
+        } ?: throw Exception("can not delete a file")
+    }
+
+    override suspend fun deleteAllImagesInUserFolder(folderUri: Uri, namesList: List<String>) = withContext(Dispatchers.IO) {
+        val listDeferredResult: MutableList<Deferred<Boolean>> = mutableListOf()
         val folder = DocumentFile.fromTreeUri(context, folderUri)
             ?: throw IllegalArgumentException("Invalid folder Uri: $folderUri")
         Log.d("nbnbvnvbnvbn", "folder name: ${folder.name}")
@@ -67,17 +112,42 @@ class FilesHandleRepositoryImpl @Inject constructor(
         }
         namesList.forEach { displayName ->
             val result = async {
-                var bitmapResult: Bitmap? = null
+                var deleteResult = false
                 val documentFile= folder.findFile(displayName)
                 documentFile?.let {
-                    if (it.type == "image/png") {
-                        context.contentResolver.openInputStream(documentFile.uri)?.use { inputStream ->
-                            val bitmap = BitmapFactory.decodeStream(inputStream)
-                            bitmapResult = bitmap
-                        }
+                    if (it.type == "image/jpeg") {
+                        deleteResult = documentFile.delete()
                     }
                 }
-                bitmapResult
+                deleteResult
+            }
+            listDeferredResult.add(result)
+        }
+        listDeferredResult.awaitAll().any { !it }
+    }
+
+    override suspend fun findImagesInUserFolder(
+        folderUri: Uri,
+        namesList: List<String>
+    ): List<Uri> = withContext(Dispatchers.IO) {
+        val listDeferredResult: MutableList<Deferred<Uri?>> = mutableListOf()
+        val folder = DocumentFile.fromTreeUri(context, folderUri)
+            ?: throw IllegalArgumentException("Invalid folder Uri: $folderUri")
+        Log.d("nbnbvnvbnvbn", "folder name: ${folder.name}")
+        if (!folder.isDirectory) {
+            throw IllegalArgumentException("Uri does not point to a directory: $folderUri")
+        }
+        namesList.forEach { displayName ->
+            val result = async {
+                var uriResult: Uri? = null
+                val documentFile= folder.findFile(displayName)
+                documentFile?.let {
+                    Log.d("nbnbvnvbnvbn", "document = $documentFile")
+                    if (it.type == "image/jpeg") {
+                        uriResult = documentFile.uri
+                    }
+                }
+                uriResult
             }
             listDeferredResult.add(result)
         }

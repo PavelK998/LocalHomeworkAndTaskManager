@@ -1,6 +1,7 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import com.mohamedrejeb.richeditor.model.RichTextState
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
@@ -32,6 +33,7 @@ data class AddHomeworkState(
     val nameRichTextState: RichTextState = RichTextState(),
     val descriptionRichTextState: RichTextState = RichTextState(),
     val currentStage: String = "",
+    val imagesUriList: List<Uri> = emptyList(),
     val currentColor: Color = importance1,
     val isColorPickerVisible: Boolean = false,
     val isStagePickerVisible: Boolean = false,

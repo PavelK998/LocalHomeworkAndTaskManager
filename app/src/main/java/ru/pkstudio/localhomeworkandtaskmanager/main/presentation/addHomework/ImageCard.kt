@@ -1,9 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
-import android.content.res.Resources
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import androidx.compose.foundation.Image
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,17 +18,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ru.pkstudio.localhomeworkandtaskmanager.R
+import androidx.core.net.toUri
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ImageCard(
     modifier: Modifier = Modifier,
-    bitmap: Bitmap,
+    //bitmap: Bitmap,
+    uri:Uri,
     onDeleteClick: () -> Unit
 ) {
 
@@ -50,9 +50,9 @@ fun ImageCard(
                 modifier = Modifier
                     .padding(8.dp),
             ) {
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = null,
+                GlideImage(
+                    model = uri,
+                    contentDescription = "",
                     contentScale = ContentScale.FillBounds,
                 )
             }
@@ -82,11 +82,12 @@ private fun ImageCardPreview() {
     LocalHomeworkAndTaskManagerTheme {
         ImageCard(
             modifier = Modifier.size(100.dp),
-            bitmap = BitmapFactory.decodeResource(
-                Resources.getSystem(),
-                R.drawable.logo4
-            ),
-            onDeleteClick = {}
+//            bitmap = BitmapFactory.decodeResource(
+//                Resources.getSystem(),
+//                R.drawable.logo4
+//            ),
+            onDeleteClick = {},
+            uri = "sdfdsf".toUri()
         )
     }
 }

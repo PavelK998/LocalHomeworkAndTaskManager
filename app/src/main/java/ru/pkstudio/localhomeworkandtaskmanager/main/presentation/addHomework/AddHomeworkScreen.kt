@@ -338,23 +338,24 @@ fun AddHomeworkScreen(
                     }
 
                 }
-                AnimatedVisibility(uiState.imagesList.isNotEmpty()) {
+                AnimatedVisibility(uiState.imagesUriList.isNotEmpty()) {
                     LazyRow(
                         modifier = Modifier
                             .padding(4.dp)
                             .weight(1f),
                     ) {
                         itemsIndexed(
-                            items = uiState.imagesList,
-                            key = { _, item ->
-                                item.first
-                            }
+                            items = uiState.imagesUriList,
+//                            key = { _, item ->
+//                                item.first
+//                            }
                         ) { index, image ->
                             ImageCard(
                                 modifier = Modifier
                                     .padding(horizontal = 4.dp)
                                     .size(90.dp),
-                                bitmap = image.second,
+                                uri = image,
+                                //bitmap = image.second,
                                 onDeleteClick = {
                                     handleIntent(AddHomeworkIntent.OnDeleteImage(index))
                                 }

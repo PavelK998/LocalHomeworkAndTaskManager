@@ -1,20 +1,22 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +55,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -62,6 +65,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -70,11 +75,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -83,6 +90,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichText
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
@@ -147,7 +156,8 @@ fun HomeworkInfoScreen(
                 navigateUp = { handleIntent(HomeworkInfoIntent.NavigateUp) },
                 onSettingsClicked = { handleIntent(HomeworkInfoIntent.OnSettingsClicked) },
                 closeSettingsMenu = { handleIntent(HomeworkInfoIntent.CloseSettingsMenu) },
-                onDeleteBtnClick = { handleIntent(HomeworkInfoIntent.OnDeleteBtnClick) }
+                onDeleteBtnClick = { handleIntent(HomeworkInfoIntent.OnDeleteBtnClick) },
+                onAttachFileClicked = { handleIntent(HomeworkInfoIntent.OnAttachFileClicked) }
             )
         }
     ) { paddingValues ->
@@ -340,11 +350,21 @@ fun HomeworkInfoScreen(
             whichPhotoShouldBeOpenFirst = uiState.whichPhotoShouldBeOpenedFirst,
             listPhotos = uiState.photoList,
             isUiVisible = uiState.isPhotoUiVisible,
+            isDropDownMEnuExpanded = uiState.isDropDownMenuVisible,
             onClick = {
                 handleIntent(HomeworkInfoIntent.HandlePhotoUi(isVisible = it))
             },
             onBackCLick = {
                 handleIntent(HomeworkInfoIntent.ClosePhotoMode)
+            },
+            onDeleteCLick = {
+                handleIntent(HomeworkInfoIntent.OnDeletePhotoClick(it))
+            },
+            onDismissDropDownMenuClick = {
+                handleIntent(HomeworkInfoIntent.DismissPhotoDropDownMenu)
+            },
+            onExpandDropDownMenuClick = {
+                handleIntent(HomeworkInfoIntent.ExpandPhotoDropDownMenu)
             }
         )
     }
@@ -379,6 +399,7 @@ fun HomeworkInfoScreen(
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun MediaScreen(
     modifier: Modifier = Modifier,
@@ -399,9 +420,9 @@ private fun MediaScreen(
                             onPhotoClicked(index)
                         }
                 ) {
-                    Image(
+                    GlideImage(
                         contentScale = ContentScale.Crop,
-                        bitmap = photo,
+                        model = photo,
                         contentDescription = ""
                     )
                 }
@@ -410,14 +431,19 @@ private fun MediaScreen(
     )
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 private fun HandlePhotos(
     whichPhotoShouldBeOpenFirst: Int,
     isUiVisible: Boolean,
-    listPhotos: List<ImageBitmap>,
+    isDropDownMEnuExpanded: Boolean,
+    listPhotos: List<Uri>,
     onClick: (Boolean) -> Unit,
-    onBackCLick: () -> Unit
+    onBackCLick: () -> Unit,
+    onExpandDropDownMenuClick: () -> Unit,
+    onDismissDropDownMenuClick: () -> Unit,
+    onDeleteCLick: (Int) -> Unit
 ) {
     val context = LocalContext.current
     val activity by remember {
@@ -449,29 +475,18 @@ private fun HandlePhotos(
             windowInsetsController.hide(androidx.core.view.WindowInsetsCompat.Type.statusBars())
         }
     }
-//    var scale by remember { mutableFloatStateOf(1f) }
-//    val animatedScale = animateFloatAsState(scale)
-//    var x by remember { mutableFloatStateOf(0f) }
-//    var y by remember { mutableFloatStateOf(0f) }
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+    val animatedScale = animateFloatAsState(scale)
     val pagerState = rememberPagerState(
         initialPage = whichPhotoShouldBeOpenFirst,
         pageCount = {
             listPhotos.size
         }
     )
-//    val maxOffsetX by remember(key1 = pagerState.currentPage, key2 = scale) {
-//        mutableFloatStateOf((scale - 1) * listPhotos[pagerState.currentPage].width + 20f / 2)
-//    }
-//    val maxOffsetY by remember(key1 = pagerState.currentPage, key2 = scale) {
-//        mutableFloatStateOf((scale - 1) * listPhotos[pagerState.currentPage].height + 20f / 2)
-//    }
-//    val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
-//        scale = (scale * zoomChange).coerceIn(1f, 5f)
-//        x = (x + panChange.x).coerceIn(-maxOffsetX, maxOffsetX)
-//        y = (y + panChange.y).coerceIn(-maxOffsetY, maxOffsetY)
-//    }
-
-
+    var isPagerUSerScrollEnabled by remember {
+        mutableStateOf(true)
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -479,43 +494,86 @@ private fun HandlePhotos(
         LaunchedEffect(true) {
             topPadding = paddingValues.calculateTopPadding()
         }
+        var height by remember {
+            mutableIntStateOf(0)
+        }
+        var width by remember {
+            mutableIntStateOf(0)
+        }
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color.Black.copy(alpha = 89f))
                 .pointerInput(isUiVisible) {
                     detectTapGestures(
                         onTap = {
                             onClick(isUiVisible)
                         },
                         onDoubleTap = {
-//                            when (scale) {
-//                                1f -> scale = 2f
-//                                2f -> scale = 3f
-//                                else -> {
-//                                    x = 0f
-//                                    y = 0f
-//                                    scale = 1f
-//                                }
-//                            }
+                            when (scale) {
+                                1f -> {
+                                    isPagerUSerScrollEnabled = false
+                                    scale = 2f
+                                }
+
+                                2f -> {
+                                    isPagerUSerScrollEnabled = false
+                                    scale = 3f
+                                }
+
+                                else -> {
+                                    isPagerUSerScrollEnabled = true
+                                    offset = Offset.Zero
+                                    scale = 1f
+                                }
+                            }
+                        }
+                    )
+                }
+                .pointerInput(Unit) {
+                    detectTransformGestures(
+                        onGesture = { _, pan, zoom, _ ->
+                            // Если жест масштабирования (zoom != 1) или изображение уже увеличено (scale > 1),
+                            // обрабатываем зум и скролл
+                            if (zoom != 1f || scale > 1f) {
+                                isPagerUSerScrollEnabled = false
+                                scale = (scale * zoom).coerceIn(1f, 5f)
+                                // Ограничиваем скролл, чтобы изображение не уходило слишком далеко
+                                offset += pan
+                                val maxOffsetX =
+                                    (width * (scale - 1)) / 2
+                                val maxOffsetY =
+                                    (height * (scale - 1)) / 2
+                                offset = Offset(
+                                    offset.x.coerceIn(-maxOffsetX, maxOffsetX),
+                                    offset.y.coerceIn(-maxOffsetY, maxOffsetY)
+                                )
+                            } else {
+                                isPagerUSerScrollEnabled = true
+                            }
                         }
                     )
                 },
         ) {
             HorizontalPager(
-                state = pagerState
+                state = pagerState,
+                userScrollEnabled = isPagerUSerScrollEnabled
             ) { index ->
-                Image(
+                GlideImage(
                     modifier = Modifier
-                        .fillMaxSize(),
-//                        .transformable(state = transformableState)
-//                        .graphicsLayer(
-//                            scaleX = animatedScale.value,
-//                            scaleY = animatedScale.value,
-//                            translationX = x,
-//                            translationY = y
-//                        ),
-                    bitmap = listPhotos[index],
-                    contentDescription = ""
+                        .fillMaxSize()
+                        .onGloballyPositioned {
+                            width = it.size.width
+                            height = it.size.height
+                        }
+                        .graphicsLayer(
+                            scaleX = animatedScale.value,
+                            scaleY = animatedScale.value,
+                            translationX = offset.x,
+                            translationY = offset.y
+                        ),
+                    model = listPhotos[index],
+                    contentDescription = "",
                 )
             }
             Column(
@@ -532,7 +590,8 @@ private fun HandlePhotos(
                             .fillMaxWidth()
                             .height(53.dp + topPadding)
                             .background(photoUiBackground),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         IconButton(
                             modifier = Modifier.padding(top = 30.dp),
@@ -551,6 +610,48 @@ private fun HandlePhotos(
                                 tint = onDarkCardText
                             )
                         }
+                        Column(
+                            modifier = Modifier.padding(top = 30.dp),
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    onExpandDropDownMenuClick()
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = "",
+                                    tint = onDarkCardText
+                                )
+                            }
+                            DropdownMenu(
+                                modifier = Modifier
+                                    .heightIn(min = 20.dp),
+                                containerColor = photoUiBackground,
+                                expanded = isDropDownMEnuExpanded,
+                                onDismissRequest = {
+                                    onDismissDropDownMenuClick()
+                                }
+                            ) {
+                                DropdownMenuItem(
+                                    colors = MenuDefaults.itemColors().copy(
+
+                                    ),
+                                    text = {
+                                        Text(
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            text = stringResource(R.string.delete),
+                                            color = onDarkCardText
+                                        )
+                                    },
+                                    onClick = {
+                                        onDeleteCLick(pagerState.currentPage)
+                                    }
+                                )
+                            }
+                        }
+
+
 //                        Text(
 //                            modifier = Modifier.padding(start = 4.dp),
 //                            style = MaterialTheme.typography.titleLarge,
@@ -937,6 +1038,7 @@ private fun InfoTopBar(
     isMenuOpened: Boolean,
     navigateUp: () -> Unit,
     onSettingsClicked: () -> Unit,
+    onAttachFileClicked: () -> Unit,
     closeSettingsMenu: () -> Unit,
     onDeleteBtnClick: () -> Unit,
 ) {
@@ -948,6 +1050,14 @@ private fun InfoTopBar(
             navigateUp()
         },
         actions = listOf(
+            TopAppBarAction(
+                imageRes = R.drawable.icon_attach,
+                contentDescription = "",
+                action = {
+                    onAttachFileClicked()
+                },
+                tint = MaterialTheme.colorScheme.onBackground
+            ),
             TopAppBarAction(
                 image = Icons.Default.MoreVert,
                 contentDescription = "",
