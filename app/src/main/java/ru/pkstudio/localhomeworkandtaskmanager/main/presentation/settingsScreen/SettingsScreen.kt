@@ -10,10 +10,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -43,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
+import ru.pkstudio.localhomeworkandtaskmanager.core.components.DeleteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.emptyColor
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.filledColor
@@ -56,8 +62,14 @@ fun SettingsScreen(
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             DefaultTopAppBar(
+                modifier = Modifier.windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Start
+                    )
+                ),
                 title = uiState.toolbarTitle,
                 navigationIcon = Icons.AutoMirrored.Default.ArrowBack,
                 navigationAction = {
@@ -104,6 +116,37 @@ fun SettingsScreen(
                     handleIntent = handleIntent
                 )
             }
+        }
+        if (uiState.isImportAlertDialogOpened) {
+            DeleteDialog(
+                title = uiState.titleImportAlertDialog,
+                comment = uiState.commentImportAlertDialog,
+                onConfirm = {
+                    handleIntent(SettingsIntent.ImportConfirmed)
+                },
+                onDismissRequest = {
+                    handleIntent(SettingsIntent.CloseImportDialog)
+                },
+                onDismiss = {
+                    handleIntent(SettingsIntent.CloseImportDialog)
+                }
+            )
+        }
+
+        if (uiState.isExportAlertDialogOpened) {
+            DeleteDialog(
+                title = uiState.titleExportAlertDialog,
+                comment = uiState.commentExportAlertDialog,
+                onConfirm = {
+                    handleIntent(SettingsIntent.ExportConfirmed)
+                },
+                onDismissRequest = {
+                    handleIntent(SettingsIntent.CloseExportDialog)
+                },
+                onDismiss = {
+                    handleIntent(SettingsIntent.CloseExportDialog)
+                }
+            )
         }
 
     }
@@ -164,6 +207,31 @@ fun SettingsMainScreen(
         HorizontalDivider(
             modifier = Modifier.padding(vertical = 8.dp),
             thickness = 1.dp,
+        )
+
+        Text(
+            style = MaterialTheme.typography.titleMedium,
+            text = stringResource(R.string.data_management)
+        )
+
+        MenuItem(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            onClick = {
+                handleIntent(SettingsIntent.OnImportClicked)
+            },
+            name = stringResource(id = R.string.import_database)
+        )
+
+        MenuItem(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            onClick = {
+                handleIntent(SettingsIntent.OnExportClicked)
+            },
+            name = stringResource(id = R.string.export_database)
         )
 
     }
@@ -515,7 +583,7 @@ private fun Preview() {
         SettingsScreen(
             uiState = SettingsState(
                 isSystemTheme = true,
-                currentScreen = SettingsViewModel.PASSWORD_CHANGE_SCREEN
+                currentScreen = SettingsViewModel.SETTINGS_MAIN
             ),
             handleIntent = {}
         )

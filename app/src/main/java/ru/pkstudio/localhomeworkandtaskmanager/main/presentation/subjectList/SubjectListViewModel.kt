@@ -1,13 +1,9 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList
 
-import android.net.Uri
-import android.util.Log
 import androidx.compose.ui.graphics.toArgb
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
@@ -54,10 +50,6 @@ class SubjectListViewModel @Inject constructor(
         SubjectListState(
             titleDeleteAlertDialog = resourceManager.getString(R.string.delete_dialog_title),
             commentDeleteAlertDialog = resourceManager.getString(R.string.comment_subjects_delete_dialog),
-            titleImportAlertDialog = resourceManager.getString(R.string.import_database_dialog_title),
-            commentImportAlertDialog = resourceManager.getString(R.string.import_database_dialog_description),
-            titleExportAlertDialog = resourceManager.getString(R.string.export_database_dialog_title),
-            commentExportAlertDialog = resourceManager.getString(R.string.export_database_dialog_description)
         )
     )
     val uiState = _uiState
@@ -174,18 +166,8 @@ class SubjectListViewModel @Inject constructor(
 
             is SubjectListIntent.OnSettingClicked -> {
                 viewModelScope.launch {
-                    _uiAction.tryEmit(SubjectListUiAction.CloseDrawer)
-                    delay(180)
                     navigator.navigate(Destination.SettingsScreen)
                 }
-            }
-
-            is SubjectListIntent.CloseDrawer -> {
-                _uiAction.tryEmit(SubjectListUiAction.CloseDrawer)
-            }
-
-            is SubjectListIntent.OpenDrawer -> {
-                _uiAction.tryEmit(SubjectListUiAction.OpenDrawer)
             }
 
             is SubjectListIntent.ChangeCommentSubject -> {
@@ -196,110 +178,8 @@ class SubjectListViewModel @Inject constructor(
                 }
             }
 
-            is SubjectListIntent.OnExportClicked -> {
-                _uiState.update {
-                    it.copy(
-                        isExportAlertDialogOpened = true
-                    )
-                }
-            }
-
-            is SubjectListIntent.OnImportClicked -> {
-                _uiState.update {
-                    it.copy(
-                        isImportAlertDialogOpened = true
-                    )
-                }
-            }
-
-            is SubjectListIntent.OnFileExportPathSelected -> {
-                viewModelScope.execute(
-                    source = {
-                        deviceManager.setFilePathUri(intent.uri.toString())
-                    },
-                    onSuccess = {
-                        exportDb(intent.uri)
-                    }
-                )
-            }
-
-            is SubjectListIntent.OnFileImportPathSelected -> {
-                importDb(intent.uri)
-            }
-
-            is SubjectListIntent.CloseImportDialog -> {
-                _uiState.update {
-                    it.copy(
-                        isImportAlertDialogOpened = false
-                    )
-                }
-            }
-
-            is SubjectListIntent.ImportConfirmed -> {
-                _uiState.update {
-                    it.copy(
-                        isImportAlertDialogOpened = false
-                    )
-                }
-                _uiAction.tryEmit(SubjectListUiAction.SelectDatabaseFile)
-            }
-
-            is SubjectListIntent.CloseExportDialog -> {
-                _uiState.update {
-                    it.copy(
-                        isExportAlertDialogOpened = false
-                    )
-                }
-            }
-
-            is SubjectListIntent.ExportConfirmed -> {
-                viewModelScope.execute(
-                    source = {
-                        deviceManager.getFilePathUri()
-                    },
-                    onSuccess = { filePath ->
-                        if (filePath.isNullOrEmpty()) {
-                            _uiAction.tryEmit(SubjectListUiAction.OpenDocumentTree)
-                        } else {
-                            exportDb(filePath.toUri())
-                        }
-                    }
-                )
-            }
         }
     }
-
-    private fun exportDb(uri: Uri) = viewModelScope.execute(
-        source = {
-            Log.d("rtytrytryrtytryrt", "exportDb: $uri")
-            importExportDbRepository.exportDatabase(uri)
-        },
-        onSuccess = {
-//            _uiAction.tryEmit(
-//                SubjectListUiAction.ShowErrorMessage(
-//                    resourceManager.getString(R.string.export_database_success)
-//                )
-//            )
-            _uiAction.tryEmit(SubjectListUiAction.RestartApp)
-
-        },
-        onError = {
-            Log.d("rtytrytryrtytryrt", "exportDb error: $it")
-        }
-    )
-
-    private fun importDb(uri: Uri) = viewModelScope.execute(
-        source = {
-            importExportDbRepository.importDatabase(uri)
-        },
-        onSuccess = {
-            _uiAction.tryEmit(SubjectListUiAction.RestartApp)
-
-        },
-        onError = {
-
-        }
-    )
 
     private fun checkUsage() {
         when(deviceManager.getUsage()) {

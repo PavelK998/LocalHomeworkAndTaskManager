@@ -10,9 +10,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -30,12 +35,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -89,6 +94,11 @@ fun HomeworkListScreen(
         topBar = {
             if (uiState.isEditModeEnabled) {
                 DefaultTopAppBar(
+                    modifier = Modifier.windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(
+                            WindowInsetsSides.Horizontal
+                        )
+                    ),
                     title = uiState.numberOfCheckedCards.toString(),
                     navigationIcon = Icons.Default.Close,
                     navigationAction = {
@@ -107,6 +117,11 @@ fun HomeworkListScreen(
                 )
             } else {
                 DefaultTopAppBar(
+                    modifier = Modifier.windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(
+                            WindowInsetsSides.Horizontal
+                        )
+                    ),
                     title = uiState.subjectName,
                     navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
                     navigationAction = {
@@ -174,6 +189,11 @@ fun HomeworkListScreen(
         floatingActionButton = {
             if (uiState.isScreenEmpty) {
                 GradientFloatingActionButton(
+                    modifier = Modifier.windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(
+                            WindowInsetsSides.End
+                        )
+                    ),
                     onClick = {
                         handleIntent.invoke(HomeworkListIntent.NavigateToAddHomework)
                     },
@@ -186,6 +206,11 @@ fun HomeworkListScreen(
                     exit = slideOutHorizontally() + fadeOut()
                 ) {
                     DefaultFloatingActionButton(
+                        modifier = Modifier.windowInsetsPadding(
+                            WindowInsets.safeDrawing.only(
+                                WindowInsetsSides.End
+                            )
+                        ),
                         onClick = {
                             handleIntent.invoke(HomeworkListIntent.NavigateToAddHomework)
                         },
@@ -201,12 +226,8 @@ fun HomeworkListScreen(
             SortModalBottomSheet(
                 sheetState = sheetState,
                 isSortImportance = uiState.isSortImportance,
-                isSortAdd = uiState.isSortAdd,
                 onSortImportanceClick = {
-                    handleIntent(HomeworkListIntent.OnSortImportanceClick(it))
-                },
-                onSortAddClick = {
-                    handleIntent(HomeworkListIntent.OnSortAddClick(it))
+                    handleIntent(HomeworkListIntent.OnSortClick(it))
                 },
                 onDismissRequest = {
                     handleIntent(HomeworkListIntent.CloseBottomSheet)
@@ -414,9 +435,7 @@ fun HomeworkListScreen(
 fun SortModalBottomSheet(
     modifier: Modifier = Modifier,
     sheetState: SheetState,
-    isSortAdd: Boolean,
     isSortImportance: Boolean,
-    onSortAddClick: (Boolean) -> Unit,
     onSortImportanceClick: (Boolean) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
@@ -444,16 +463,18 @@ fun SortModalBottomSheet(
                 fontWeight = FontWeight.W700
             )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(text = stringResource(R.string.sort_by_descending_importance))
-                Switch(
-                    checked = isSortImportance,
-                    onCheckedChange = {
-                        onSortImportanceClick(it)
-                    }
+                RadioButton(
+                    selected = isSortImportance,
+                    onClick = {
+                        onSortImportanceClick(true)
+                    },
                 )
             }
 
@@ -464,16 +485,18 @@ fun SortModalBottomSheet(
                 fontWeight = FontWeight.W700
             )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(text = stringResource(R.string.sort_by_descending_add_date))
-                Switch(
-                    checked = isSortAdd,
-                    onCheckedChange = {
-                        onSortAddClick(it)
-                    }
+                RadioButton(
+                    selected = !isSortImportance,
+                    onClick = {
+                        onSortImportanceClick(false)
+                    },
                 )
             }
         }

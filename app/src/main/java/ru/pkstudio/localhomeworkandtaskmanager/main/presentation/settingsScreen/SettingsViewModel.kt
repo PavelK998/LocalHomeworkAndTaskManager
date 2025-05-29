@@ -1,6 +1,9 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen
 
+import android.net.Uri
 import android.os.Build
+import android.util.Log
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,16 +19,19 @@ import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.data.util.SingleSharedFlow
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
+import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.ThemeConstants
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.ImportExportDbRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val navigator: Navigator,
     private val deviceManager: DeviceManager,
-    private val resourceManager: ResourceManager
+    private val resourceManager: ResourceManager,
+    private val importExportDbRepository: ImportExportDbRepository
 ) : ViewModel() {
 
     private var isNavigateBtnClicked = false
@@ -39,7 +45,11 @@ class SettingsViewModel @Inject constructor(
         SettingsState(
             isDynamicColorAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
             currentScreen = SETTINGS_MAIN,
-            toolbarTitle = resourceManager.getString(R.string.settings)
+            toolbarTitle = resourceManager.getString(R.string.settings),
+            titleImportAlertDialog = resourceManager.getString(R.string.import_database_dialog_title),
+            commentImportAlertDialog = resourceManager.getString(R.string.import_database_dialog_description),
+            titleExportAlertDialog = resourceManager.getString(R.string.export_database_dialog_title),
+            commentExportAlertDialog = resourceManager.getString(R.string.export_database_dialog_description)
         )
     )
     val uiState = _uiState
@@ -321,8 +331,106 @@ class SettingsViewModel @Inject constructor(
                     }
                 }
             }
+
+            is SettingsIntent.OnExportClicked -> {
+                _uiState.update {
+                    it.copy(
+                        isExportAlertDialogOpened = true
+                    )
+                }
+            }
+
+            is SettingsIntent.OnImportClicked -> {
+                _uiState.update {
+                    it.copy(
+                        isImportAlertDialogOpened = true
+                    )
+                }
+            }
+
+            is SettingsIntent.OnFileExportPathSelected -> {
+                viewModelScope.execute(
+                    source = {
+                        deviceManager.setFilePathUri(intent.uri.toString())
+                    },
+                    onSuccess = {
+                        exportDb(intent.uri)
+                    }
+                )
+            }
+
+            is SettingsIntent.OnFileImportPathSelected -> {
+                importDb(intent.uri)
+            }
+
+            is SettingsIntent.CloseImportDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isImportAlertDialogOpened = false
+                    )
+                }
+            }
+
+            is SettingsIntent.ImportConfirmed -> {
+                _uiState.update {
+                    it.copy(
+                        isImportAlertDialogOpened = false
+                    )
+                }
+                _uiAction.tryEmit(SettingsUIAction.SelectDatabaseFile)
+            }
+
+            is SettingsIntent.CloseExportDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isExportAlertDialogOpened = false
+                    )
+                }
+            }
+
+            is SettingsIntent.ExportConfirmed -> {
+                viewModelScope.execute(
+                    source = {
+                        deviceManager.getFilePathUri()
+                    },
+                    onSuccess = { filePath ->
+                        if (filePath.isNullOrEmpty()) {
+                            _uiAction.tryEmit(SettingsUIAction.OpenDocumentTree)
+                        } else {
+                            exportDb(filePath.toUri())
+                        }
+                    }
+                )
+            }
         }
     }
+
+    private fun exportDb(uri: Uri) = viewModelScope.execute(
+        source = {
+            Log.d("rtytrytryrtytryrt", "exportDb: $uri")
+            importExportDbRepository.exportDatabase(uri)
+        },
+        onSuccess = {
+            _uiAction.tryEmit(SettingsUIAction.RestartApp)
+
+        },
+        onError = {
+            Log.d("rtytrytryrtytryrt", "exportDb error: $it")
+        }
+    )
+
+    private fun importDb(uri: Uri) = viewModelScope.execute(
+        source = {
+            importExportDbRepository.importDatabase(uri)
+        },
+        onSuccess = {
+            _uiAction.tryEmit(SettingsUIAction.RestartApp)
+
+        },
+        onError = {
+
+        }
+    )
 
     private fun pinSuccess() {
         _uiState.update {

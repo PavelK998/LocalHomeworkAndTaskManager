@@ -1,41 +1,37 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DrawerState
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultButton
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultFloatingActionButton
-import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DeleteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.EmptyScreen
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.GradientFloatingActionButton
@@ -53,227 +48,179 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.com
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectListScreen(
     uiState: SubjectListState,
     handleIntent: (SubjectListIntent) -> Unit,
-    drawerState: DrawerState
 ) {
-    val localView = LocalView.current
-    val density = LocalDensity.current
-
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-
-            ModalDrawerSheet(
-                modifier = Modifier.width(
-                    with(density) { (localView.width - (localView.width / 4)).toDp() }
+    Scaffold(
+        contentWindowInsets = WindowInsets.safeContent,
+        topBar = {
+            TopAppBar(
+                modifier = Modifier.windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Start
+                    )
                 ),
-                drawerContainerColor = MaterialTheme.colorScheme.surface
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Box(
+                title = {
+                    Text(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .weight(0.6f),
-
-                        ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Image(
-                                modifier = Modifier.size(100.dp),
-                                painter = painterResource(id = R.drawable.logo4),
-                                contentDescription = "logo"
-                            )
-                            HorizontalDivider(
-                                modifier = Modifier.padding(top = 16.dp),
-                                thickness = 2.dp,
-                                color = MaterialTheme.colorScheme.outline
-                            )
+                            .padding(start = 12.dp),
+                        text = uiState.toolbarTitle
+                    )
+                },
+                navigationIcon = {
+                    IconButton(
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .border(
+                                width = 2.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = CircleShape
+                            ),
+                        onClick = {
+                            handleIntent(SubjectListIntent.OnSettingClicked)
                         }
-
-                    }
-                    Column(
-                        modifier = Modifier.weight(1.4f),
-                        verticalArrangement = Arrangement.Top
                     ) {
-                        DefaultButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            onClick = {
-                                handleIntent(SubjectListIntent.OnImportClicked)
-                            },
-                            textStyle = MaterialTheme.typography.headlineSmall,
-                            text = stringResource(id = R.string.import_database)
-                        )
-
-                        DefaultButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            onClick = {
-                                handleIntent(SubjectListIntent.OnExportClicked)
-                            },
-                            textStyle = MaterialTheme.typography.headlineSmall,
-                            text = stringResource(id = R.string.export_database)
-                        )
-
-                        DefaultButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 48.dp),
-                            onClick = {
-                                handleIntent(SubjectListIntent.OnSettingClicked)
-                            },
-                            textStyle = MaterialTheme.typography.headlineSmall,
-                            text = stringResource(id = R.string.settings)
+                        Image(
+                            painter = painterResource(R.drawable.logo4),
+                            contentDescription = ""
                         )
                     }
-
-                }
-            }
-        }
-    ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            topBar = {
-                DefaultTopAppBar(
-                    title = uiState.toolbarTitle,
-                    navigationIcon = Icons.Default.Menu,
-                    navigationAction = {
-                        handleIntent(SubjectListIntent.OpenDrawer)
-                    },
-                    actions = emptyList()
-                )
-            },
-            floatingActionButton = {
-                if (uiState.isScreenEmpty) {
-                    GradientFloatingActionButton(
-                        onClick = {
-                            handleIntent(SubjectListIntent.OpenAddSubject)
-                        },
-                        imageVector = Icons.Default.Add,
-                    )
-                } else {
-                    DefaultFloatingActionButton(
-                        onClick = {
-                            handleIntent(SubjectListIntent.OpenAddSubject)
-                        },
-                        imageVector = Icons.Default.Add,
-                    )
-                }
-
-
-            }
-        ) { paddingValues ->
-            if (uiState.isLoading) {
-                Loading()
-            } else if (uiState.isScreenEmpty) {
-                EmptyScreen(modifier = Modifier.padding(paddingValues))
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(
-                            top = 24.dp,
-                            bottom = 20.dp
+                },
+            )
+        },
+        floatingActionButton = {
+            if (uiState.isScreenEmpty) {
+                GradientFloatingActionButton(
+                    modifier = Modifier.windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(
+                            WindowInsetsSides.End
                         )
-                        .padding(horizontal = 12.dp),
-                ) {
-                    itemsIndexed(
-                        uiState.subjectsList,
-                        key = { _, model ->
-                            model.id
-                        }
-                    ) { index, model ->
-                        SwipeableCard(
-                            modifier = Modifier
-                                .padding(vertical = 2.dp)
-                                .padding(horizontal = 8.dp),
-                            isRevealed = model.isRevealed,
-                            actions = {
-                                IconButton(
-                                    onClick = {
-                                        handleIntent(SubjectListIntent.DeleteSubject(index))
-                                    }
-                                ) {
-                                    Icon(
-                                        tint = MaterialTheme.colorScheme.onSurface,
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = null
-                                    )
+                    ),
+                    onClick = {
+                        handleIntent(SubjectListIntent.OpenAddSubject)
+                    },
+                    imageVector = Icons.Default.Add,
+                )
+            } else {
+
+                DefaultFloatingActionButton(
+                    modifier = Modifier.windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(
+                            WindowInsetsSides.End
+                        )
+                    ),
+                    onClick = {
+                        handleIntent(SubjectListIntent.OpenAddSubject)
+                    },
+                    imageVector = Icons.Default.Add,
+                )
+            }
+
+
+        }
+    ) { paddingValues ->
+        if (uiState.isLoading) {
+            Loading()
+        } else if (uiState.isScreenEmpty) {
+            EmptyScreen(modifier = Modifier.padding(paddingValues))
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(
+                        top = 24.dp,
+                        bottom = 20.dp
+                    )
+                    .padding(horizontal = 12.dp),
+            ) {
+                itemsIndexed(
+                    uiState.subjectsList,
+                    key = { _, model ->
+                        model.id
+                    }
+                ) { index, model ->
+                    SwipeableCard(
+                        modifier = Modifier
+                            .padding(vertical = 2.dp)
+                            .padding(horizontal = 8.dp),
+                        isRevealed = model.isRevealed,
+                        actions = {
+                            IconButton(
+                                onClick = {
+                                    handleIntent(SubjectListIntent.DeleteSubject(index))
                                 }
-                                IconButton(
-                                    onClick = {
-                                        handleIntent(SubjectListIntent.TurnEditModeOn(index))
-                                    }
-                                ) {
-                                    Icon(
-                                        tint = MaterialTheme.colorScheme.onSurface,
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = null
-                                    )
-                                }
-                            },
-                            onCollapsed = {
-                                handleIntent(
-                                    SubjectListIntent.OnRevealCardOptionsMenuClicked(
-                                        index = index,
-                                        isRevealed = false
-                                    )
-                                )
-                            },
-                            onExpanded = {
-                                handleIntent(
-                                    SubjectListIntent.OnRevealCardOptionsMenuClicked(
-                                        index = index,
-                                        isRevealed = true
-                                    )
+                            ) {
+                                Icon(
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = null
                                 )
                             }
-                        ) {
-                            SubjectCard(
-                                isEditModeEnabled = model.isEditModeEnabled,
-                                navigateToHomeworkScreen = {
-                                    handleIntent(
-                                        SubjectListIntent.NavigateToHomeworkScreen(
-                                            subjectNane = model.subjectName,
-                                            subjectId = model.id
-                                        )
-                                    )
-                                },
-                                onTitleChanged = {
-                                    handleIntent(SubjectListIntent.OnEditTitleChanged(it))
-                                },
-                                onCommentChanged = {
-                                    handleIntent(SubjectListIntent.OnEditCommentChanged(it))
-                                },
-                                onConfirmChangesBtnCLicked = {
-                                    handleIntent(SubjectListIntent.EditSubject(index))
-                                },
-                                onDiscardChangesBtnCLicked = {
-                                    handleIntent(SubjectListIntent.TurnEditModeOff(index))
-                                },
-                                title = model.subjectName,
-                                comment = model.comment,
-                                editModeTitle = uiState.subjectNameForEdit,
-                                editModeComment = uiState.subjectCommentForEdit,
+                            IconButton(
+                                onClick = {
+                                    handleIntent(SubjectListIntent.TurnEditModeOn(index))
+                                }
+                            ) {
+                                Icon(
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        onCollapsed = {
+                            handleIntent(
+                                SubjectListIntent.OnRevealCardOptionsMenuClicked(
+                                    index = index,
+                                    isRevealed = false
+                                )
+                            )
+                        },
+                        onExpanded = {
+                            handleIntent(
+                                SubjectListIntent.OnRevealCardOptionsMenuClicked(
+                                    index = index,
+                                    isRevealed = true
+                                )
                             )
                         }
+                    ) {
+                        SubjectCard(
+                            isEditModeEnabled = model.isEditModeEnabled,
+                            navigateToHomeworkScreen = {
+                                handleIntent(
+                                    SubjectListIntent.NavigateToHomeworkScreen(
+                                        subjectNane = model.subjectName,
+                                        subjectId = model.id
+                                    )
+                                )
+                            },
+                            onTitleChanged = {
+                                handleIntent(SubjectListIntent.OnEditTitleChanged(it))
+                            },
+                            onCommentChanged = {
+                                handleIntent(SubjectListIntent.OnEditCommentChanged(it))
+                            },
+                            onConfirmChangesBtnCLicked = {
+                                handleIntent(SubjectListIntent.EditSubject(index))
+                            },
+                            onDiscardChangesBtnCLicked = {
+                                handleIntent(SubjectListIntent.TurnEditModeOff(index))
+                            },
+                            title = model.subjectName,
+                            comment = model.comment,
+                            editModeTitle = uiState.subjectNameForEdit,
+                            editModeComment = uiState.subjectCommentForEdit,
+                        )
                     }
                 }
             }
         }
-
     }
 
     if (uiState.isDeleteAlertDialogOpened) {
@@ -288,38 +235,6 @@ fun SubjectListScreen(
             },
             onDismiss = {
                 handleIntent(SubjectListIntent.CloseDeleteDialog)
-            }
-        )
-    }
-
-    if (uiState.isImportAlertDialogOpened) {
-        DeleteDialog(
-            title = uiState.titleImportAlertDialog,
-            comment = uiState.commentImportAlertDialog,
-            onConfirm = {
-                handleIntent(SubjectListIntent.ImportConfirmed)
-            },
-            onDismissRequest = {
-                handleIntent(SubjectListIntent.CloseImportDialog)
-            },
-            onDismiss = {
-                handleIntent(SubjectListIntent.CloseImportDialog)
-            }
-        )
-    }
-
-    if (uiState.isExportAlertDialogOpened) {
-        DeleteDialog(
-            title = uiState.titleExportAlertDialog,
-            comment = uiState.commentExportAlertDialog,
-            onConfirm = {
-                handleIntent(SubjectListIntent.ExportConfirmed)
-            },
-            onDismissRequest = {
-                handleIntent(SubjectListIntent.CloseExportDialog)
-            },
-            onDismiss = {
-                handleIntent(SubjectListIntent.CloseExportDialog)
             }
         )
     }
@@ -399,7 +314,7 @@ fun SubjectListScreen(
 }
 
 
-@Preview
+@Preview(showSystemUi = true)
 @Composable
 private fun Preview() {
     LocalHomeworkAndTaskManagerTheme {
@@ -409,7 +324,6 @@ private fun Preview() {
                 isScreenEmpty = false
             ),
             handleIntent = {},
-            drawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
         )
     }
 }

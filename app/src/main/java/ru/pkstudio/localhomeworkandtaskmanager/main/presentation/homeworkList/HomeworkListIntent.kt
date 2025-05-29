@@ -58,20 +58,10 @@ sealed interface HomeworkListIntent {
         val oldColumnId: Int,
     ) : HomeworkListIntent
 
-
-    data object OnSortAddAscendingClick : HomeworkListIntent
-
-    data class OnSortAddClick(val isSelected: Boolean) : HomeworkListIntent
-
-    data class OnSortImportanceClick(val isSelected: Boolean) : HomeworkListIntent
-
-    data object OnSortAddDescendingClick : HomeworkListIntent
-
-    data object OnSortImportanceAscendingClick : HomeworkListIntent
-
-    data object OnSortImportanceDescendingClick : HomeworkListIntent
+    data class OnSortClick(val isSortDescendingImportance: Boolean) : HomeworkListIntent
 
     data object OnOpenBottomSheetClick : HomeworkListIntent
 
     data object CloseBottomSheet : HomeworkListIntent
+
 }

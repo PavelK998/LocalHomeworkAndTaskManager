@@ -4,6 +4,7 @@
 
     <string name="loading">Загружаю…</string>
     <string name="loading_more_time">Еще немного…</string>
+    <string name="data_management">Управление данными</string>
     <string name="edit">Редактировать</string>
     <string name="delete">Удалить</string>
     <string name="sort">Сортировка:</string>

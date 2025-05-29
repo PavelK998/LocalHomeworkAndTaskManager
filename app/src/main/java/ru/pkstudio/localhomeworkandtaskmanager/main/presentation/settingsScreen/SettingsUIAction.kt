@@ -12,4 +12,10 @@ sealed interface SettingsUIAction {
 
     data object SetDynamicColors : SettingsUIAction
 
+    data object OpenDocumentTree : SettingsUIAction
+
+    data object SelectDatabaseFile : SettingsUIAction
+
+    data object RestartApp : SettingsUIAction
+
 }

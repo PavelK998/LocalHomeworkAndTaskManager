@@ -16,4 +16,13 @@ data class SettingsState(
     val isSuccess: Boolean = false,
     val titleText: String = "",
     val shouldEnterPassword: Boolean = true,
+    val isExportAlertDialogOpened: Boolean = false,
+    val isImportAlertDialogOpened: Boolean = false,
+
+    val titleImportAlertDialog: String = "",
+    val commentImportAlertDialog: String = "",
+
+    val titleExportAlertDialog: String = "",
+    val commentExportAlertDialog: String = "",
+
 )

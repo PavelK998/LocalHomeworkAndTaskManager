@@ -1,7 +1,12 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.editStagesScreen
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -27,8 +32,14 @@ fun EditStagesScreen(
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             DefaultTopAppBar(
+                modifier = Modifier.windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Start
+                    )
+                ),
                 title = stringResource(id = R.string.edit_stages),
                 navigationIcon = Icons.AutoMirrored.Default.ArrowBack,
                 navigationAction = {
