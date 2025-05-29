@@ -158,6 +158,13 @@ class EditStagesViewModel @Inject constructor(
                             color = color
                         )
                     )
+                },
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(
+                            isColorAlertDialogOpened = false
+                        )
+                    }
                 }
             )
         }

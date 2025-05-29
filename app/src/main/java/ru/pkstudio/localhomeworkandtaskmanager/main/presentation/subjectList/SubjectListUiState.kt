@@ -20,13 +20,5 @@ data class SubjectListState(
     val titleDeleteAlertDialog: String = "",
     val commentDeleteAlertDialog: String = "",
 
-    val isImportAlertDialogOpened: Boolean = false,
-    val titleImportAlertDialog: String = "",
-    val commentImportAlertDialog: String = "",
-
-    val isExportAlertDialogOpened: Boolean = false,
-    val titleExportAlertDialog: String = "",
-    val commentExportAlertDialog: String = "",
-
     val isVideoPlayerViewVisible: Boolean = true,
 )

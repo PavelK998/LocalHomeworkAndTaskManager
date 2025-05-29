@@ -1,7 +1,5 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList
 
-import android.net.Uri
-
 sealed interface SubjectListIntent {
 
     data class NavigateToHomeworkScreen(
@@ -13,18 +11,9 @@ sealed interface SubjectListIntent {
 
     data object CloseDeleteDialog: SubjectListIntent
 
-    data object CloseImportDialog: SubjectListIntent
-
-    data object CloseExportDialog: SubjectListIntent
-
     data object LogOutClicked: SubjectListIntent
 
     data object CloseAddSubject: SubjectListIntent
-
-    data object OpenDrawer: SubjectListIntent
-
-    data object CloseDrawer: SubjectListIntent
-
 
     data class ChangeNameSubject(val text: String): SubjectListIntent
 
@@ -51,19 +40,5 @@ sealed interface SubjectListIntent {
 
 
     data object OnSettingClicked: SubjectListIntent
-
-    data object OnImportClicked: SubjectListIntent
-
-    data object ImportConfirmed: SubjectListIntent
-
-    data object OnExportClicked: SubjectListIntent
-
-    data object ExportConfirmed: SubjectListIntent
-
-
-
-    data class OnFileExportPathSelected(val uri: Uri): SubjectListIntent
-
-    data class OnFileImportPathSelected(val uri: Uri): SubjectListIntent
 
 }

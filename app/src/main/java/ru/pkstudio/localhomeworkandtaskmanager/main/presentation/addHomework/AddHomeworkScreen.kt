@@ -15,13 +15,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -113,11 +117,17 @@ fun AddHomeworkScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize(),
             containerColor = MaterialTheme.colorScheme.surface,
+            contentWindowInsets = WindowInsets.safeDrawing,
             topBar = {
                 DefaultTopAppBar(
+                    modifier = Modifier.windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(
+                            WindowInsetsSides.Horizontal
+                        )
+                    ),
                     title = "",
                     navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
                     navigationAction = {
@@ -309,7 +319,7 @@ fun AddHomeworkScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f)
+                            .heightIn(min = 200.dp)
                             .padding(horizontal = 16.dp)
                             .clickable {
                                 handleIntent(AddHomeworkIntent.OnDescriptionChangeClick)

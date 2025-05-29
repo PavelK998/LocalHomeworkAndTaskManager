@@ -11,11 +11,8 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,7 +22,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
-import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthScreen
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthUiAction
@@ -45,10 +41,10 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo.Ho
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo.HomeworkInfoViewModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.HomeworkListViewModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsIntent
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsUIAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen.SettingsViewModel
-import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListIntent
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListScreen
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListUiAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListViewModel
@@ -131,93 +127,18 @@ fun SetupNavHost(
                 }
             ) {
                 val context = LocalContext.current
-                val coroutineScope = rememberCoroutineScope()
-                val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val viewModel = hiltViewModel<SubjectListViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
-                val launchSelectFilePath = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.OpenDocumentTree(),
-                    onResult = { uri ->
-                        val appName = context.getString(R.string.app_name)
-                        uri?.let {
-                            try {
-                                val documentFile =  DocumentFile.fromTreeUri(context, it)
-                                val appFolder = documentFile?.createDirectory(appName)
-                                if (appFolder != null) {
-                                    val takeFlags =
-                                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                                context.contentResolver.takePersistableUriPermission(uri, takeFlags)
-                                viewModel.handleIntent(
-                                    SubjectListIntent.OnFileExportPathSelected(
-                                        appFolder.uri
-                                    )
-                                )
-                                }
-
-                            } catch (e:Exception) {
-
-                            }
-                        }
-                    }
-                )
-                val launchOpenDocument = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.StartActivityForResult(),
-                    onResult = { result ->
-                        if (result.resultCode == RESULT_OK) {
-                            result.data?.data?.let { uri ->
-                                Log.d("sadasdsadas", "SetupNavHost: import uri $uri")
-                                viewModel.handleIntent(
-                                    SubjectListIntent.OnFileImportPathSelected(
-                                        uri
-                                    )
-                                )
-                            }
-                        }
-                    }
-                )
                 ObserveAsActions(flow = viewModel.uiAction) { action ->
                     when (action) {
-                        is SubjectListUiAction.CloseDrawer -> {
-                            coroutineScope.launch {
-                                drawerState.close()
-                            }
-                        }
-
-                        is SubjectListUiAction.OpenDrawer -> {
-                            coroutineScope.launch {
-                                drawerState.open()
-                            }
-                        }
-
                         is SubjectListUiAction.ShowErrorMessage -> {
                             Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
-                        }
-
-                        is SubjectListUiAction.OpenDocumentTree -> {
-                            launchSelectFilePath.launch(null)
-                        }
-
-                        is SubjectListUiAction.SelectDatabaseFile -> {
-                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                                addCategory(Intent.CATEGORY_OPENABLE)
-                                type = "*/*"
-                            }
-                            launchOpenDocument.launch(intent)
-                        }
-
-                        is SubjectListUiAction.RestartApp -> {
-                            val intent =
-                                context.packageManager.getLaunchIntentForPackage(context.packageName)
-                            intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                            context.startActivity(intent)
-                            Process.killProcess(Process.myPid())
                         }
                     }
                 }
                 SubjectListScreen(
                     uiState = uiState,
                     handleIntent = viewModel::handleIntent,
-                    drawerState = drawerState
                 )
             }
 
@@ -378,6 +299,46 @@ fun SetupNavHost(
                 val viewModel = hiltViewModel<SettingsViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
                 val context = LocalContext.current
+                val launchSelectFilePath = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.OpenDocumentTree(),
+                    onResult = { uri ->
+                        val appName = context.getString(R.string.app_name)
+                        uri?.let {
+                            try {
+                                val documentFile =  DocumentFile.fromTreeUri(context, it)
+                                val appFolder = documentFile?.createDirectory(appName)
+                                if (appFolder != null) {
+                                    val takeFlags =
+                                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                    context.contentResolver.takePersistableUriPermission(uri, takeFlags)
+                                    viewModel.handleIntent(
+                                        SettingsIntent.OnFileExportPathSelected(
+                                            appFolder.uri
+                                        )
+                                    )
+                                }
+
+                            } catch (e:Exception) {
+
+                            }
+                        }
+                    }
+                )
+                val launchOpenDocument = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.StartActivityForResult(),
+                    onResult = { result ->
+                        if (result.resultCode == RESULT_OK) {
+                            result.data?.data?.let { uri ->
+                                Log.d("sadasdsadas", "SetupNavHost: import uri $uri")
+                                viewModel.handleIntent(
+                                    SettingsIntent.OnFileImportPathSelected(
+                                        uri
+                                    )
+                                )
+                            }
+                        }
+                    }
+                )
                 ObserveAsActions(flow = viewModel.uiAction) { action ->
                     when (action) {
                         is SettingsUIAction.ShowError -> {
@@ -398,6 +359,26 @@ fun SetupNavHost(
 
                         is SettingsUIAction.SetSystemTheme -> {
                             activityViewModel.toggleSystemTheme(action.isSystemInDarkMode)
+                        }
+
+                        is SettingsUIAction.OpenDocumentTree -> {
+                            launchSelectFilePath.launch(null)
+                        }
+
+                        is SettingsUIAction.SelectDatabaseFile -> {
+                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                                addCategory(Intent.CATEGORY_OPENABLE)
+                                type = "*/*"
+                            }
+                            launchOpenDocument.launch(intent)
+                        }
+
+                        is SettingsUIAction.RestartApp -> {
+                            val intent =
+                                context.packageManager.getLaunchIntentForPackage(context.packageName)
+                            intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            context.startActivity(intent)
+                            Process.killProcess(Process.myPid())
                         }
                     }
                 }

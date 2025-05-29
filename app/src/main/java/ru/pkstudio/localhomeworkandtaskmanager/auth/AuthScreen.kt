@@ -1,5 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.auth
 
+import android.content.res.Configuration
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -11,10 +12,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -32,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -64,6 +69,19 @@ fun AuthScreen(
     handleIntent: (AuthIntent) -> Unit,
     player: Player?
 ) {
+    val configuration = LocalConfiguration.current
+    val isLandscape by remember(configuration) {
+        mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
+    }
+    val screenWidthPx by remember {
+        mutableIntStateOf(configuration.screenWidthDp * (configuration.densityDpi / 160))
+    }
+
+
+    Log.d(
+        "hjhgfhfghfghfh",
+        "screenWidthPx: ${configuration.screenWidthDp * (configuration.densityDpi / 160)}"
+    )
     BackHandler {
         handleIntent(AuthIntent.OnBackBtnClicked)
     }
@@ -116,14 +134,19 @@ fun AuthScreen(
         }
     } else {
         Scaffold(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            contentWindowInsets = WindowInsets.safeContent
         ) { paddingValues ->
             when (uiState.currentAuthAction) {
                 AuthAction.SET_PIN -> {
                     SetPinCode(
-                        modifier = Modifier.padding(paddingValues),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
                         uiState = uiState,
-                        handleIntent = handleIntent
+                        handleIntent = handleIntent,
+                        isLandscape = isLandscape,
+                        screenWidthPx = screenWidthPx
                     )
                 }
 
@@ -151,6 +174,7 @@ fun AuthScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                             .padding(horizontal = 16.dp),
+                        isLandscape = isLandscape,
                         setDiary = {
                             handleIntent(AuthIntent.SetDiaryUsage)
                         },
@@ -171,50 +195,102 @@ fun SelectUsage(
     modifier: Modifier = Modifier,
     setDiary: () -> Unit,
     setTaskTracker: () -> Unit,
+    isLandscape: Boolean
 ) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            style = MaterialTheme.typography.titleLarge,
-            text = stringResource(R.string.auth_usage_title)
-        )
-        Text(
-            modifier = Modifier.padding(top = 12.dp),
-            style = MaterialTheme.typography.titleMedium,
-            text = stringResource(R.string.auth_usage_sub_title)
-        )
-        Text(
-            modifier = Modifier.padding(top = 4.dp),
-            style = MaterialTheme.typography.bodyLarge,
-            text = stringResource(R.string.auth_usage_parentheses)
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
+    if (isLandscape) {
+        Box(
+            modifier = modifier,
+            contentAlignment = Alignment.Center
         ) {
-            DefaultButton(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp),
-                onClick = {
-                    setTaskTracker()
-                },
-                text = stringResource(R.string.auth_usage_btn_task_tracker)
-            )
-            DefaultButton(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp),
-                onClick = {
-                    setDiary()
-                },
-                text = stringResource(R.string.auth_usage_btn_diary)
-            )
-        }
+            Column(
+                modifier = Modifier.fillMaxWidth(0.7f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    style = MaterialTheme.typography.titleLarge,
+                    text = stringResource(R.string.auth_usage_title)
+                )
+                Text(
+                    modifier = Modifier.padding(top = 12.dp),
+                    style = MaterialTheme.typography.titleMedium,
+                    text = stringResource(R.string.auth_usage_sub_title)
+                )
+                Text(
+                    modifier = Modifier.padding(top = 4.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    text = stringResource(R.string.auth_usage_parentheses)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp)
+                ) {
+                    DefaultButton(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp),
+                        onClick = {
+                            setTaskTracker()
+                        },
+                        text = stringResource(R.string.auth_usage_btn_task_tracker)
+                    )
+                    DefaultButton(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 8.dp),
+                        onClick = {
+                            setDiary()
+                        },
+                        text = stringResource(R.string.auth_usage_btn_diary)
+                    )
+                }
 
+            }
+        }
+    } else {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                style = MaterialTheme.typography.titleLarge,
+                text = stringResource(R.string.auth_usage_title)
+            )
+            Text(
+                modifier = Modifier.padding(top = 12.dp),
+                style = MaterialTheme.typography.titleMedium,
+                text = stringResource(R.string.auth_usage_sub_title)
+            )
+            Text(
+                modifier = Modifier.padding(top = 4.dp),
+                style = MaterialTheme.typography.bodyLarge,
+                text = stringResource(R.string.auth_usage_parentheses)
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp)
+            ) {
+                DefaultButton(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp),
+                    onClick = {
+                        setTaskTracker()
+                    },
+                    text = stringResource(R.string.auth_usage_btn_task_tracker)
+                )
+                DefaultButton(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp),
+                    onClick = {
+                        setDiary()
+                    },
+                    text = stringResource(R.string.auth_usage_btn_diary)
+                )
+            }
+        }
     }
 }
 
@@ -328,40 +404,99 @@ fun SelectTheme(
 private fun SetPinCode(
     modifier: Modifier,
     uiState: AuthUiState,
+    isLandscape: Boolean,
+    screenWidthPx: Int,
     handleIntent: (AuthIntent) -> Unit
 ) {
-    Column(
-        modifier = modifier
-    ) {
+    if (isLandscape && screenWidthPx < 2000) {
         Column(
-            modifier = Modifier.weight(0.8f),
-            verticalArrangement = Arrangement.Bottom,
+            modifier = modifier,
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 50.dp),
-                fontSize = 30.sp,
-                text = uiState.titleText
-            )
-
-            PinCode(
-                text = uiState.text,
-                emptyColor = emptyColor,
-                filledColor = filledColor,
-                isError = uiState.isError,
-                isSuccess = uiState.isSuccess,
-            )
-        }
-        Box(modifier = Modifier.weight(1.2f)) {
-            Keyboard(
-                modifier = Modifier.padding(top = 50.dp),
-                onKeyboardClick = {
-                    handleIntent(AuthIntent.OnKeyboardClicked(it))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.2f),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Text(
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 30.sp,
+                    text = uiState.titleText
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.8f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Box(
+                    modifier = Modifier.weight(0.5f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    PinCode(
+                        text = uiState.text,
+                        emptyColor = emptyColor,
+                        filledColor = filledColor,
+                        isError = uiState.isError,
+                        isSuccess = uiState.isSuccess,
+                        screenWidthPx = screenWidthPx
+                    )
                 }
-            )
+                Box(
+                    modifier = Modifier.weight(0.4f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Keyboard(
+                        screenWidthPx = screenWidthPx,
+                        onKeyboardClick = {
+                            handleIntent(AuthIntent.OnKeyboardClicked(it))
+                        }
+                    )
+                }
+                Box(modifier = Modifier.weight(0.1f))
+            }
+        }
+    } else {
+        Column(
+            modifier = modifier
+        ) {
+            Column(
+                modifier = Modifier.weight(0.8f),
+                verticalArrangement = Arrangement.Bottom,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 50.dp),
+                    fontSize = 30.sp,
+                    text = uiState.titleText
+                )
+
+                PinCode(
+                    text = uiState.text,
+                    emptyColor = emptyColor,
+                    filledColor = filledColor,
+                    isError = uiState.isError,
+                    isSuccess = uiState.isSuccess,
+                    screenWidthPx = screenWidthPx
+                )
+            }
+            Box(modifier = Modifier.weight(1.2f)) {
+                Keyboard(
+                    modifier = Modifier.padding(top = 50.dp),
+                    screenWidthPx = screenWidthPx,
+                    onKeyboardClick = {
+                        handleIntent(AuthIntent.OnKeyboardClicked(it))
+                    },
+                )
+            }
         }
     }
+
 }
 
 @Composable
@@ -371,143 +506,275 @@ private fun PinCode(
     filledColor: Color,
     emptyColor: Color,
     isError: Boolean,
-    isSuccess: Boolean
+    isSuccess: Boolean,screenWidthPx: Int
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Row(
+    if (screenWidthPx < 2000){
+        Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            (1..4).forEach { index ->
-                val color by animateColorAsState(
-                    targetValue = if (text.length >= index) {
-                        if (isError) {
-                            MaterialTheme.colorScheme.error
-                        } else if (isSuccess) {
-                            success
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                (1..4).forEach { index ->
+                    val color by animateColorAsState(
+                        targetValue = if (text.length >= index) {
+                            if (isError) {
+                                MaterialTheme.colorScheme.error
+                            } else if (isSuccess) {
+                                success
+                            } else {
+                                filledColor
+                            }
                         } else {
-                            filledColor
-                        }
-                    } else {
-                        emptyColor
-                    },
-                    label = "boxColor"
-                )
-                Box(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .size(35.dp)
-                        .background(color)
+                            emptyColor
+                        },
+                        label = "boxColor"
+                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(35.dp)
+                            .background(color)
+                    )
+                }
+            }
+            AnimatedVisibility(visible = isError) {
+                Text(
+                    modifier = Modifier.padding(top = 12.dp),
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.error,
+                    text = stringResource(id = R.string.incorrect_password)
                 )
             }
         }
-        AnimatedVisibility(visible = isError) {
-            Text(
-                modifier = Modifier.padding(top = 12.dp),
-                fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.error,
-                text = stringResource(id = R.string.incorrect_password)
-            )
+    } else {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = modifier
+                    .fillMaxWidth(0.5f),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                (1..4).forEach { index ->
+                    val color by animateColorAsState(
+                        targetValue = if (text.length >= index) {
+                            if (isError) {
+                                MaterialTheme.colorScheme.error
+                            } else if (isSuccess) {
+                                success
+                            } else {
+                                filledColor
+                            }
+                        } else {
+                            emptyColor
+                        },
+                        label = "boxColor"
+                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(35.dp)
+                            .background(color)
+                    )
+                }
+            }
+            AnimatedVisibility(visible = isError) {
+                Text(
+                    modifier = Modifier.padding(top = 12.dp),
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.error,
+                    text = stringResource(id = R.string.incorrect_password)
+                )
+            }
         }
     }
-
 }
 
 @Composable
 fun Keyboard(
     modifier: Modifier = Modifier,
-    onKeyboardClick: (String) -> Unit
+    onKeyboardClick: (String) -> Unit,
+    screenWidthPx: Int
 ) {
+    if (screenWidthPx < 2000) {
+        Column(
+            modifier = modifier
+        ) {
+            listOf(1..3, 4..6, 7..9).forEach { range ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    range.forEach { index ->
+                        TextButton(
+                            colors = ButtonDefaults.buttonColors().copy(
+                                contentColor = MaterialTheme.colorScheme.primary,
+                                containerColor = Color.Transparent
+                            ),
+                            onClick = {
+                                Log.d("saaasdsadasd", "Keyboard: ${index.toChar()}")
+                                onKeyboardClick(index.toString())
+                            }
+                        ) {
+                            Text(
+                                fontSize = 40.sp,
+                                text = index.toString()
+                            )
+                        }
 
-    Column(
-        modifier = modifier
-    ) {
-        listOf(1..3, 4..6, 7..9).forEach { range ->
+                    }
+                }
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceAround
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                range.forEach { index ->
-                    TextButton(
-                        colors = ButtonDefaults.buttonColors().copy(
-                            contentColor = MaterialTheme.colorScheme.primary,
-                            containerColor = Color.Transparent
-                        ),
-                        onClick = {
-                            Log.d("saaasdsadasd", "Keyboard: ${index.toChar()}")
-                            onKeyboardClick(index.toString())
-                        }
-                    ) {
-                        Text(
-                            fontSize = 40.sp,
-                            text = index.toString()
-                        )
+                TextButton(
+                    colors = ButtonDefaults.buttonColors().copy(
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        containerColor = Color.Transparent
+                    ),
+                    onClick = {
+                        onKeyboardClick("C")
                     }
-
+                ) {
+                    Text(
+                        fontSize = 40.sp,
+                        text = "C"
+                    )
                 }
+                TextButton(
+                    colors = ButtonDefaults.buttonColors().copy(
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        containerColor = Color.Transparent
+                    ),
+                    onClick = {
+                        onKeyboardClick("0")
+                    }
+                ) {
+                    Text(
+                        fontSize = 40.sp,
+                        text = "0"
+                    )
+                }
+                IconButton(
+                    colors = IconButtonDefaults.iconButtonColors().copy(
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        containerColor = Color.Transparent
+                    ),
+                    onClick = {
+                        onKeyboardClick("-")
+                    }
+                ) {
+                    Icon(
+                        modifier = Modifier.size(40.dp),
+                        painter = painterResource(id = R.drawable.icon_backspace),
+                        contentDescription = ""
+                    )
+                }
+
             }
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
+    } else {
+        Column(
+            modifier = modifier
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TextButton(
-                colors = ButtonDefaults.buttonColors().copy(
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    containerColor = Color.Transparent
-                ),
-                onClick = {
-                    onKeyboardClick("C")
-                }
-            ) {
-                Text(
-                    fontSize = 40.sp,
-                    text = "C"
-                )
-            }
-            TextButton(
-                colors = ButtonDefaults.buttonColors().copy(
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    containerColor = Color.Transparent
-                ),
-                onClick = {
-                    onKeyboardClick("0")
-                }
-            ) {
-                Text(
-                    fontSize = 40.sp,
-                    text = "0"
-                )
-            }
-            IconButton(
-                colors = IconButtonDefaults.iconButtonColors().copy(
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    containerColor = Color.Transparent
-                ),
-                onClick = {
-                    onKeyboardClick("-")
-                }
-            ) {
-                Icon(
-                    modifier = Modifier.size(40.dp),
-                    painter = painterResource(id = R.drawable.icon_backspace),
-                    contentDescription = ""
-                )
-            }
+            listOf(1..3, 4..6, 7..9).forEach { range ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    range.forEach { index ->
+                        TextButton(
+                            colors = ButtonDefaults.buttonColors().copy(
+                                contentColor = MaterialTheme.colorScheme.primary,
+                                containerColor = Color.Transparent
+                            ),
+                            onClick = {
+                                Log.d("saaasdsadasd", "Keyboard: ${index.toChar()}")
+                                onKeyboardClick(index.toString())
+                            }
+                        ) {
+                            Text(
+                                fontSize = 40.sp,
+                                text = index.toString()
+                            )
+                        }
 
+                    }
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(0.5f),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(
+                    colors = ButtonDefaults.buttonColors().copy(
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        containerColor = Color.Transparent
+                    ),
+                    onClick = {
+                        onKeyboardClick("C")
+                    }
+                ) {
+                    Text(
+                        fontSize = 40.sp,
+                        text = "C"
+                    )
+                }
+                TextButton(
+                    colors = ButtonDefaults.buttonColors().copy(
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        containerColor = Color.Transparent
+                    ),
+                    onClick = {
+                        onKeyboardClick("0")
+                    }
+                ) {
+                    Text(
+                        fontSize = 40.sp,
+                        text = "0"
+                    )
+                }
+                IconButton(
+                    colors = IconButtonDefaults.iconButtonColors().copy(
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        containerColor = Color.Transparent
+                    ),
+                    onClick = {
+                        onKeyboardClick("-")
+                    }
+                ) {
+                    Icon(
+                        modifier = Modifier.size(40.dp),
+                        painter = painterResource(id = R.drawable.icon_backspace),
+                        contentDescription = ""
+                    )
+                }
+
+            }
         }
     }
 }
