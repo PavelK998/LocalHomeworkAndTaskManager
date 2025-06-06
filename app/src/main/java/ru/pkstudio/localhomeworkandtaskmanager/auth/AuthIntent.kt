@@ -20,6 +20,8 @@ sealed interface AuthIntent {
 
     data object SetTaskTrackerUsage : AuthIntent
 
+    data class GetInitialData(val orientation: Int) : AuthIntent
+
     data class SetThemeId(
         val themeId: Int,
         val isSystemInDarkMode: Boolean

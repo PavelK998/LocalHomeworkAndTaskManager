@@ -531,6 +531,7 @@ class AddHomeworkViewModel @Inject constructor(
 
             viewModelScope.launch {
                 stageFlow.collect { stageList ->
+                    Log.d("tryrtyrtyrtyrt", "getStages: $stageList")
                     _uiState.update {
                         it.copy(
                             stageList = stageList
@@ -586,6 +587,7 @@ class AddHomeworkViewModel @Inject constructor(
                     isLoading = true
                 )
             }
+            Log.d("tyutryutyutyrtu", "addHomework is finished: ${_uiState.value.currentSelectedStage}")
             viewModelScope.execute(
                 source = {
                     homeworkRepository.insertHomework(
@@ -601,13 +603,14 @@ class AddHomeworkViewModel @Inject constructor(
                             startDate = null,
                             endDate = endDate,
                             imageNameList = emptyList(),
-                            stageId = _uiState.value.currentSelectedStage?.id ?: 0L
+                            stageId = _uiState.value.currentSelectedStage?.id ?: 0L,
+                            isFinished = _uiState.value.currentSelectedStage?.isFinishStage ?: false
                         )
                     )
                 },
                 onSuccess = { id ->
                     Log.d("gfgdfgdfgdfgdfg", "addHomework: name id $id")
-                    if (folderUri.isNotBlank()) {
+                    if (folderUri.isNotBlank() && _uiState.value.imagesUriList.isNotEmpty()) {
                         viewModelScope.execute(
                             source = {
                                 filesHandleRepository.uploadImageToUserFolderWithImageUriList(
@@ -626,6 +629,13 @@ class AddHomeworkViewModel @Inject constructor(
                                 Log.d("fgdhgghgfh", "addHomework: $it")
                             }
                         )
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false
+                            )
+                        }
+                        navigateUp()
                     }
                 },
                 onError = {

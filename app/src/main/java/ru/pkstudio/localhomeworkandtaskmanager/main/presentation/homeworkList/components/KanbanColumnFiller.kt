@@ -68,7 +68,7 @@ fun KanbanColumnFiller(
                         textAlign = TextAlign.End,
                     )
                 }
-                if (model.endDate.isNotBlank()) {
+                if (!model.isFinished && model.endDate.isNotBlank()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -142,7 +142,8 @@ private fun KanbanColumnFillerPreview() {
                 stageName = "asdsad",
                 subjectId = 0L,
                 color = 0,
-                importance = 1
+                importance = 1,
+                isFinished = true
 
             ),
             onColorPaletteClicked = {}

@@ -4,5 +4,6 @@ data class StageModel(
     val id: Long? = null,
     val color: Int,
     val stageName: String,
-    val position: Int
+    val position: Int,
+    val isFinishStage: Boolean = false,
 )

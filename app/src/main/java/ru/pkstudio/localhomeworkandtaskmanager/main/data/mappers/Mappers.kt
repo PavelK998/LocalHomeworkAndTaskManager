@@ -105,7 +105,8 @@ fun HomeworkEntity.toHomeworkModel(): HomeworkModel {
         startDate = startDate,
         endDate = endDate,
         imageNameList = imageNameList,
-        stageId = stageId
+        stageId = stageId,
+        isFinished = isFinished
     )
 }
 
@@ -140,7 +141,8 @@ fun HomeworkModel.toHomeworkEntity(): HomeworkEntity {
         startDate = startDate,
         endDate = endDate,
         imageNameList = imageNameList,
-        stageId = stageId
+        stageId = stageId,
+        isFinished = isFinished
     )
 }
 
@@ -210,7 +212,8 @@ fun HomeworkModel.toHomeworkUiModel(): HomeworkUiModel {
         name = name,
         stageName = stage,
         stageId = stageId,
-        subjectId = subjectId
+        subjectId = subjectId,
+        isFinished = isFinished
     )
 }
 
@@ -245,7 +248,8 @@ fun HomeworkUiModel.toHomeworkModel(): HomeworkModel {
         name = name,
         stageId = stageId,
         stage = stageName,
-        subjectId = subjectId
+        subjectId = subjectId,
+        isFinished = isFinished
     )
 }
 
@@ -261,7 +265,8 @@ fun StageEntity.toStageModel(): StageModel {
         id = id,
         color = color,
         stageName = stageName,
-        position = position
+        position = position,
+        isFinishStage = isFinishStage
     )
 }
 
@@ -270,7 +275,8 @@ fun StageModel.toStageEntity(): StageEntity {
         id = id,
         color = color,
         stageName = stageName,
-        position = position
+        position = position,
+        isFinishStage = isFinishStage
     )
 }
 
@@ -280,7 +286,20 @@ fun List<StageEntity>.toStageModelList(): List<StageModel> {
             id = it.id,
             color = it.color,
             stageName = it.stageName,
-            position = it.position
+            position = it.position,
+            isFinishStage = it.isFinishStage
+        )
+    }
+}
+
+fun List<StageModel>.toStageEntityList(): List<StageEntity> {
+    return map {
+        StageEntity(
+            id = it.id,
+            color = it.color,
+            stageName = it.stageName,
+            position = it.position,
+            isFinishStage = it.isFinishStage
         )
     }
 }

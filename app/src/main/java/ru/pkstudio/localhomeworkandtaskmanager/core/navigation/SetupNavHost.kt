@@ -1,11 +1,15 @@
 package ru.pkstudio.localhomeworkandtaskmanager.core.navigation
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.os.Process
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,6 +17,11 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -23,6 +32,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthIntent
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthScreen
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthUiAction
 import ru.pkstudio.localhomeworkandtaskmanager.auth.AuthViewModel
@@ -49,6 +59,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.Sub
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListUiAction
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList.SubjectListViewModel
 
+@SuppressLint("SourceLockedOrientationActivity")
 @Composable
 fun SetupNavHost(
     navController: NavHostController,
@@ -84,6 +95,13 @@ fun SetupNavHost(
                 val viewModel = hiltViewModel<AuthViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
                 val context = LocalContext.current
+                val configuration = LocalConfiguration.current
+                val isLandscape by remember(configuration) {
+                    mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
+                }
+                val screenWidthPx by remember {
+                    mutableIntStateOf(configuration.screenWidthDp * (configuration.densityDpi / 160))
+                }
                 ObserveAsActions(flow = viewModel.uiAction) { action ->
                     when (action) {
                         is AuthUiAction.SetDarkTheme -> {
@@ -105,12 +123,23 @@ fun SetupNavHost(
                         is AuthUiAction.FinishActivity -> {
                             (context as? Activity)?.finish()
                         }
+
+                        is AuthUiAction.GetInitialData -> {
+                            viewModel.handleIntent(AuthIntent.GetInitialData(configuration.orientation))
+                        }
+
+                        is AuthUiAction.SetUnspecifiedOrientation -> {
+                            val activity = context as ComponentActivity
+                            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                        }
                     }
                 }
                 AuthScreen(
                     uiState = uiState,
                     handleIntent = viewModel::handleIntent,
-                    player = viewModel.player
+                    player = viewModel.player,
+                    isLandscape = isLandscape,
+                    screenWidthPx = screenWidthPx
                 )
             }
         }

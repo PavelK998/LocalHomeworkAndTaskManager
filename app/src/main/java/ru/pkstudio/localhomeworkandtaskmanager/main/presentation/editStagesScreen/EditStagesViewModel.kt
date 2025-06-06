@@ -23,7 +23,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.EditStageResult
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
-import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant10
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant9
 import javax.inject.Inject
 
 @HiltViewModel
@@ -64,7 +64,16 @@ class EditStagesViewModel @Inject constructor(
     fun handleIntent(intent: EditStagesIntent) {
         when (intent) {
             is EditStagesIntent.OnAddStageBtmClick -> {
-                addStage(intent.position + 1)
+                if (intent.position == _uiState.value.stagesList.lastIndex){
+                    if (_uiState.value.stagesList.size == 2) {
+                        addStage(intent.position)
+                    } else {
+                        addStage(intent.position - 1)
+                    }
+                } else {
+                    addStage(intent.position + 1)
+                }
+
             }
 
             is EditStagesIntent.OnStageNameChange -> {
@@ -77,7 +86,7 @@ class EditStagesViewModel @Inject constructor(
             }
 
             is EditStagesIntent.OnDeleteStageBtmClick -> {
-                if (_uiState.value.stagesList.size == 1) {
+                if (intent.index == 0 || intent.index == _uiState.value.stagesList.lastIndex) {
                     _uiAction.tryEmit(
                         EditStageUiAction.ShowErrorMessage(
                             resourceManager.getString(R.string.delete_single_stage)
@@ -220,9 +229,9 @@ class EditStagesViewModel @Inject constructor(
         source = {
             stageRepository.insertStageToPosition(
                 stage = StageModel(
-                    stageName = resourceManager.getString(R.string.default_stage),
+                    stageName = resourceManager.getString(R.string.default_added_stage),
                     position = position,
-                    color = stageVariant10.toArgb()
+                    color = stageVariant9.toArgb()
                 )
             )
         },

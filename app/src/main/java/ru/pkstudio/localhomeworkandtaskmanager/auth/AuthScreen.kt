@@ -1,6 +1,5 @@
 package ru.pkstudio.localhomeworkandtaskmanager.auth
 
-import android.content.res.Configuration
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -35,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,7 +41,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,21 +64,10 @@ import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.success
 fun AuthScreen(
     uiState: AuthUiState,
     handleIntent: (AuthIntent) -> Unit,
-    player: Player?
+    player: Player?,
+    isLandscape: Boolean,
+    screenWidthPx: Int
 ) {
-    val configuration = LocalConfiguration.current
-    val isLandscape by remember(configuration) {
-        mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
-    }
-    val screenWidthPx by remember {
-        mutableIntStateOf(configuration.screenWidthDp * (configuration.densityDpi / 160))
-    }
-
-
-    Log.d(
-        "hjhgfhfghfghfh",
-        "screenWidthPx: ${configuration.screenWidthDp * (configuration.densityDpi / 160)}"
-    )
     BackHandler {
         handleIntent(AuthIntent.OnBackBtnClicked)
     }
@@ -788,7 +774,9 @@ private fun AuthScreenPreview() {
                 currentAuthAction = AuthAction.SELECT_THEME
             ),
             handleIntent = {},
-            player = null
+            player = null,
+            screenWidthPx = 0,
+            isLandscape = false
         )
     }
 }

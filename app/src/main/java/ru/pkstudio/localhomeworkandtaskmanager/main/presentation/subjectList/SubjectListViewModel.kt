@@ -23,10 +23,10 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.SubjectModel
-import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.ImportExportDbRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant10
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant5
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,7 +36,6 @@ class SubjectListViewModel @Inject constructor(
     private val resourceManager: ResourceManager,
     private val deviceManager: DeviceManager,
     private val stageRepository: StageRepository,
-    private val importExportDbRepository: ImportExportDbRepository,
 ) : ViewModel() {
 
     private var indexItemForDelete = -1
@@ -220,14 +219,22 @@ class SubjectListViewModel @Inject constructor(
     private fun createStage() {
         viewModelScope.execute(
             source = {
-                stageRepository.insertStage(
-                    stage = StageModel(
-                        stageName = resourceManager.getString(R.string.default_stage),
-                        position = 0,
-                        color = stageVariant10.toArgb()
+                stageRepository.insertStages(
+                    stagesList = listOf(
+                        StageModel(
+                            stageName = resourceManager.getString(R.string.default_stage),
+                            position = 0,
+                            color = stageVariant10.toArgb()
+                        ),
+                        StageModel(
+                            stageName = resourceManager.getString(R.string.default_finish_stage),
+                            position = 1,
+                            isFinishStage = true,
+                            color = stageVariant5.toArgb()
+                        )
                     )
                 )
-            }
+            },
         )
     }
 

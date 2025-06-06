@@ -242,6 +242,7 @@ fun AddHomeworkScreen(
                             .padding(top = 4.dp, bottom = 8.dp),
                         currentStageName = uiState.currentSelectedStage?.stageName ?: "",
                         currentColor = uiState.currentColor,
+                        ifStageIsFinishStage = uiState.currentSelectedStage?.isFinishStage ?: false,
                         onColorSelectClick = {
                             handleIntent(AddHomeworkIntent.OpenImportanceColorDialog)
                         },
@@ -251,30 +252,32 @@ fun AddHomeworkScreen(
                         currentStageColor = uiState.currentSelectedStage?.color
                             ?: stageVariant8.toArgb()
                     )
-                    Row(
-                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.finish_before)
-                        )
-                        TextButton(
-                            onClick = {
-                                handleIntent(AddHomeworkIntent.SelectDateTime)
-                            }
+                    if (uiState.currentSelectedStage?.isFinishStage == false) {
+                        Row(
+                            modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                text = if (uiState.selectedFinishDate.isBlank() || uiState.selectedFinishTime.isBlank()) {
-                                    stringResource(R.string.select_date)
-                                } else {
-                                    "${uiState.selectedFinishDate} ${uiState.selectedFinishTime}"
-                                }
-
+                                text = stringResource(R.string.finish_before)
                             )
-                        }
+                            TextButton(
+                                onClick = {
+                                    handleIntent(AddHomeworkIntent.SelectDateTime)
+                                }
+                            ) {
+                                Text(
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    text = if (uiState.selectedFinishDate.isBlank() || uiState.selectedFinishTime.isBlank()) {
+                                        stringResource(R.string.select_date)
+                                    } else {
+                                        "${uiState.selectedFinishDate} ${uiState.selectedFinishTime}"
+                                    }
 
+                                )
+                            }
+
+                        }
                     }
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),

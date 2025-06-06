@@ -14,6 +14,9 @@ interface StageDao {
     @Insert
     suspend fun insertStage(stage: StageEntity)
 
+    @Insert
+    suspend fun insertStages(stageList: List<StageEntity>)
+
     @Delete
     suspend fun deleteStage(stage: StageEntity)
 
@@ -30,17 +33,20 @@ interface StageDao {
     fun getAllStagesSingleTime(): List<StageEntity>
 
     @Query("UPDATE stage SET position = position + 1 WHERE position >= :newPosition")
-    suspend fun shiftPositions(newPosition: Int)
+    suspend fun shiftPositionsPlusOne(newPosition: Int)
+
+    @Query("UPDATE stage SET position = position - 1 WHERE position > :newPosition")
+    suspend fun shiftPositionsMinusOne(newPosition: Int)
 
     @Transaction
     suspend fun insertWithShift(stage: StageEntity) {
-        shiftPositions(stage.position)
+        shiftPositionsPlusOne(stage.position)
         insertStage(stage)
     }
 
     @Transaction
     suspend fun deleteWithShift(stage: StageEntity) {
-        shiftPositions(stage.position)
+        shiftPositionsMinusOne(stage.position)
         deleteStage(stage)
     }
 

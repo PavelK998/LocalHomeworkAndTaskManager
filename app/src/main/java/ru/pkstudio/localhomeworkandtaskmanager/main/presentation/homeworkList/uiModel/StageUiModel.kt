@@ -4,5 +4,6 @@ data class StageUiModel(
     val id: Long,
     val color: Int,
     val stageName: String,
-    val itemsCount: String
+    val itemsCount: String,
+    val isFinishStage: Boolean = false,
 )

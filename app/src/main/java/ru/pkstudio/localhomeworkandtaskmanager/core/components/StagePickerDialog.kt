@@ -126,7 +126,8 @@ private fun Preview() {
                     id = 0,
                     color = -5234535,
                     stageName = "toDo",
-                    position = 0
+                    position = 0,
+                    isFinishStage = false
                 )
             ),
             onDismiss = {},
