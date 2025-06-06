@@ -63,7 +63,9 @@ fun EditStageCard(
                 value = text,
                 onValueChange = {
                     text = it
-                    onTextChanged(it)
+                    if (it.isNotEmpty()) {
+                        onTextChanged(it.trimEnd())
+                    }
                 }
             )
             IconButton(

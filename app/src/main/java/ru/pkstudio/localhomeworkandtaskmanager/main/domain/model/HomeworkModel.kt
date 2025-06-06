@@ -15,5 +15,6 @@ data class HomeworkModel(
     val description: String,
     val startDate: LocalDate?,
     val endDate: LocalDateTime?,
+    val isFinished: Boolean,
     val imageNameList: List<String>
 )

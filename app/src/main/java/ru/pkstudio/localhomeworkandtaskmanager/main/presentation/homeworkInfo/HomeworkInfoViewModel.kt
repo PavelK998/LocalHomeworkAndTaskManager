@@ -164,12 +164,6 @@ class HomeworkInfoViewModel @Inject constructor(
             }
 
             is HomeworkInfoIntent.NavigateUp -> {
-                val endDate = if (localFinishDate != null && localFinishTime != null) {
-                    LocalDateTime.of(
-                        localFinishDate,
-                        localFinishTime
-                    )
-                } else null
                 if (
                     _uiState.value.nameRichTextState.annotatedString != defaultNameState.annotatedString
                     || _uiState.value.descriptionRichTextState.annotatedString != defaultDescriptionState.annotatedString
@@ -343,7 +337,8 @@ class HomeworkInfoViewModel @Inject constructor(
                             newImportanceColor = _uiState.value.currentColor,
                             newStageId = _uiState.value.currentSelectedStage?.id ?: 0L,
                             newStageName = _uiState.value.currentSelectedStage?.stageName ?: "",
-                            endDate = endDate
+                            endDate = endDate,
+                            isFinished = _uiState.value.currentSelectedStage?.isFinishStage ?: false
                         )
                     }
                 }
@@ -732,6 +727,7 @@ class HomeworkInfoViewModel @Inject constructor(
         newStageName: String,
         endDate: LocalDateTime?,
         newImportanceColor: Color,
+        isFinished: Boolean
     ) =
         viewModelScope.execute(
             source = {
@@ -745,7 +741,8 @@ class HomeworkInfoViewModel @Inject constructor(
                         stage = newStageName,
                         color = newImportanceColor.toArgb(),
                         importance = newImportanceColor.toImportance(),
-                        endDate = endDate
+                        endDate = endDate,
+                        isFinished = isFinished
                     )
                 )
 
@@ -761,27 +758,6 @@ class HomeworkInfoViewModel @Inject constructor(
                 }
             }
         )
-
-    private fun changeStage(homeworkModel: HomeworkModel, newStageId: Long) {
-        val stage = _uiState.value.stageList.find { it.id == newStageId }
-        viewModelScope.execute(
-            source = {
-                homeworkRepository.updateHomework(
-                    homework = homeworkModel.copy(
-                        stageId = newStageId,
-                        stage = stage?.stageName ?: ""
-                    )
-                )
-            },
-            onSuccess = {
-                _uiState.update {
-                    it.copy(
-                        isStagePickerVisible = false
-                    )
-                }
-            }
-        )
-    }
 
 
     private fun getInitialData(homeworkId: Long, subjectId: Long) {

@@ -619,7 +619,8 @@ class HomeworkListViewModel @Inject constructor(
                                         color = stage.color,
                                         itemsCount = subjectWithHomework.homework.filter { homework ->
                                             homework.stageId == stage.id
-                                        }.size.toString()
+                                        }.size.toString(),
+                                        isFinishStage = stage.isFinishStage
                                     )
                                 }
                                 Log.d("gfdgdfgdfg", "getHomework: ${subjectWithHomework.homework}")
@@ -645,7 +646,6 @@ class HomeworkListViewModel @Inject constructor(
                                                         }
                                                 },
                                             )
-
                                         },
                                         homeworkList = if (sortByDescendingImportance) {
                                             subjectWithHomework.homework.toHomeworkUiModelList()
@@ -682,6 +682,7 @@ class HomeworkListViewModel @Inject constructor(
                 val homeworkModel = kanbanItems[oldRowId].columnItems[oldColumnId].copy(
                     stageId = kanbanItems[newRowId].rowItem.id,
                     stageName = kanbanItems[newRowId].rowItem.stageName,
+                    isFinished = kanbanItems[newRowId].rowItem.isFinishStage
                 )
 
                 viewModelScope.execute(

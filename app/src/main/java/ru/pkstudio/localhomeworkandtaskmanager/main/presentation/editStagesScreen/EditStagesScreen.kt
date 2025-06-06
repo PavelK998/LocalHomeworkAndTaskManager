@@ -66,9 +66,14 @@ fun EditStagesScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
         ) {
-            itemsIndexed(uiState.stagesList) { index, model ->
+            itemsIndexed(
+                items = uiState.stagesList,
+                key = { _, item ->
+                    item.id!!
+                }
+            ) { index, model ->
                 EditStageCard(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     stage = model,

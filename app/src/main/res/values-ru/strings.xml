@@ -41,6 +41,8 @@
     <string name="add_homework_title_label">Введите название</string>
     <string name="add_homework_description_label">Введите описание</string>
     <string name="default_stage">Сделать</string>
+    <string name="default_added_stage">Добавьте название</string>
+    <string name="default_finish_stage">Готово</string>
     <string name="import_database">Импорт базы</string>
     <string name="export_database">Экспорт базы</string>
     <string name="settings">Настройки</string>
@@ -54,7 +56,7 @@
     <string name="delete_dialog_title_stage">Вы уверены, что хотите удалить этот этап?</string>
     <string name="comment_subjects_delete_dialog">Все связанные данные будут удалены</string>
     <string name="comment_subjects_delete_dialog_stage">Все связанные данные будут перенесены в этап: </string>
-    <string name="delete_single_stage">Вы не можете удалить единственный этап</string>
+    <string name="delete_single_stage">Вы не можете удалить начальную или завершающую стадию</string>
     <string name="enable_dark_theme">Включить темную тему</string>
     <string name="enable_light_theme">Включить светлую тему</string>
     <string name="enable_system_theme">Включить системные настройки</string>

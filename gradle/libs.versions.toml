@@ -25,13 +25,15 @@ icons = "1.7.8"
 documentFile = "1.1.0"
 gson = "2.13.1"
 leakCanary = "2.14"
-#coil = "3.2.0"
 glide = "1.0.0-beta01"
+crashlytics = "3.0.3"
 
 [libraries]
 
-#coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil"}
-#coil-network = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil"}
+google-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBob" }
+google-firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+google-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
+
 glide = { module = "com.github.bumptech.glide:compose", version.ref = "glide"}
 
 
@@ -89,4 +91,5 @@ kotlin-kapt = {id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin"}
 google-ksp = {id = "com.google.devtools.ksp", version.ref = "ksp"}
 dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt"}
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices"}
+google-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics"}
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

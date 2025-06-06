@@ -1,5 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.auth
 
+import android.content.res.Configuration
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -43,13 +44,30 @@ class AuthViewModel @Inject constructor(
     )
     val uiState = _uiState
         .onStart {
-            isFirstLaunch()
+            _uiAction.tryEmit(AuthUiAction.GetInitialData)
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000L),
             initialValue = AuthUiState()
         )
+
+    private val videoListener by lazy {
+        object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                super.onPlaybackStateChanged(playbackState)
+                if (playbackState == Player.STATE_ENDED) {
+                    deviceManager.setIsFirstLaunch(false)
+                    selectUsageAction()
+                    _uiState.update {
+                        it.copy(
+                            isFirstLaunch = false,
+                        )
+                    }
+                }
+            }
+        }
+    }
 
     private val _uiAction = SingleSharedFlow<AuthUiAction>()
     val uiAction = _uiAction.asSharedFlow()
@@ -208,6 +226,10 @@ class AuthViewModel @Inject constructor(
                     }
                 }
             }
+
+            is AuthIntent.GetInitialData -> {
+                isFirstLaunch(intent.orientation)
+            }
         }
     }
 
@@ -240,35 +262,18 @@ class AuthViewModel @Inject constructor(
     }
 
 
-    private fun isFirstLaunch() {
+    private fun isFirstLaunch(orientation: Int) {
+        Log.d("fhdgfghfghfg", "landscape: ${orientation == Configuration.ORIENTATION_LANDSCAPE}")
+        Log.d("fhdgfghfghfg", "portrait: ${orientation == Configuration.ORIENTATION_PORTRAIT}")
         val isFirstLaunch = deviceManager.getIsFirstLaunch()
         val lastAuthAction = deviceManager.getLastAuthAction()
-
         _uiState.update {
             it.copy(
                 isFirstLaunch = isFirstLaunch
             )
         }
         if (isFirstLaunch) {
-            viewModelScope.launch {
-                videoPlayerRepository.playVideo(R.raw.intro)
-                player.addListener(
-                    object : Player.Listener {
-                        override fun onPlaybackStateChanged(playbackState: Int) {
-                            super.onPlaybackStateChanged(playbackState)
-                            if (playbackState == Player.STATE_ENDED) {
-                                deviceManager.setIsFirstLaunch(false)
-                                selectUsageAction()
-                                _uiState.update {
-                                    it.copy(
-                                        isFirstLaunch = false,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                )
-            }
+            startVideo(orientation)
         } else {
             Log.d("asdsadsadsa", "last: $lastAuthAction")
             when(lastAuthAction) {
@@ -287,6 +292,50 @@ class AuthViewModel @Inject constructor(
 
         }
     }
+
+    private fun startVideo(orientation: Int) = viewModelScope.launch {
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            videoPlayerRepository.playVideo(R.raw.intro_landscape)
+            player.addListener(
+                object : Player.Listener {
+                    override fun onPlaybackStateChanged(playbackState: Int) {
+                        super.onPlaybackStateChanged(playbackState)
+                        if (playbackState == Player.STATE_ENDED) {
+                            deviceManager.setIsFirstLaunch(false)
+                            _uiAction.tryEmit(AuthUiAction.SetUnspecifiedOrientation)
+                            selectUsageAction()
+                            _uiState.update {
+                                it.copy(
+                                    isFirstLaunch = false,
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+        } else {
+            videoPlayerRepository.playVideo(R.raw.intro)
+            player.addListener(
+                object : Player.Listener {
+                    override fun onPlaybackStateChanged(playbackState: Int) {
+                        super.onPlaybackStateChanged(playbackState)
+                        if (playbackState == Player.STATE_ENDED) {
+                            deviceManager.setIsFirstLaunch(false)
+                            _uiAction.tryEmit(AuthUiAction.SetUnspecifiedOrientation)
+                            selectUsageAction()
+                            _uiState.update {
+                                it.copy(
+                                    isFirstLaunch = false,
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+        }
+
+    }
+
 
     private fun checkPinCode() {
         deviceManager.setLastAuthAction(AuthAction.SET_PIN.ordinal)

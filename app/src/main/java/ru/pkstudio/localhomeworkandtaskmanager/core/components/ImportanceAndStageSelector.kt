@@ -10,8 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +36,7 @@ fun ImportanceAndStageSelector(
     currentColor: Color,
     currentStageName: String,
     currentStageColor: Int,
+    ifStageIsFinishStage: Boolean,
     onColorSelectClick: () -> Unit,
     onStageSelectClick: () -> Unit,
 ) {
@@ -88,10 +92,19 @@ fun ImportanceAndStageSelector(
                     containerColor = Color(currentStageColor)
                 )
             ) {
-                Box(
+                Row (
                     modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ){
+                    if (ifStageIsFinishStage) {
+                        Icon(
+                            modifier = Modifier.padding(horizontal = 2.dp),
+                            imageVector = Icons.Default.DownloadDone,
+                            contentDescription = "",
+                            tint = kanbanHeaderText
+                        )
+                    }
                     Text(
                         modifier = Modifier
                             .padding(4.dp),

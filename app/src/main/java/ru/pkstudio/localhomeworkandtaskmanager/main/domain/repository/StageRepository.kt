@@ -6,6 +6,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 interface StageRepository {
     suspend fun insertStage(stage: StageModel)
 
+    suspend fun insertStages(stagesList: List<StageModel>)
+
     suspend fun deleteStage(stage: StageModel)
 
     suspend fun updateStage(stage: StageModel)
@@ -19,5 +21,7 @@ interface StageRepository {
     suspend fun insertStageToPosition(stage: StageModel)
 
     suspend fun deleteStageFromPosition(stage: StageModel)
+
+    suspend fun shiftAllStagesPositionsPlusOne(position: Int)
 
 }

@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.google.crashlytics)
 }
 
 android {
@@ -60,10 +62,10 @@ android {
 
 dependencies {
     implementation(libs.glide)
-//    //coil
-//    implementation(libs.coil.compose)
-//    implementation(libs.coil.network)
 
+    implementation(platform(libs.google.firebase.bom))
+    implementation(libs.google.firebase.analytics)
+    implementation(libs.google.firebase.crashlytics)
 
     implementation(libs.core.splashscreen)
     implementation(libs.navigation.compose)

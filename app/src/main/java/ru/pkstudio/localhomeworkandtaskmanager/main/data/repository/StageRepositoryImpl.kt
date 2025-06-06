@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.StageDao
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toStageEntity
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toStageEntityList
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toStageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toStageModelList
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
@@ -16,6 +17,12 @@ class StageRepositoryImpl @Inject constructor(
 ): StageRepository {
     override suspend fun insertStage(stage: StageModel) = withContext(Dispatchers.IO) {
         stageDao.insertStage(stage.toStageEntity())
+    }
+
+    override suspend fun insertStages(stagesList: List<StageModel>) = withContext(Dispatchers.IO) {
+        stageDao.insertStages(
+            stageList = stagesList.toStageEntityList()
+        )
     }
 
     override suspend fun deleteStage(stage: StageModel) = withContext(Dispatchers.IO) {
@@ -46,5 +53,9 @@ class StageRepositoryImpl @Inject constructor(
 
     override suspend fun insertStageToPosition(stage: StageModel) = withContext(Dispatchers.IO) {
         stageDao.insertWithShift(stage = stage.toStageEntity())
+    }
+
+    override suspend fun shiftAllStagesPositionsPlusOne(position: Int) = withContext(Dispatchers.IO) {
+        stageDao.shiftPositionsPlusOne(position)
     }
 }

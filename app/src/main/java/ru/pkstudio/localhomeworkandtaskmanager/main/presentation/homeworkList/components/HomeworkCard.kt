@@ -99,7 +99,7 @@ fun HomeworkCard(
                     color = Color(homeworkUiModel.color).toTextColor()
                 )
             }
-            if(homeworkUiModel.endDate.isNotBlank()) {
+            if(!homeworkUiModel.isFinished && homeworkUiModel.endDate.isNotBlank()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -207,7 +207,8 @@ private fun HomeworkCardPreview() {
                 stageId = 0L,
                 subjectId = 0L,
                 color = 3424123,
-                importance = 1
+                importance = 1,
+                isFinished = true
             ),
             onCheckCardClicked = { _ -> },
             goToDetails = {},

@@ -14,5 +14,6 @@ data class HomeworkUiModel(
     val stageId: Long,
     val imageNameList: List<String>,
     val isChecked: Boolean,
+    val isFinished: Boolean,
     val isCheckBoxVisible: Boolean
 )

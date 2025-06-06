@@ -12,4 +12,8 @@ sealed interface AuthUiAction {
 
     data object SetSystemTheme : AuthUiAction
 
+    data object GetInitialData : AuthUiAction
+
+    data object SetUnspecifiedOrientation : AuthUiAction
+
 }

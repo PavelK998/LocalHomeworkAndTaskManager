@@ -10,4 +10,5 @@ data class StageEntity(
     val color: Int,
     val stageName: String,
     val position: Int,
+    val isFinishStage: Boolean,
 )
