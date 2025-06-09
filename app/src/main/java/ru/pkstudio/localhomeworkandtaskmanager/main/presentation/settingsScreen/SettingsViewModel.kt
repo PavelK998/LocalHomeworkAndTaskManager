@@ -23,6 +23,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.ThemeConstants
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.FilesHandleRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.ImportExportDbRepository
 import javax.inject.Inject
 
@@ -31,7 +32,8 @@ class SettingsViewModel @Inject constructor(
     private val navigator: Navigator,
     private val deviceManager: DeviceManager,
     private val resourceManager: ResourceManager,
-    private val importExportDbRepository: ImportExportDbRepository
+    private val importExportDbRepository: ImportExportDbRepository,
+    private val filesHandleRepository: FilesHandleRepository,
 ) : ViewModel() {
 
     private var isNavigateBtnClicked = false
@@ -394,11 +396,28 @@ class SettingsViewModel @Inject constructor(
                         deviceManager.getFilePathUri()
                     },
                     onSuccess = { filePath ->
-                        if (filePath.isNullOrEmpty()) {
-                            _uiAction.tryEmit(SettingsUIAction.OpenDocumentTree)
+                        if (!filePath.isNullOrEmpty()) {
+                            viewModelScope.execute(
+                                source = {
+                                    filesHandleRepository.checkUriPermission(filePath.toUri())
+                                },
+                                onSuccess = {
+                                    exportDb(filePath.toUri())
+                                },
+                                onError = {
+                                    _uiAction.tryEmit(SettingsUIAction.OpenDocumentTree)
+                                }
+                            )
                         } else {
-                            exportDb(filePath.toUri())
+                            _uiAction.tryEmit(SettingsUIAction.OpenDocumentTree)
                         }
+
+
+
+
+
+
+
                     }
                 )
             }

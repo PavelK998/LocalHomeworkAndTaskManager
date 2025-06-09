@@ -82,6 +82,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -157,7 +158,7 @@ fun HomeworkInfoScreen(
                 onSettingsClicked = { handleIntent(HomeworkInfoIntent.OnSettingsClicked) },
                 closeSettingsMenu = { handleIntent(HomeworkInfoIntent.CloseSettingsMenu) },
                 onDeleteBtnClick = { handleIntent(HomeworkInfoIntent.OnDeleteBtnClick) },
-                onAttachFileClicked = { handleIntent(HomeworkInfoIntent.OnAttachFileClicked) }
+                onAttachFileClicked = { handleIntent(HomeworkInfoIntent.OnSelectMediaClick) }
             )
         }
     ) { paddingValues ->
@@ -256,24 +257,6 @@ fun HomeworkInfoScreen(
             ) {
                 TabRow(
                     selectedTabIndex = pagerState.currentPage,
-//                indicator = { tabPosition ->
-//                    if(pagerState.currentPage < tabPosition.size) {
-//                        TabRowDefaults
-//                            .PrimaryIndicator(
-//                                modifier = Modifier
-//                                    .tabIndicatorOffset(
-//                                        tabPosition[pagerState.currentPage]
-//                                    ),
-//                                height = 4.dp,
-//                                width = 65.dp,
-//                                color = Depth400,
-//                                shape = RoundedCornerShape(
-//                                    topStart = 10.dp,
-//                                    topEnd = 10.dp
-//                                )
-//                            )
-//                    }
-//                }
                 ) {
                     HomeworkInfoPagerState.entries.forEach { homeworkInfoPagerState ->
                         Tab(
@@ -455,6 +438,10 @@ private fun HandlePhotos(
     var topPadding by remember {
         mutableStateOf(0.dp)
     }
+    var bottomPadding by remember {
+        mutableStateOf(0.dp)
+    }
+    val configuration = LocalConfiguration.current
     val isDarkTheme = isSystemInDarkTheme()
     BackHandler {
         onBackCLick()
@@ -491,8 +478,9 @@ private fun HandlePhotos(
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
-        LaunchedEffect(true) {
+        LaunchedEffect(configuration.orientation) {
             topPadding = paddingValues.calculateTopPadding()
+            bottomPadding = paddingValues.calculateBottomPadding()
         }
         var height by remember {
             mutableIntStateOf(0)
@@ -668,7 +656,7 @@ private fun HandlePhotos(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(15.dp + paddingValues.calculateBottomPadding())
+                            .height(15.dp + bottomPadding)
                             .background(photoUiBackground)
                     ) {}
                 }
@@ -684,6 +672,21 @@ private fun MainScreen(
     uiState: HomeworkInfoState,
     handleIntent: (HomeworkInfoIntent) -> Unit,
 ) {
+    if (uiState.isSelectFilePathDialogOpened) {
+        DeleteDialog(
+            title = stringResource(R.string.select_folder_dialog_title),
+            comment = stringResource(R.string.select_folder_dialog_description),
+            onConfirm = {
+                handleIntent(HomeworkInfoIntent.ConfirmPathSelect)
+            },
+            onDismissRequest = {
+                handleIntent(HomeworkInfoIntent.DismissPathSelectDialog)
+            },
+            onDismiss = {
+                handleIntent(HomeworkInfoIntent.DismissPathSelectDialog)
+            }
+        )
+    }
     Column(
         modifier = modifier
     ) {

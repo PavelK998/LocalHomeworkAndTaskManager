@@ -35,6 +35,9 @@ interface HomeworkDao {
     @Query("SELECT * FROM homework WHERE id = :homeworkId")
     suspend fun getHomeworkById(homeworkId: Long): HomeworkEntity
 
+    @Query("SELECT * FROM homework WHERE id = :homeworkId")
+    fun getHomeworkFlowById(homeworkId: Long): Flow<HomeworkEntity>
+
     @Query("UPDATE homework SET stageId = :targetStageId, stage = :targetStageName WHERE stageId = :fromStageId")
     suspend fun changeHomeworkStagesAfterDeleteStage(fromStageId: Long, targetStageId: Long, targetStageName: String)
 }

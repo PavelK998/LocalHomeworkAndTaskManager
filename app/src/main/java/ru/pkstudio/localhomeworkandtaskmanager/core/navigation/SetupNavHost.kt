@@ -288,6 +288,31 @@ fun SetupNavHost(
                         subjectId = args.subjectId
                     )
                 }
+                val launchSelectFilePath = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.OpenDocumentTree(),
+                    onResult = { uri ->
+                        val appName = context.getString(R.string.app_name)
+                        uri?.let {
+                            try {
+                                val documentFile =  DocumentFile.fromTreeUri(context, it)
+                                val appFolder = documentFile?.createDirectory(appName)
+                                if (appFolder != null) {
+                                    val takeFlags =
+                                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                    context.contentResolver.takePersistableUriPermission(uri, takeFlags)
+                                    viewModel.handleIntent(
+                                        HomeworkInfoIntent.OnFileExportPathSelected(
+                                            appFolder.uri
+                                        )
+                                    )
+                                }
+
+                            } catch (e:Exception) {
+
+                            }
+                        }
+                    }
+                )
                 val launcherForMultiplyImages = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.PickMultipleVisualMedia(
                         maxItems = 10
@@ -308,6 +333,10 @@ fun SetupNavHost(
                                     mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
                                 )
                             )
+                        }
+
+                        is HomeworkInfoUiAction.LaunchPathSelectorForSaveImages -> {
+                            launchSelectFilePath.launch(null)
                         }
                     }
                 }

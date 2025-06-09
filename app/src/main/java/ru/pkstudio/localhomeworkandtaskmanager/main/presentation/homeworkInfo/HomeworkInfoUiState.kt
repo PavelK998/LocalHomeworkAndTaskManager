@@ -74,4 +74,5 @@ data class HomeworkInfoState(
     val whichPhotoShouldBeOpenedFirst: Int = 0,
     val isPhotoUiVisible: Boolean = false,
     val isDropDownMenuVisible: Boolean = false,
+    val isSelectFilePathDialogOpened: Boolean = false,
 )
