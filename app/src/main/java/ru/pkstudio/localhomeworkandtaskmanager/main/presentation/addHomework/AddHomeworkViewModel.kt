@@ -414,7 +414,14 @@ class AddHomeworkViewModel @Inject constructor(
                         deviceManager.setFilePathUri(intent.uri.toString())
                     },
                     onSuccess = {
-                        _uiAction.tryEmit(AddHomeworkUIAction.LaunchPhotoPicker)
+                        viewModelScope.launch {
+                            val hasPermission =
+                                filesHandleRepository.checkUriPermission(folderUri = intent.uri)
+                            if (hasPermission) {
+                                _uiAction.tryEmit(AddHomeworkUIAction.LaunchPhotoPicker)
+                                folderUri = intent.uri.toString()
+                            }
+                        }
                     }
                 )
             }
@@ -609,7 +616,8 @@ class AddHomeworkViewModel @Inject constructor(
                     )
                 },
                 onSuccess = { id ->
-                    Log.d("gfgdfgdfgdfgdfg", "addHomework: name id $id")
+                    Log.d("fghfghfghfghfgh", "addHomework success: $id")
+
                     if (folderUri.isNotBlank() && _uiState.value.imagesUriList.isNotEmpty()) {
                         viewModelScope.execute(
                             source = {
@@ -623,10 +631,10 @@ class AddHomeworkViewModel @Inject constructor(
                                     homeworkId = id,
                                     imageNamesList = imageNamesList
                                 )
-                                Log.d("fgdhgghgfh", "imagesList: $imageNamesList")
+                                Log.d("fghfghfghfghfgh", "add images success: $imageNamesList")
                             },
                             onError = {
-                                Log.d("fgdhgghgfh", "addHomework: $it")
+                                Log.d("fghfghfghfghfgh", "add images error: $it")
                             }
                         )
                     } else {
@@ -639,6 +647,7 @@ class AddHomeworkViewModel @Inject constructor(
                     }
                 },
                 onError = {
+                    Log.d("fghfghfghfghfgh", "addHomework error: $it")
                     _uiState.update {
                         it.copy(
                             isLoading = false

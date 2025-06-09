@@ -60,4 +60,10 @@ class HomeworkRepositoryImpl @Inject constructor(
             targetStageName = targetStageName
         )
     }
+
+    override suspend fun getHomeworkFlowById(homeworkId: Long)= withContext(Dispatchers.IO) {
+        homeworkDao.getHomeworkFlowById(homeworkId = homeworkId).map {
+            it.toHomeworkModel()
+        }
+    }
 }
