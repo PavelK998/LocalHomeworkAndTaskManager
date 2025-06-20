@@ -15,6 +15,12 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -173,7 +179,7 @@ fun SetupNavHost(
 
             composable<Destination.HomeworkListScreen>(
                 enterTransition = {
-                    EnterTransition.None
+                    fadeIn()
                 },
                 exitTransition = {
                     ExitTransition.None
@@ -195,10 +201,10 @@ fun SetupNavHost(
 
             composable<Destination.HomeworkAddScreen>(
                 enterTransition = {
-                    EnterTransition.None
+                    slideInVertically(initialOffsetY = { it })
                 },
                 exitTransition = {
-                    ExitTransition.None
+                    slideOutVertically(targetOffsetY = { -it / 2 }) + fadeOut()
                 }
             ) { navBackStackEntry ->
                 val context = LocalContext.current
@@ -348,10 +354,10 @@ fun SetupNavHost(
 
             composable<Destination.SettingsScreen>(
                 enterTransition = {
-                    EnterTransition.None
+                    expandIn() + fadeIn()
                 },
                 exitTransition = {
-                    ExitTransition.None
+                    shrinkOut()
                 }
             ) {
                 val viewModel = hiltViewModel<SettingsViewModel>()

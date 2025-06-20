@@ -177,6 +177,21 @@ class SubjectListViewModel @Inject constructor(
                 }
             }
 
+            is SubjectListIntent.TurnFabInvisible -> {
+                _uiState.update {
+                    it.copy(
+                        isFABVisible = false
+                    )
+                }
+            }
+
+            is SubjectListIntent.TurnFabVisible -> {
+                _uiState.update {
+                    it.copy(
+                        isFABVisible = true
+                    )
+                }
+            }
         }
     }
 

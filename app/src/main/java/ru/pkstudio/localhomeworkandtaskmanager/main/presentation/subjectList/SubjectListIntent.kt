@@ -41,4 +41,10 @@ sealed interface SubjectListIntent {
 
     data object OnSettingClicked: SubjectListIntent
 
+    data object TurnFabInvisible: SubjectListIntent
+
+    data object TurnFabVisible: SubjectListIntent
+
+
+
 }
