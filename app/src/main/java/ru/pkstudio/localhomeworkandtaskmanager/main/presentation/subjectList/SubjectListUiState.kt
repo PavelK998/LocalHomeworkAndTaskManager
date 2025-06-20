@@ -21,4 +21,5 @@ data class SubjectListState(
     val commentDeleteAlertDialog: String = "",
 
     val isVideoPlayerViewVisible: Boolean = true,
+    val isFABVisible: Boolean = true,
 )

@@ -5,7 +5,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -44,10 +47,12 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,6 +63,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.collectLatest
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultFloatingActionButton
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
@@ -85,6 +91,27 @@ fun HomeworkListScreen(
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    val lazyListState = rememberLazyListState()
+    LaunchedEffect(key1 = lazyListState) {
+        var isBtnVisible = uiState.isFABVisible
+        snapshotFlow { lazyListState.firstVisibleItemScrollOffset }
+            .collectLatest {
+                if (!uiState.isEditModeEnabled) {
+                    if (lazyListState.lastScrolledForward) {
+                        if (isBtnVisible) {
+                            isBtnVisible = false
+                            handleIntent(HomeworkListIntent.TurnFabInvisible)
+                        }
+                    }
+                    if (lazyListState.lastScrolledBackward) {
+                        if (!isBtnVisible) {
+                            isBtnVisible = true
+                            handleIntent(HomeworkListIntent.TurnFabVisible)
+                        }
+                    }
+                }
+            }
+    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -202,8 +229,25 @@ fun HomeworkListScreen(
             } else {
                 AnimatedVisibility(
                     visible = uiState.isFABVisible,
-                    enter = slideInHorizontally() + fadeIn(),
-                    exit = slideOutHorizontally() + fadeOut()
+                    enter = if (uiState.isKanbanScreenVisible) {
+                        slideInHorizontally() + fadeIn()
+                    } else {
+                        slideInVertically(
+                            initialOffsetY = {
+                                it
+                            }
+                        ) + fadeIn()
+                    },
+                    exit = if (uiState.isKanbanScreenVisible) {
+                        slideOutHorizontally() + fadeOut()
+                    } else {
+                        slideOutVertically(
+                            targetOffsetY = {
+                                it
+                            }
+                        ) + fadeOut()
+                    },
+
                 ) {
                     DefaultFloatingActionButton(
                         modifier = Modifier.windowInsetsPadding(
@@ -380,6 +424,7 @@ fun HomeworkListScreen(
 
                 } else {
                     LazyColumn(
+                        state = lazyListState,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 8.dp)
