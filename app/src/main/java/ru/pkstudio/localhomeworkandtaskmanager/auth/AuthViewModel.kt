@@ -57,12 +57,14 @@ class AuthViewModel @Inject constructor(
             override fun onPlaybackStateChanged(playbackState: Int) {
                 super.onPlaybackStateChanged(playbackState)
                 if (playbackState == Player.STATE_ENDED) {
-                    deviceManager.setIsFirstLaunch(false)
-                    selectUsageAction()
-                    _uiState.update {
-                        it.copy(
-                            isFirstLaunch = false,
-                        )
+                    viewModelScope.launch {
+                        deviceManager.setIsFirstLaunch(false)
+                        selectUsageAction()
+                        _uiState.update {
+                            it.copy(
+                                isFirstLaunch = false,
+                            )
+                        }
                     }
                 }
             }
@@ -137,17 +139,21 @@ class AuthViewModel @Inject constructor(
                                     } else {
                                         val isValid = _uiState.value.text == firstEnteredPin
                                         if (isValid) {
-                                            deviceManager.setPinCode(pinCode = newString)
-                                            pinSuccess()
+                                            viewModelScope.launch {
+                                                deviceManager.setPinCode(pinCode = newString)
+                                                pinSuccess()
+                                            }
                                         } else {
                                             pinError()
                                         }
                                     }
                                 } else {
-                                    if (validatePinCode(newString)) {
-                                        pinSuccess()
-                                    } else {
-                                        pinError()
+                                    viewModelScope.launch {
+                                        if (validatePinCode(newString)) {
+                                            pinSuccess()
+                                        } else {
+                                            pinError()
+                                        }
                                     }
                                 }
                             }
@@ -173,14 +179,17 @@ class AuthViewModel @Inject constructor(
             }
 
             is AuthIntent.SetDiaryUsage -> {
-                deviceManager.setUsage(Constants.DIARY.ordinal)
-                selectThemeAction()
-
+                viewModelScope.launch {
+                    deviceManager.setUsage(Constants.DIARY.ordinal)
+                    selectThemeAction()
+                }
             }
 
             is AuthIntent.SetTaskTrackerUsage -> {
-                deviceManager.setUsage(Constants.TASK_TRACKER.ordinal)
-                selectThemeAction()
+                viewModelScope.launch {
+                    deviceManager.setUsage(Constants.TASK_TRACKER.ordinal)
+                    selectThemeAction()
+                }
             }
 
             is AuthIntent.SetThemeId -> {
@@ -262,7 +271,7 @@ class AuthViewModel @Inject constructor(
     }
 
 
-    private fun isFirstLaunch(orientation: Int) {
+    private fun isFirstLaunch(orientation: Int) = viewModelScope.launch {
         Log.d("fhdgfghfghfg", "landscape: ${orientation == Configuration.ORIENTATION_LANDSCAPE}")
         Log.d("fhdgfghfghfg", "portrait: ${orientation == Configuration.ORIENTATION_PORTRAIT}")
         val isFirstLaunch = deviceManager.getIsFirstLaunch()
@@ -276,7 +285,7 @@ class AuthViewModel @Inject constructor(
             startVideo(orientation)
         } else {
             Log.d("asdsadsadsa", "last: $lastAuthAction")
-            when(lastAuthAction) {
+            when (lastAuthAction) {
                 AuthAction.SELECT_USAGE.ordinal -> {
                     selectUsageAction()
                 }
@@ -289,9 +298,9 @@ class AuthViewModel @Inject constructor(
                     checkPinCode()
                 }
             }
-
         }
     }
+
 
     private fun startVideo(orientation: Int) = viewModelScope.launch {
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -301,13 +310,15 @@ class AuthViewModel @Inject constructor(
                     override fun onPlaybackStateChanged(playbackState: Int) {
                         super.onPlaybackStateChanged(playbackState)
                         if (playbackState == Player.STATE_ENDED) {
-                            deviceManager.setIsFirstLaunch(false)
-                            _uiAction.tryEmit(AuthUiAction.SetUnspecifiedOrientation)
-                            selectUsageAction()
-                            _uiState.update {
-                                it.copy(
-                                    isFirstLaunch = false,
-                                )
+                            viewModelScope.launch {
+                                deviceManager.setIsFirstLaunch(false)
+                                _uiAction.tryEmit(AuthUiAction.SetUnspecifiedOrientation)
+                                selectUsageAction()
+                                _uiState.update {
+                                    it.copy(
+                                        isFirstLaunch = false,
+                                    )
+                                }
                             }
                         }
                     }
@@ -320,27 +331,28 @@ class AuthViewModel @Inject constructor(
                     override fun onPlaybackStateChanged(playbackState: Int) {
                         super.onPlaybackStateChanged(playbackState)
                         if (playbackState == Player.STATE_ENDED) {
-                            deviceManager.setIsFirstLaunch(false)
-                            _uiAction.tryEmit(AuthUiAction.SetUnspecifiedOrientation)
-                            selectUsageAction()
-                            _uiState.update {
-                                it.copy(
-                                    isFirstLaunch = false,
-                                )
+                            viewModelScope.launch {
+                                deviceManager.setIsFirstLaunch(false)
+                                _uiAction.tryEmit(AuthUiAction.SetUnspecifiedOrientation)
+                                selectUsageAction()
+                                _uiState.update {
+                                    it.copy(
+                                        isFirstLaunch = false,
+                                    )
+                                }
                             }
                         }
                     }
                 }
             )
         }
-
     }
 
 
-    private fun checkPinCode() {
+    private fun checkPinCode() = viewModelScope.launch {
         deviceManager.setLastAuthAction(AuthAction.SET_PIN.ordinal)
         val pin = deviceManager.getPinCode()
-        if (pin.isNullOrBlank()) {
+        if (pin.isEmpty()) {
             _uiState.update {
                 it.copy(
                     currentAuthAction = AuthAction.SET_PIN,
@@ -359,7 +371,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private fun selectThemeAction() {
+    private fun selectThemeAction() = viewModelScope.launch {
         deviceManager.setLastAuthAction(AuthAction.SELECT_THEME.ordinal)
         _uiState.update {
             it.copy(
@@ -368,7 +380,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private fun selectUsageAction() {
+    private fun selectUsageAction() = viewModelScope.launch {
         deviceManager.setLastAuthAction(AuthAction.SELECT_USAGE.ordinal)
         _uiState.update {
             it.copy(
@@ -377,12 +389,8 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private fun validatePinCode(pin: String): Boolean {
-        var pinCodeResult = false
-        deviceManager.getPinCode()?.let {
-            pinCodeResult = pin == it
-        }
-        return pinCodeResult
+    private suspend fun validatePinCode(pin: String): Boolean {
+        return deviceManager.getPinCode() == pin
     }
 
     override fun onCleared() {

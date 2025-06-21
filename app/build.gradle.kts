@@ -61,6 +61,8 @@ android {
 
 
 dependencies {
+
+    implementation(libs.androidx.datastore.preferences)
     implementation(libs.glide)
 
     implementation(platform(libs.google.firebase.bom))

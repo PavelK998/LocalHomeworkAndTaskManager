@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.ThemeConstants
 import javax.inject.Inject
@@ -90,12 +91,12 @@ class ActivityViewModel @Inject constructor(
             initialValue = ActivityState()
         )
 
-    private fun getThemeId():Int {
+    private suspend fun getThemeId():Int {
         return deviceManager.getTheme()
     }
 
 
-    fun toggleDarkTheme() {
+    fun toggleDarkTheme() = viewModelScope.launch{
         deviceManager.setTheme(ThemeConstants.DARK_THEME.ordinal)
         _uiState.update {
             it.copy(
@@ -104,7 +105,7 @@ class ActivityViewModel @Inject constructor(
         }
     }
 
-    fun toggleLightTheme() {
+    fun toggleLightTheme() = viewModelScope.launch {
         deviceManager.setTheme(ThemeConstants.LIGHT_THEME.ordinal)
         _uiState.update {
             it.copy(
@@ -113,7 +114,7 @@ class ActivityViewModel @Inject constructor(
         }
     }
 
-    fun toggleDynamicColors() {
+    fun toggleDynamicColors() = viewModelScope.launch {
         if (_uiState.value.isDynamicColor){
             deviceManager.setDynamicColors(false)
             _uiState.update {
@@ -140,29 +141,33 @@ class ActivityViewModel @Inject constructor(
                 )
             }
         } else {
-            deviceManager.setTheme(ThemeConstants.SYSTEM_DEFAULTS.ordinal)
-            _uiState.update {
-                it.copy(
-                    isDarkTheme = false,
-                    isSystemTheme = true,
-                )
+            viewModelScope.launch {
+                deviceManager.setTheme(ThemeConstants.SYSTEM_DEFAULTS.ordinal)
+                _uiState.update {
+                    it.copy(
+                        isDarkTheme = false,
+                        isSystemTheme = true,
+                    )
+                }
             }
         }
     }
 
     fun toggleSystemThemeFromAuth() {
         if (!_uiState.value.isSystemTheme) {
-            deviceManager.setTheme(ThemeConstants.SYSTEM_DEFAULTS.ordinal)
-            _uiState.update {
-                it.copy(
-                    isDarkTheme = false,
-                    isSystemTheme = true,
-                )
+            viewModelScope.launch {
+                deviceManager.setTheme(ThemeConstants.SYSTEM_DEFAULTS.ordinal)
+                _uiState.update {
+                    it.copy(
+                        isDarkTheme = false,
+                        isSystemTheme = true,
+                    )
+                }
             }
         }
     }
 
-    fun toggleDarkThemeFromAuth() {
+    fun toggleDarkThemeFromAuth() = viewModelScope.launch {
         deviceManager.setTheme(ThemeConstants.DARK_THEME.ordinal)
         _uiState.update {
             it.copy(
@@ -172,7 +177,7 @@ class ActivityViewModel @Inject constructor(
         }
     }
 
-    fun toggleLightThemeFromAuth() {
+    fun toggleLightThemeFromAuth() = viewModelScope.launch {
         deviceManager.setTheme(ThemeConstants.LIGHT_THEME.ordinal)
         _uiState.update {
             it.copy(
