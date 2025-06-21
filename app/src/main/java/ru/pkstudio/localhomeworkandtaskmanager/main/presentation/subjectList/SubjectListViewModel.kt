@@ -195,7 +195,7 @@ class SubjectListViewModel @Inject constructor(
         }
     }
 
-    private fun checkUsage() {
+    private fun checkUsage() = viewModelScope.launch {
         when(deviceManager.getUsage()) {
             Constants.TASK_TRACKER.ordinal -> {
                 _uiState.update {

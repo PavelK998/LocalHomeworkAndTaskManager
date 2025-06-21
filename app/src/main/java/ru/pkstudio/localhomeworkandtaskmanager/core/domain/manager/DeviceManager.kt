@@ -1,47 +1,44 @@
 package ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager
 
 interface DeviceManager {
-    fun setUserId(userId: String)
 
-    fun getUserId(): String?
+    suspend fun setSelectedDisplayMethod(displayMethodId: Int)
 
-    fun setSelectedDisplayMethod(displayMethodId: Int)
+    suspend fun getSelectedDisplayMethod(): Int
 
-    fun getSelectedDisplayMethod(): Int
+    suspend fun setPinCode(pinCode: String)
 
-    fun setPinCode(pinCode: String)
+    suspend fun getPinCode(): String
 
-    fun getPinCode(): String?
+    suspend fun setTheme(themeId: Int)
 
-    fun setTheme(themeId: Int)
+    suspend fun setDynamicColors(isDynamicColor: Boolean)
 
-    fun setDynamicColors(isDynamicColor: Boolean)
+    suspend fun getDynamicColors(): Boolean
 
-    fun getDynamicColors(): Boolean
-
-    fun getTheme(): Int
+    suspend fun getTheme(): Int
 
     fun startMicroVibrate()
 
-    fun getIsFirstLaunch(): Boolean
+    suspend fun getIsFirstLaunch(): Boolean
 
-    fun setIsFirstLaunch(isFirstLaunch: Boolean)
+    suspend fun setIsFirstLaunch(isFirstLaunch: Boolean)
 
-    fun getUsage(): Int
+    suspend fun getUsage(): Int
 
-    fun setUsage(usageId: Int)
+    suspend fun setUsage(usageId: Int)
 
-    fun setLastAuthAction(authAction: Int)
+    suspend fun setLastAuthAction(authAction: Int)
 
-    fun getLastAuthAction(): Int
+    suspend fun getLastAuthAction(): Int
 
-    fun setFilterAddDate(filterAction: Int)
+    suspend fun setFilterAddDate(filterAction: Int)
 
-    fun getFilterAddDate(): Int
+    suspend fun getFilterAddDate(): Int
 
-    fun setFilterImportance(filterAction: Int)
+    suspend fun setFilterImportance(filterAction: Int)
 
-    fun getFilterImportance(): Int
+    suspend fun getFilterImportance(): Int
 
     suspend fun setFilePathUri(path: String)
 

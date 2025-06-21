@@ -145,25 +145,29 @@ class HomeworkListViewModel @Inject constructor(
                 if (intent.index in _uiState.value.segmentedButtonOptions.indices) {
                     when (_uiState.value.segmentedButtonOptions[intent.index]) {
                         list -> {
-                            _uiState.update {
-                                it.copy(
-                                    segmentedButtonSelectedIndex = intent.index,
-                                    isKanbanScreenVisible = false
-                                )
-                            }
+                            viewModelScope.launch {
+                                _uiState.update {
+                                    it.copy(
+                                        segmentedButtonSelectedIndex = intent.index,
+                                        isKanbanScreenVisible = false
+                                    )
+                                }
 
-                            setDisplayMethod(Constants.LIST.ordinal)
+                                setDisplayMethod(Constants.LIST.ordinal)
+                            }
                         }
 
                         kanban -> {
-                            _uiState.update {
-                                it.copy(
-                                    segmentedButtonSelectedIndex = intent.index,
-                                    isKanbanScreenVisible = true
-                                )
+                            viewModelScope.launch {
+                                _uiState.update {
+                                    it.copy(
+                                        segmentedButtonSelectedIndex = intent.index,
+                                        isKanbanScreenVisible = true
+                                    )
+                                }
+                                turnOffCardEditMode()
+                                setDisplayMethod(Constants.KANBAN.ordinal)
                             }
-                            turnOffCardEditMode()
-                            setDisplayMethod(Constants.KANBAN.ordinal)
                         }
                     }
                 }
@@ -329,32 +333,35 @@ class HomeworkListViewModel @Inject constructor(
             }
 
             is HomeworkListIntent.OnSortClick -> {
-                if (intent.isSortDescendingImportance) {
-                    deviceManager.setFilterImportance(Constants.FILTER_IMPORTANCE_DESCENDING.ordinal)
-                    _uiState.update {
-                        it.copy(
-                            isSortImportance = true
+                viewModelScope.launch {
+                    if (intent.isSortDescendingImportance) {
+                        deviceManager.setFilterImportance(Constants.FILTER_IMPORTANCE_DESCENDING.ordinal)
+                        _uiState.update {
+                            it.copy(
+                                isSortImportance = true
+                            )
+                        }
+                        sortHomework(
+                            sortByDescendingImportance = _uiState.value.isSortImportance,
                         )
-                    }
-                    sortHomework(
-                        sortByDescendingImportance = _uiState.value.isSortImportance,
-                    )
-                } else {
-                    deviceManager.setFilterImportance(Constants.FILTER_IMPORTANCE_ASCENDING.ordinal)
-                    _uiState.update {
-                        it.copy(
-                            isSortImportance = false
+                    } else {
+                        deviceManager.setFilterImportance(Constants.FILTER_IMPORTANCE_ASCENDING.ordinal)
+                        _uiState.update {
+                            it.copy(
+                                isSortImportance = false
+                            )
+                        }
+                        sortHomework(
+                            sortByDescendingImportance = _uiState.value.isSortImportance,
                         )
+
                     }
-                    sortHomework(
-                        sortByDescendingImportance = _uiState.value.isSortImportance,
-                    )
                 }
             }
         }
     }
 
-    private fun checkFilterActions() {
+    private fun checkFilterActions() = viewModelScope.launch {
         val importanceFilter = deviceManager.getFilterImportance()
         if (importanceFilter == -1) {
             deviceManager.setFilterImportance(Constants.FILTER_IMPORTANCE_DESCENDING.ordinal)
@@ -456,7 +463,7 @@ class HomeworkListViewModel @Inject constructor(
         }
     )
 
-    private fun checkUsage() {
+    private fun checkUsage() = viewModelScope.launch {
         when (deviceManager.getUsage()) {
             Constants.TASK_TRACKER.ordinal -> {
                 _uiState.update {
@@ -556,7 +563,7 @@ class HomeworkListViewModel @Inject constructor(
         }
     }
 
-    private fun getDisplayMethod() {
+    private fun getDisplayMethod() = viewModelScope.launch {
         deviceManager.getSelectedDisplayMethod().let { displayMethod ->
             when (displayMethod) {
                 Constants.LIST.ordinal -> {
@@ -584,7 +591,7 @@ class HomeworkListViewModel @Inject constructor(
         }
     }
 
-    private fun setDisplayMethod(displayMethod: Int) {
+    private suspend fun setDisplayMethod(displayMethod: Int) {
         deviceManager.setSelectedDisplayMethod(displayMethod)
     }
 

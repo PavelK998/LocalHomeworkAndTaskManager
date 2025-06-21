@@ -71,7 +71,7 @@ class SettingsViewModel @Inject constructor(
                     )
                 }
             }
-            when(themeId) {
+            when (themeId) {
                 ThemeConstants.SYSTEM_DEFAULTS.ordinal -> {
                     _uiState.update {
                         it.copy(
@@ -83,6 +83,7 @@ class SettingsViewModel @Inject constructor(
                         )
                     }
                 }
+
                 ThemeConstants.LIGHT_THEME.ordinal -> {
                     _uiState.update {
                         it.copy(
@@ -94,6 +95,7 @@ class SettingsViewModel @Inject constructor(
                         )
                     }
                 }
+
                 ThemeConstants.DARK_THEME.ordinal -> {
                     _uiState.update {
                         it.copy(
@@ -132,7 +134,7 @@ class SettingsViewModel @Inject constructor(
 
             is SettingsIntent.SetDarkTheme -> {
                 _uiAction.tryEmit(SettingsUIAction.SetDarkTheme)
-                if (!_uiState.value.isDarkTheme){
+                if (!_uiState.value.isDarkTheme) {
                     _uiState.update {
                         it.copy(
                             isDarkTheme = true,
@@ -143,9 +145,10 @@ class SettingsViewModel @Inject constructor(
                 }
 
             }
+
             is SettingsIntent.SetDynamicColors -> {
                 _uiAction.tryEmit(SettingsUIAction.SetDynamicColors)
-                if (!_uiState.value.isDynamicColor){
+                if (!_uiState.value.isDynamicColor) {
                     _uiState.update {
                         it.copy(
                             isDynamicColor = true
@@ -159,9 +162,10 @@ class SettingsViewModel @Inject constructor(
                     }
                 }
             }
+
             is SettingsIntent.SetLightTheme -> {
                 _uiAction.tryEmit(SettingsUIAction.SetLightTheme)
-                if (!_uiState.value.isLightTheme){
+                if (!_uiState.value.isLightTheme) {
                     _uiState.update {
                         it.copy(
                             isDarkTheme = false,
@@ -171,6 +175,7 @@ class SettingsViewModel @Inject constructor(
                     }
                 }
             }
+
             is SettingsIntent.SetSystemTheme -> {
                 _uiAction.tryEmit(SettingsUIAction.SetSystemTheme(isSystemInDarkMode = intent.isSystemInDarkMode))
                 if (_uiState.value.isSystemTheme) {
@@ -290,41 +295,43 @@ class SettingsViewModel @Inject constructor(
                                 )
                             }
                             if (newString.length == 4) {
-                                if (newString == deviceManager.getPinCode() && _uiState.value.shouldEnterPassword) {
-                                    viewModelScope.launch {
-                                        _uiState.update {
-                                            it.copy(
-                                                isSuccess = true
-                                            )
+                                viewModelScope.launch {
+                                    if (newString == deviceManager.getPinCode() && _uiState.value.shouldEnterPassword) {
+                                        viewModelScope.launch {
+                                            _uiState.update {
+                                                it.copy(
+                                                    isSuccess = true
+                                                )
+                                            }
+                                            delay(200)
+                                            _uiState.update {
+                                                it.copy(
+                                                    titleText = resourceManager.getString(R.string.create_password),
+                                                    isSuccess = false,
+                                                    text = "",
+                                                    shouldEnterPassword = false
+                                                )
+                                            }
                                         }
-                                        delay(200)
-                                        _uiState.update {
-                                            it.copy(
-                                                titleText = resourceManager.getString(R.string.create_password),
-                                                isSuccess = false,
-                                                text = "",
-                                                shouldEnterPassword = false
-                                            )
-                                        }
-                                    }
-                                } else if (newString != deviceManager.getPinCode() && _uiState.value.shouldEnterPassword) {
-                                    pinError()
-                                } else {
-                                    if (firstEnteredPin.isBlank()) {
-                                        firstEnteredPin = newString
-                                        _uiState.update {
-                                            it.copy(
-                                                titleText = resourceManager.getString(R.string.repeat_password),
-                                                text = ""
-                                            )
-                                        }
+                                    } else if (newString != deviceManager.getPinCode() && _uiState.value.shouldEnterPassword) {
+                                        pinError()
                                     } else {
-                                        val isValid = _uiState.value.text == firstEnteredPin
-                                        if (isValid) {
-                                            deviceManager.setPinCode(pinCode = newString)
-                                            pinSuccess()
+                                        if (firstEnteredPin.isBlank()) {
+                                            firstEnteredPin = newString
+                                            _uiState.update {
+                                                it.copy(
+                                                    titleText = resourceManager.getString(R.string.repeat_password),
+                                                    text = ""
+                                                )
+                                            }
                                         } else {
-                                            pinError()
+                                            val isValid = _uiState.value.text == firstEnteredPin
+                                            if (isValid) {
+                                                deviceManager.setPinCode(pinCode = newString)
+                                                pinSuccess()
+                                            } else {
+                                                pinError()
+                                            }
                                         }
                                     }
                                 }
@@ -413,11 +420,6 @@ class SettingsViewModel @Inject constructor(
                         }
 
 
-
-
-
-
-
                     }
                 )
             }
@@ -478,6 +480,7 @@ class SettingsViewModel @Inject constructor(
         }
         deviceManager.startMicroVibrate()
     }
+
     companion object {
         const val SETTINGS_MAIN = "settings_main"
         const val THEME_SCREEN = "theme"
