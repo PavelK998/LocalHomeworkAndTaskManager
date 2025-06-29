@@ -1,6 +1,5 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -204,7 +203,6 @@ fun AddHomeworkScreen(
                         handleIntent(AddHomeworkIntent.CloseDatePickerDialog)
                     },
                     onConfirm = {
-                        Log.d("sdfsdfsdfsdf", "AddHomeworkScreen: $it")
                         handleIntent(AddHomeworkIntent.DatePicked(it ?: 0L))
                     }
                 )
@@ -359,16 +357,15 @@ fun AddHomeworkScreen(
                     ) {
                         itemsIndexed(
                             items = uiState.imagesUriList,
-//                            key = { _, item ->
-//                                item.first
-//                            }
+                            key = { _, item ->
+                                item
+                            }
                         ) { index, image ->
                             ImageCard(
                                 modifier = Modifier
                                     .padding(horizontal = 4.dp)
                                     .size(90.dp),
                                 uri = image,
-                                //bitmap = image.second,
                                 onDeleteClick = {
                                     handleIntent(AddHomeworkIntent.OnDeleteImage(index))
                                 }

@@ -123,7 +123,7 @@ private fun Preview() {
         StagePickerDialog(
             stageList = listOf(
                 StageModel(
-                    id = 0,
+                    id = "",
                     color = -5234535,
                     stageName = "toDo",
                     position = 0,

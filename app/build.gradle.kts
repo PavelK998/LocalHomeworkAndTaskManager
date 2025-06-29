@@ -2,12 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.dagger.hilt.android)
-    alias(libs.plugins.kotlin.kapt)
-    alias(libs.plugins.google.ksp)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.google.services)
-    alias(libs.plugins.google.crashlytics)
+    alias(libs.plugins.realm.database)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
@@ -34,6 +32,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -63,11 +62,9 @@ android {
 dependencies {
 
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.realm.database)
     implementation(libs.glide)
 
-    implementation(platform(libs.google.firebase.bom))
-    implementation(libs.google.firebase.analytics)
-    implementation(libs.google.firebase.crashlytics)
 
     implementation(libs.core.splashscreen)
     implementation(libs.navigation.compose)
@@ -83,10 +80,6 @@ dependencies {
     implementation(libs.androidx.ui.text.google.fonts)
     kapt(libs.dagger.hilt.kapt)
     implementation(libs.dagger.hilt.navigation)
-
-    implementation(libs.androidx.room)
-    implementation(libs.androidx.room.coroutines)
-    ksp(libs.androidx.room.ksp)
 
     implementation(libs.media3)
     implementation(libs.media3.ui)
@@ -106,7 +99,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    debugImplementation(libs.leak.canary)
 
     coreLibraryDesugaring(libs.android.desugaring)
 }

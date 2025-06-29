@@ -9,10 +9,6 @@ lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
 composeBom = "2025.03.01"
 hilt = "2.51.1"
-room = "2.6.1"
-ksp = "2.0.21-1.0.27"
-googleServices = "4.4.2"
-firebaseBob = "33.7.0"
 composeNavigation = "2.8.5"
 serialization = "1.6.3"
 hiltNavigationCompose = "1.2.0"
@@ -24,16 +20,11 @@ richText = "1.0.0-rc05-k2"
 icons = "1.7.8"
 documentFile = "1.1.0"
 gson = "2.13.1"
-leakCanary = "2.14"
 glide = "1.0.0-beta01"
-crashlytics = "3.0.3"
 datastorePrefs = "1.1.7"
+realm = "2.3.0"
 
 [libraries]
-
-google-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBob" }
-google-firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
-google-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
 
 glide = { module = "com.github.bumptech.glide:compose", version.ref = "glide"}
 
@@ -48,10 +39,6 @@ dagger-hilt = { group = "com.google.dagger", name = "hilt-android", version.ref 
 dagger-hilt-kapt = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 dagger-hilt-navigation = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 
-androidx-room = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
-androidx-room-coroutines = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
-androidx-room-ksp = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
-
 richText = { group = "com.mohamedrejeb.richeditor", name = "richeditor-compose", version.ref = "richText" }
 
 media3 = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "exoplayer" }
@@ -63,7 +50,9 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 
 android-desugaring = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar"}
 
-leak-canary = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakCanary"}
+
+realm-database = { module = "io.realm.kotlin:library-base", version.ref = "realm"}
+
 
 
 
@@ -90,8 +79,6 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-kapt = {id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin"}
-google-ksp = {id = "com.google.devtools.ksp", version.ref = "ksp"}
 dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt"}
-google-services = { id = "com.google.gms.google-services", version.ref = "googleServices"}
-google-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics"}
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+realm-database = { id = "io.realm.kotlin", version.ref = "realm" }

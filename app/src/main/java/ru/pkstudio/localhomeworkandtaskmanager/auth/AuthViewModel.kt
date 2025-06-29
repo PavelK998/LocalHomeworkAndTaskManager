@@ -1,7 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.auth
 
 import android.content.res.Configuration
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
@@ -59,6 +58,7 @@ class AuthViewModel @Inject constructor(
                 if (playbackState == Player.STATE_ENDED) {
                     viewModelScope.launch {
                         deviceManager.setIsFirstLaunch(false)
+                        _uiAction.tryEmit(AuthUiAction.SetUnspecifiedOrientation)
                         selectUsageAction()
                         _uiState.update {
                             it.copy(
@@ -162,22 +162,6 @@ class AuthViewModel @Inject constructor(
                 }
             }
 
-            is AuthIntent.SetDarkTheme -> {
-
-            }
-
-            is AuthIntent.SetDynamicColors -> {
-
-            }
-
-            is AuthIntent.SetLightTheme -> {
-
-            }
-
-            is AuthIntent.SetSystemTheme -> {
-
-            }
-
             is AuthIntent.SetDiaryUsage -> {
                 viewModelScope.launch {
                     deviceManager.setUsage(Constants.DIARY.ordinal)
@@ -193,7 +177,6 @@ class AuthViewModel @Inject constructor(
             }
 
             is AuthIntent.SetThemeId -> {
-                Log.d("xzcxzczxczx", "handleIntent: set theme id ${intent.themeId}")
                 if (intent.themeId in _uiState.value.listUiThemes.indices) {
                     viewModelScope.launch {
                         when (_uiState.value.listUiThemes[intent.themeId]) {
@@ -272,8 +255,6 @@ class AuthViewModel @Inject constructor(
 
 
     private fun isFirstLaunch(orientation: Int) = viewModelScope.launch {
-        Log.d("fhdgfghfghfg", "landscape: ${orientation == Configuration.ORIENTATION_LANDSCAPE}")
-        Log.d("fhdgfghfghfg", "portrait: ${orientation == Configuration.ORIENTATION_PORTRAIT}")
         val isFirstLaunch = deviceManager.getIsFirstLaunch()
         val lastAuthAction = deviceManager.getLastAuthAction()
         _uiState.update {
@@ -284,7 +265,6 @@ class AuthViewModel @Inject constructor(
         if (isFirstLaunch) {
             startVideo(orientation)
         } else {
-            Log.d("asdsadsadsa", "last: $lastAuthAction")
             when (lastAuthAction) {
                 AuthAction.SELECT_USAGE.ordinal -> {
                     selectUsageAction()
@@ -306,44 +286,12 @@ class AuthViewModel @Inject constructor(
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             videoPlayerRepository.playVideo(R.raw.intro_landscape)
             player.addListener(
-                object : Player.Listener {
-                    override fun onPlaybackStateChanged(playbackState: Int) {
-                        super.onPlaybackStateChanged(playbackState)
-                        if (playbackState == Player.STATE_ENDED) {
-                            viewModelScope.launch {
-                                deviceManager.setIsFirstLaunch(false)
-                                _uiAction.tryEmit(AuthUiAction.SetUnspecifiedOrientation)
-                                selectUsageAction()
-                                _uiState.update {
-                                    it.copy(
-                                        isFirstLaunch = false,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                videoListener
             )
         } else {
             videoPlayerRepository.playVideo(R.raw.intro)
             player.addListener(
-                object : Player.Listener {
-                    override fun onPlaybackStateChanged(playbackState: Int) {
-                        super.onPlaybackStateChanged(playbackState)
-                        if (playbackState == Player.STATE_ENDED) {
-                            viewModelScope.launch {
-                                deviceManager.setIsFirstLaunch(false)
-                                _uiAction.tryEmit(AuthUiAction.SetUnspecifiedOrientation)
-                                selectUsageAction()
-                                _uiState.update {
-                                    it.copy(
-                                        isFirstLaunch = false,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                videoListener
             )
         }
     }
@@ -395,8 +343,7 @@ class AuthViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        viewModelScope.launch {
-            videoPlayerRepository.releaseVideoPlayer()
-        }
+        player.removeListener(videoListener)
+        player.release()
     }
 }

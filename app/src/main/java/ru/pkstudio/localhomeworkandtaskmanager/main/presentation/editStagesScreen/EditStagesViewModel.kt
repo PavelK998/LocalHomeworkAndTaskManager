@@ -21,7 +21,6 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.EditStageResult
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
-import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant9
 import javax.inject.Inject
@@ -31,7 +30,6 @@ class EditStagesViewModel @Inject constructor(
     private val stageRepository: StageRepository,
     private val navigator: Navigator,
     private val resourceManager: ResourceManager,
-    private val homeworkRepository: HomeworkRepository
 ) : ViewModel() {
 
     private var isNavigateBtnClicked = false
@@ -126,11 +124,12 @@ class EditStagesViewModel @Inject constructor(
                             isDeleteAlertDialogOpened = false
                         )
                     }
-                    changeStagesInHomework(
-                        fromStageId = _uiState.value.stagesList[stageIndexForDelete].id ?: 0L,
-                        targetStageId = _uiState.value.stagesList[0].id ?: 0L,
-                        targetStageName = _uiState.value.stagesList[0].stageName
-                    )
+                    deleteStage(_uiState.value.stagesList[stageIndexForDelete])
+//                    changeStagesInHomework(
+//                        fromStageId = _uiState.value.stagesList[stageIndexForDelete].id ?: 0L,
+//                        targetStageId = _uiState.value.stagesList[0].id ?: 0L,
+//                        targetStageName = _uiState.value.stagesList[0].stageName
+//                    )
                 }
             }
 
@@ -202,26 +201,29 @@ class EditStagesViewModel @Inject constructor(
     ) = viewModelScope.execute(
         source = {
             stageRepository.deleteStageFromPosition(stage = stage)
-        }
-    )
-
-    private fun changeStagesInHomework(
-        fromStageId: Long,
-        targetStageId: Long,
-        targetStageName: String
-    ) = viewModelScope.execute(
-        source = {
-            homeworkRepository.changeHomeworkStagesAfterDeleteStage(
-                fromStageId = fromStageId,
-                targetStageId = targetStageId,
-                targetStageName = targetStageName
-            )
         },
-        onSuccess = {
-            deleteStage(_uiState.value.stagesList[stageIndexForDelete])
-        }
+        onError = {
 
+        }
     )
+
+//    private fun changeStagesInHomework(
+//        fromStageId: Long,
+//        targetStageId: Long,
+//        targetStageName: String
+//    ) = viewModelScope.execute(
+//        source = {
+//            homeworkRepository.changeHomeworkStagesAfterDeleteStage(
+//                fromStageId = fromStageId,
+//                targetStageId = targetStageId,
+//                targetStageName = targetStageName
+//            )
+//        },
+//        onSuccess = {
+//            deleteStage(_uiState.value.stagesList[stageIndexForDelete])
+//        }
+//
+//    )
 
     private fun addStage(
         position: Int
@@ -232,7 +234,7 @@ class EditStagesViewModel @Inject constructor(
                     stageName = resourceManager.getString(R.string.default_added_stage),
                     position = position,
                     color = stageVariant9.toArgb()
-                )
+                ),
             )
         },
         onSuccess = {
@@ -251,6 +253,9 @@ class EditStagesViewModel @Inject constructor(
                     stageName = newName
                 )
             )
+        },
+        onError = {
+
         }
     )
 
@@ -259,6 +264,7 @@ class EditStagesViewModel @Inject constructor(
             stageRepository.getAllStages()
         },
         onSuccess = { stageFlow ->
+
             viewModelScope.launch {
                 stageFlow.collect { stages ->
                     if (stages.isNotEmpty()) {
@@ -278,8 +284,11 @@ class EditStagesViewModel @Inject constructor(
                             stagesList = stages,
                         )
                     }
+
                 }
             }
+        },
+        onError = {
         }
     )
 }

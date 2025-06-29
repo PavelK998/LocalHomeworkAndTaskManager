@@ -28,14 +28,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
@@ -153,31 +149,6 @@ fun HomeworkListScreen(
                     navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
                     navigationAction = {
                         handleIntent.invoke(HomeworkListIntent.NavigateUp)
-                    },
-                    dropDownMenu = {
-                        DropdownMenu(
-                            expanded = uiState.isDropDownMenuVisible,
-                            onDismissRequest = {
-                                handleIntent(HomeworkListIntent.ShrinkMenu)
-                            }
-                        ) {
-                            DropdownMenuItem(
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "edit"
-                                    )
-                                },
-                                text = {
-                                    Text(
-                                        text = stringResource(id = R.string.edit)
-                                    )
-                                },
-                                onClick = {
-
-                                }
-                            )
-                        }
                     },
                     actions = if (uiState.isKanbanScreenVisible) {
                         listOf(
@@ -444,7 +415,7 @@ fun HomeworkListScreen(
                                     handleIntent(
                                         HomeworkListIntent.NavigateToDetailsHomework(
                                             homeworkId = model.id,
-                                            subjectId = model.subjectId
+                                            subjectId = uiState.subjectId
                                         )
                                     )
                                 },

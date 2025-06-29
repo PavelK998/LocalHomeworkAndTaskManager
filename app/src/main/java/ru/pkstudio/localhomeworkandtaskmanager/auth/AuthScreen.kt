@@ -169,8 +169,6 @@ fun AuthScreen(
                         }
                     )
                 }
-
-                else -> {}
             }
         }
     }

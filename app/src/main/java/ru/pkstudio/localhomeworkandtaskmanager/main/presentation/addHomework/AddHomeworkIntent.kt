@@ -8,8 +8,6 @@ sealed interface AddHomeworkIntent {
 
     data class OnDescriptionHomeworkChange(val text:String): AddHomeworkIntent
 
-    data class OnImagePicked(val uri: Uri): AddHomeworkIntent
-
     data class OnMultiplyImagePicked(val listUri: List<Uri>): AddHomeworkIntent
 
     data class OnDeleteImage(val index: Int): AddHomeworkIntent
@@ -85,9 +83,5 @@ sealed interface AddHomeworkIntent {
     data class TimePicked(val timeString: String): AddHomeworkIntent
 
     data class OnFileExportPathSelected(val uri: Uri): AddHomeworkIntent
-
-
-
-
 
 }

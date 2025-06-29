@@ -66,7 +66,7 @@ private fun KanbanHeaderPreview() {
             model = StageUiModel(
                 stageName = "first",
                 itemsCount = "20",
-                id = 0L,
+                id = "",
                 color = -0
             )
         )

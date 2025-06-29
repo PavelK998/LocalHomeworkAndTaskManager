@@ -194,7 +194,7 @@ private fun HomeworkCardPreview() {
     LocalHomeworkAndTaskManagerTheme {
         HomeworkCard(
             homeworkUiModel = HomeworkUiModel(
-                id = 0L,
+                id = "",
                 addDate = "12.10.2024",
                 name = "Сделать доклад",
                 description = "Важный доклад по важной теме",
@@ -204,8 +204,7 @@ private fun HomeworkCardPreview() {
                 isChecked = false,
                 isCheckBoxVisible = false,
                 stageName = "asdasdas",
-                stageId = 0L,
-                subjectId = 0L,
+                stageId = "",
                 color = 3424123,
                 importance = 1,
                 isFinished = true

@@ -1,7 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.SpanStyle
@@ -37,7 +36,6 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectUiMode
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.FilesHandleRepository
-import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
 import java.text.SimpleDateFormat
@@ -52,7 +50,6 @@ import kotlin.math.roundToInt
 
 @HiltViewModel
 class HomeworkInfoViewModel @Inject constructor(
-    private val homeworkRepository: HomeworkRepository,
     private val subjectsRepository: SubjectsRepository,
     private val stageRepository: StageRepository,
     private val resourceManager: ResourceManager,
@@ -60,12 +57,11 @@ class HomeworkInfoViewModel @Inject constructor(
     private val filesHandleRepository: FilesHandleRepository,
     private val navigator: Navigator
 ) : ViewModel() {
-    private var homeworkId: Long = 0L
 
     private val defaultNameState = RichTextState()
     private val defaultDescriptionState = RichTextState()
     private var defaultColor: Color? = null
-    private var defaultStage: Long = 0L
+    private var defaultStage: String = ""
     private var isUpdateClicked = false
     private var isDeleteClicked = false
     private var isNavigateToStageEdit = false
@@ -76,8 +72,13 @@ class HomeworkInfoViewModel @Inject constructor(
     private var folderString: String? = null
 
 
-    fun parseArguments(homeworkId: Long, subjectId: Long) {
-        this.homeworkId = homeworkId
+    fun parseArguments(homeworkId: String, subjectId: String) {
+        _uiState.update {
+            it.copy(
+                homeworkId = homeworkId,
+                subjectId = subjectId
+            )
+        }
         getInitialData(homeworkId = homeworkId, subjectId = subjectId)
         isNavigateToStageEdit = false
     }
@@ -334,14 +335,13 @@ class HomeworkInfoViewModel @Inject constructor(
                             newName = _uiState.value.nameRichTextState.toHtml(),
                             newDescription = _uiState.value.descriptionRichTextState.toHtml(),
                             newImportanceColor = _uiState.value.currentColor,
-                            newStageId = _uiState.value.currentSelectedStage?.id ?: 0L,
+                            newStageId = _uiState.value.currentSelectedStage?.id ?: "",
                             newStageName = _uiState.value.currentSelectedStage?.stageName ?: "",
                             endDate = endDate,
                             isFinished = _uiState.value.currentSelectedStage?.isFinishStage ?: false
                         )
                     }
                 }
-
             }
 
             is HomeworkInfoIntent.UpdateDismiss -> {
@@ -583,7 +583,6 @@ class HomeworkInfoViewModel @Inject constructor(
                 )
             },
             onSuccess = { imageNames ->
-                Log.d("ghgfhgfhgfhfgh", "addPhotos: success ${imageNames.size}")
                 val names = _uiState.value.homeworkUiModel?.let {
                     it.imageNameList + imageNames
                 } ?: imageNames
@@ -595,7 +594,7 @@ class HomeworkInfoViewModel @Inject constructor(
                 }
             },
             onError = {
-                Log.d("ghgfhgfhgfhfgh", "addPhotos: error $it")
+
             }
         )
 
@@ -603,16 +602,12 @@ class HomeworkInfoViewModel @Inject constructor(
 
 
     private fun deletePhoto(index: Int) {
-        Log.d("bdhdynjhjghhvbhn", "deletePhoto: not proceed")
-        Log.d("bdhdynjhjghhvbhn", "deletePhoto: index $index")
-
         if (_uiState.value.homeworkUiModel?.imageNameList?.indices?.contains(index) == true && !folderString.isNullOrBlank()) {
             _uiState.update {
                 it.copy(
                     isDropDownMenuVisible = false
                 )
             }
-            Log.d("bdhdynjhjghhvbhn", "deletePhoto ")
             viewModelScope.execute(
                 source = {
                     filesHandleRepository.deleteImageInUserFolder(
@@ -628,13 +623,13 @@ class HomeworkInfoViewModel @Inject constructor(
                     }
                 },
                 onSuccess = {
-                    Log.d("bdhdynjhjghhvbhn", "deletePhoto success")
                     _uiState.update {
                         it.copy(
                             isPhotoOpened = false
                         )
                     }
-                    val newImageList = _uiState.value.homeworkUiModel?.imageNameList?.toMutableList()
+                    val newImageList =
+                        _uiState.value.homeworkUiModel?.imageNameList?.toMutableList()
                     newImageList?.removeAt(index)
                     newImageList?.let {
                         updateImagesList(
@@ -643,55 +638,53 @@ class HomeworkInfoViewModel @Inject constructor(
                     }
                 },
                 onError = {
-                    Log.d("bdhdynjhjghhvbhn", "deletePhoto error $it")
                 }
             )
         }
     }
 
     private fun updateImagesList(imageNames: List<String>) {
-        Log.d("hghfghfghfg", "names size in update: ${imageNames.size}")
         _uiState.value.homeworkUiModel?.let { homeworkUiModel ->
-            viewModelScope.execute(
-                source = {
-                    homeworkRepository.updateHomework(
-                        homework = homeworkUiModel.toHomeworkModel().copy(
-                            imageNameList = imageNames
-                        )
-                    )
-                },
-                onSuccess = {
-                    viewModelScope.execute(
-                        source = {
-                            homeworkRepository.getHomeworkById(homeworkId)
-                        },
-                        onSuccess = { homeworkModel ->
-                            val model = _uiState.value.homeworkUiModel?.copy(
-                                imageNameList = homeworkModel.imageNameList
-                            )
-                            _uiState.update {
-                                it.copy(
-                                    homeworkUiModel = model
-                                )
-                            }
-                            Log.d("hghfghfghfg", "updateImagesList: success")
-                            folderString?.let { folder ->
-                                if (folder.isNotBlank()) {
-                                    findImages(
-                                        folderUri = folder.toUri(),
-                                        imageNames
-                                    )
-                                }
-                            }
-                        },
-                        onError = {}
-                    )
-
-                },
-                onError = {
-
-                }
-            )
+//            viewModelScope.execute(
+//                source = {
+//                    homeworkRepository.updateHomework(
+//                        homework = homeworkUiModel.toHomeworkModel().copy(
+//                            imageNameList = imageNames
+//                        )
+//                    )
+//                },
+//                onSuccess = {
+//                    viewModelScope.execute(
+//                        source = {
+//                            homeworkRepository.getHomeworkById(homeworkId)
+//                        },
+//                        onSuccess = { homeworkModel ->
+//                            val model = _uiState.value.homeworkUiModel?.copy(
+//                                imageNameList = homeworkModel.imageNameList
+//                            )
+//                            _uiState.update {
+//                                it.copy(
+//                                    homeworkUiModel = model
+//                                )
+//                            }
+//                            Log.d("hghfghfghfg", "updateImagesList: success")
+//                            folderString?.let { folder ->
+//                                if (folder.isNotBlank()) {
+//                                    findImages(
+//                                        folderUri = folder.toUri(),
+//                                        imageNames
+//                                    )
+//                                }
+//                            }
+//                        },
+//                        onError = {}
+//                    )
+//
+//                },
+//                onError = {
+//
+//                }
+//            )
         }
     }
 
@@ -721,7 +714,6 @@ class HomeworkInfoViewModel @Inject constructor(
 
     private fun toggleFontSize(nameFontSize: Float, descriptionFontSize: Float) {
         if (nameFontSize < Constants.MIN_FONT_VALUE) {
-            Log.d("nvbnbvvbnbn", "min value")
             _uiState.value.nameRichTextState.toggleSpanStyle(
                 SpanStyle(fontSize = Constants.MIN_FONT_VALUE.roundToInt().sp)
             )
@@ -753,8 +745,6 @@ class HomeworkInfoViewModel @Inject constructor(
     }
 
     private fun changeFontSize(textState: RichTextState, fontSize: Int) {
-        Log.d("vbnbvnvbnvbnvb", " state size: ${textState.currentSpanStyle.fontSize} ")
-        Log.d("vbnbvnvbnvbnvb", " font: $fontSize ")
         if (textState.currentSpanStyle.fontSize != fontSize.sp) {
             textState.toggleSpanStyle(
                 SpanStyle(fontSize = fontSize.sp)
@@ -792,34 +782,51 @@ class HomeworkInfoViewModel @Inject constructor(
                 isLoading = true
             )
         }
-        folderString?.let { folder ->
-            if (folder.isNotBlank()) {
-                viewModelScope.execute(
-                    source = {
-                        filesHandleRepository.deleteAllImagesInUserFolder(
-                            folderUri = folder.toUri(),
-                            namesList = homeworkModel.imageNameList
-                        )
-                    },
-                    onSuccess = {
-                        viewModelScope.execute(
-                            source = {
-                                homeworkRepository.deleteHomework(homeworkModel)
-                            },
-                            onSuccess = {
-                                _uiState.update {
-                                    it.copy(
-                                        isLoading = false
-                                    )
-                                }
-                                handleIntent(HomeworkInfoIntent.NavigateUp)
+        if (!folderString.isNullOrBlank()) {
+            viewModelScope.execute(
+                source = {
+                    filesHandleRepository.deleteAllImagesInUserFolder(
+                        folderUri = folderString!!.toUri(),
+                        namesList = homeworkModel.imageNameList
+                    )
+                },
+                onSuccess = {
+                    viewModelScope.execute(
+                        source = {
+                            subjectsRepository.deleteHomeworkInSubject(
+                                subjectId = _uiState.value.subjectId,
+                                homeworkModel = homeworkModel
+                            )
+                        },
+                        onSuccess = {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false
+                                )
                             }
+                            handleIntent(HomeworkInfoIntent.NavigateUp)
+                        }
+                    )
+                }
+            )
+        } else {
+            viewModelScope.execute(
+                source = {
+                    subjectsRepository.deleteHomeworkInSubject(
+                        subjectId = _uiState.value.subjectId,
+                        homeworkModel = homeworkModel
+                    )
+                },
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false
                         )
                     }
-                )
-            }
+                    handleIntent(HomeworkInfoIntent.NavigateUp)
+                }
+            )
         }
-
 
     }
 
@@ -827,7 +834,7 @@ class HomeworkInfoViewModel @Inject constructor(
         homeworkModel: HomeworkModel,
         newName: String,
         newDescription: String,
-        newStageId: Long,
+        newStageId: String,
         newStageName: String,
         endDate: LocalDateTime?,
         newImportanceColor: Color,
@@ -835,10 +842,9 @@ class HomeworkInfoViewModel @Inject constructor(
     ) =
         viewModelScope.execute(
             source = {
-                Log.d("gdfhfghfgh", "color:$newImportanceColor")
-                Log.d("gdfhfghfgh", "stage:$newStageName")
-                homeworkRepository.updateHomework(
-                    homework = homeworkModel.copy(
+                subjectsRepository.updateHomeworkInSubject(
+                    subjectId = _uiState.value.subjectId,
+                    homeworkModel = homeworkModel.copy(
                         name = newName,
                         description = newDescription,
                         stageId = newStageId,
@@ -849,7 +855,6 @@ class HomeworkInfoViewModel @Inject constructor(
                         isFinished = isFinished
                     )
                 )
-
             },
             onSuccess = {
                 _uiState.update {
@@ -864,9 +869,9 @@ class HomeworkInfoViewModel @Inject constructor(
         )
 
 
-    private fun getInitialData(homeworkId: Long, subjectId: Long) {
+    private fun getInitialData(homeworkId: String, subjectId: String) {
         val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
-            Log.d("jdgfhfghfgfghjhg", "getInitialData error: $throwable")
+
         }
         viewModelScope.launch(exceptionHandler) {
             _uiState.update {
@@ -879,39 +884,34 @@ class HomeworkInfoViewModel @Inject constructor(
             val subject = async {
                 subjectsRepository.getSubjectById(subjectId)
             }
-            val homework = async {
-                homeworkRepository.getHomeworkById(homeworkId)
-            }
             val stages = async {
                 stageRepository.getAllStagesSingleTime()
             }
-
-            val homeworkResult = homework.await().toHomeworkUiModel()
             val stagesResult = stages.await()
-            val subjectResult = subject.await().toSubjectUiModel()
-            Log.d("nbcvnvbnbvn", "getInitialData: stages $stagesResult")
-            defaultNameState.setHtml(homeworkResult.name)
-            defaultDescriptionState.setHtml(homeworkResult.description)
-            defaultColor = Color(homeworkResult.color)
-            defaultStage = homeworkResult.stageId
-            _uiState.update {
-                it.copy(
-                    nameRichTextState = _uiState.value.nameRichTextState.setHtml(homeworkResult.name),
-                    descriptionRichTextState = _uiState.value.descriptionRichTextState.setHtml(
-                        homeworkResult.description
-                    ),
-                    homeworkUiModel = homeworkResult,
-                    addDateText = homeworkResult.addDate,
-                    finishDateText = homeworkResult.endDate,
-                    subjectUiModel = subjectResult,
-                    subjectNameText = subjectResult.subjectName,
-                    stageList = stagesResult,
-                    currentColor = Color(homeworkResult.color),
-                    currentSelectedStage = if (stagesResult.isNotEmpty()) {
-                        stagesResult.find { stage -> stage.id == homeworkResult.stageId }
-                    } else null,
-                    isLoading = false
-                )
+            val subjectResult = subject.await()
+            val homework = subjectResult.homework.find { it.id == homeworkId }?.toHomeworkUiModel()
+            homework?.let { homeworkUiModel ->
+                defaultNameState.setHtml(homeworkUiModel.name)
+                defaultDescriptionState.setHtml(homeworkUiModel.description)
+                defaultColor = Color(homeworkUiModel.color)
+                defaultStage = homeworkUiModel.stageId
+                _uiState.update {
+                    it.copy(
+                        nameRichTextState = _uiState.value.nameRichTextState.setHtml(homeworkUiModel.name),
+                        descriptionRichTextState = _uiState.value.descriptionRichTextState.setHtml(
+                            homeworkUiModel.description
+                        ),
+                        homeworkUiModel = homeworkUiModel,
+                        addDateText = homeworkUiModel.addDate,
+                        finishDateText = homeworkUiModel.endDate,
+                        subjectUiModel = subjectResult.toSubjectUiModel(),
+                        subjectNameText = subjectResult.subjectName,
+                        stageList = stagesResult,
+                        currentColor = Color(homeworkUiModel.color),
+                        currentSelectedStage = stagesResult.find { it.id == homework.stageId },
+                        isLoading = false
+                    )
+                }
             }
             if (!isFontSizeSet) {
                 val nameFontSize =
@@ -932,28 +932,29 @@ class HomeworkInfoViewModel @Inject constructor(
                 )
                 isFontSizeSet = true
 
-                if (!folder.isNullOrBlank() && homeworkResult.imageNameList.isNotEmpty()) {
+                if (!folder.isNullOrBlank() && homework != null && homework.imageNameList.isNotEmpty()) {
                     findImages(
                         folderUri = folder.toUri(),
-                        imageNames = homeworkResult.imageNameList
+                        imageNames = homework.imageNameList
                     )
                 }
-                homeworkListener(homeworkId)
+                homeworkListener(subjectId, homeworkId)
             }
         }
     }
 
-    private fun homeworkListener(homeworkId: Long){
+    private fun homeworkListener(subjectId: String, homeworkId: String) {
         viewModelScope.execute(
             source = {
-                homeworkRepository.getHomeworkFlowById(homeworkId)
+                subjectsRepository.getSubjectByIdFlow(subjectId = subjectId)
             },
-            onSuccess = { homeworkFlow ->
+            onSuccess = { subjectFlow ->
                 viewModelScope.launch {
-                    homeworkFlow.collect{ homeworkModel ->
+                    subjectFlow.collect { subjectModel ->
                         _uiState.update {
                             it.copy(
-                                homeworkUiModel = homeworkModel.toHomeworkUiModel()
+                                homeworkUiModel = subjectModel.homework.find { it.id == homeworkId }
+                                    ?.toHomeworkUiModel()
                             )
                         }
                     }
@@ -977,7 +978,6 @@ class HomeworkInfoViewModel @Inject constructor(
             }
         },
         onError = {
-            Log.d("nbnbvnvbnvbn", "findImageSInUserFolder: error $it")
         }
     )
 }

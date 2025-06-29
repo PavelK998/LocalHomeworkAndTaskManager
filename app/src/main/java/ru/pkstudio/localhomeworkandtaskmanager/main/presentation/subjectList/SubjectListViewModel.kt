@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
@@ -250,12 +251,20 @@ class SubjectListViewModel @Inject constructor(
                     )
                 )
             },
+            onSuccess = {
+            },
+            onError = {
+                viewModelScope.launch {
+                    delay(10000)
+                    createStage()
+                }
+            }
         )
     }
 
     private fun updateModel(index: Int) {
         val subjectsList = _uiState.value.subjectsList.toMutableList()
-        if (index in subjectsList.indices) {
+        if (index in subjectsList.indices && _uiState.value.subjectNameForEdit.isNotBlank()) {
             viewModelScope.execute(
                 source = {
                     subjectsRepository.updateSubject(
@@ -274,10 +283,14 @@ class SubjectListViewModel @Inject constructor(
                             subjectCommentForEdit = ""
                         )
                     }
+                },
+                onError = {
+                    parseException(it)
                 }
             )
+        } else if (_uiState.value.subjectNameForEdit.isBlank()) {
+            parseException(Throwable("Subject name can't be blank"))
         }
-
     }
 
     private fun revealModel(isRevealed: Boolean, index: Int) {
@@ -359,7 +372,9 @@ class SubjectListViewModel @Inject constructor(
                         )
                     }
                 },
-                onError = {}
+                onError = {
+                    parseException(it)
+                }
             )
         }
     }
@@ -370,14 +385,13 @@ class SubjectListViewModel @Inject constructor(
                 source = {
                     subjectsRepository.insertSubject(
                         subject = SubjectModel(
-                            id = null,
+                            id = "",
                             subjectName = _uiState.value.newSubjectName,
                             comment = _uiState.value.newSubjectComment
                         )
                     )
                 },
                 onSuccess = {
-
                     _uiState.update {
                         it.copy(
                             isAddSubjectAlertDialogOpened = false,
@@ -431,5 +445,9 @@ class SubjectListViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun parseException(exception: Throwable) {
+
     }
 }

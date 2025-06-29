@@ -118,7 +118,7 @@ private fun EditStageCardPreview() {
     LocalHomeworkAndTaskManagerTheme {
         EditStageCard(
             stage = StageModel(
-                id = 10,
+                id = "",
                 stageName = "First Stage",
                 position = 0,
                 color = 0

@@ -7,15 +7,6 @@ sealed interface AuthIntent {
 
     data object OnBackBtnClicked : AuthIntent
 
-
-    data object SetLightTheme : AuthIntent
-
-    data object SetDarkTheme : AuthIntent
-
-    data object SetSystemTheme : AuthIntent
-
-    data object SetDynamicColors : AuthIntent
-
     data object SetDiaryUsage : AuthIntent
 
     data object SetTaskTrackerUsage : AuthIntent
