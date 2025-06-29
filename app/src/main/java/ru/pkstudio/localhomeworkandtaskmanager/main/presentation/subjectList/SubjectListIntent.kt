@@ -4,7 +4,7 @@ sealed interface SubjectListIntent {
 
     data class NavigateToHomeworkScreen(
         val subjectNane: String,
-        val subjectId: Long
+        val subjectId: String
     ): SubjectListIntent
 
     data object OpenAddSubject: SubjectListIntent

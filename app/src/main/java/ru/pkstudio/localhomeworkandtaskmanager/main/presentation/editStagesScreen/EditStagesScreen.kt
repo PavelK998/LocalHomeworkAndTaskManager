@@ -71,7 +71,7 @@ fun EditStagesScreen(
             itemsIndexed(
                 items = uiState.stagesList,
                 key = { _, item ->
-                    item.id!!
+                    item.id
                 }
             ) { index, model ->
                 EditStageCard(

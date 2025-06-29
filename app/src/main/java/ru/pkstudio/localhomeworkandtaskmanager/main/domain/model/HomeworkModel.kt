@@ -4,14 +4,13 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class HomeworkModel(
-    val id: Long?,
+    val id: String,
     val color: Int,
     val importance: Int,
-    val subjectId: Long,
     val addDate: LocalDateTime?,
     val name: String,
     val stage: String,
-    val stageId: Long,
+    val stageId: String,
     val description: String,
     val startDate: LocalDate?,
     val endDate: LocalDateTime?,

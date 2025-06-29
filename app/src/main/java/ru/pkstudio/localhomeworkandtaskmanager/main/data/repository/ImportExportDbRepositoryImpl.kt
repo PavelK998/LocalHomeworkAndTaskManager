@@ -6,7 +6,6 @@ import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
-import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.AppDb
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.ImportExportDbRepository
 import java.io.File
 import java.io.FileInputStream
@@ -15,7 +14,6 @@ import javax.inject.Inject
 
 class ImportExportDbRepositoryImpl @Inject constructor(
     private val context: Context,
-    private val appDb: AppDb
 ) : ImportExportDbRepository {
 
     private fun uriToFile(uri: Uri): File? {
@@ -72,9 +70,9 @@ class ImportExportDbRepositoryImpl @Inject constructor(
     }
 
     override suspend fun exportDatabase(uri: Uri) {
-        if (appDb.isOpen) {
-            appDb.close()
-        }
+//        if (appDb.isOpen) {
+//            appDb.close()
+//        }
 
         val folder = DocumentFile.fromTreeUri(context, uri)
             ?: throw IllegalArgumentException("Invalid folder Uri: $uri")
@@ -110,9 +108,9 @@ class ImportExportDbRepositoryImpl @Inject constructor(
     }
 
     override suspend fun importDatabase(uri: Uri) {
-        if (appDb.isOpen) {
-            appDb.close()
-        }
+//        if (appDb.isOpen) {
+//            appDb.close()
+//        }
         val databasePath = context.getDatabasePath("homework.db")
         val file = uriToFile(uri)
         file?.copyTo(databasePath, overwrite = true)

@@ -1,6 +1,5 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList
 
-import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
@@ -21,12 +20,12 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.Constants
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkModel
-import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkUiModelList
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkModelList
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toImportance
-import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toListHomeworkModels
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toListHomeworkUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
-import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.HomeworkRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.StageUiModel
 import javax.inject.Inject
 
@@ -34,14 +33,12 @@ import javax.inject.Inject
 class HomeworkListViewModel @Inject constructor(
     private val navigator: Navigator,
     private val resourceManager: ResourceManager,
-    private val homeworkRepository: HomeworkRepository,
+    private val subjectsRepository: SubjectsRepository,
     private val stageRepository: StageRepository,
     private val deviceManager: DeviceManager,
 ) : ViewModel() {
     private val kanban = resourceManager.getString(R.string.kanban)
     private val list = resourceManager.getString(R.string.list)
-
-    private var subjectId = 0L
 
     private var selectedCardToChangeColor = -1
 
@@ -50,8 +47,12 @@ class HomeworkListViewModel @Inject constructor(
     private var selectedHomeworkForDelete: HomeworkModel? = null
 
 
-    fun parseArguments(subjectId: Long) {
-        this.subjectId = subjectId
+    fun parseArguments(subjectId: String) {
+        _uiState.update {
+            it.copy(
+                subjectId = subjectId
+            )
+        }
         checkFilterActions()
         getHomework(
             subjectId = subjectId,
@@ -112,15 +113,11 @@ class HomeworkListViewModel @Inject constructor(
                 }
             }
 
-            is HomeworkListIntent.ExpandMenu -> {
-
-            }
-
             is HomeworkListIntent.NavigateToAddHomework -> {
                 viewModelScope.launch {
                     navigator.navigate(
                         Destination.HomeworkAddScreen(
-                            subjectId = subjectId
+                            subjectId = _uiState.value.subjectId
                         )
                     )
                 }
@@ -173,10 +170,6 @@ class HomeworkListViewModel @Inject constructor(
                 }
             }
 
-            is HomeworkListIntent.ShrinkMenu -> {
-
-            }
-
             is HomeworkListIntent.TurnEditMode -> {
                 if (intent.index in _uiState.value.homeworkList.indices) {
                     turnCardEditMode(index = intent.index)
@@ -210,7 +203,7 @@ class HomeworkListViewModel @Inject constructor(
                             Destination.DetailsHomeworkScreen(
                                 homeworkId =
                                     _uiState.value.kanbanItemsList[intent.rowIndex].columnItems[intent.columnIndex].id,
-                                subjectId = subjectId
+                                subjectId = _uiState.value.subjectId
                             )
                         )
                     }
@@ -368,7 +361,6 @@ class HomeworkListViewModel @Inject constructor(
         }
 
         if (importanceFilter == Constants.FILTER_IMPORTANCE_DESCENDING.ordinal) {
-            Log.d("ytutyuytutyu", "FILTER_IMPORTANCE_DESCENDING ")
             _uiState.update {
                 it.copy(
                     isSortImportance = true
@@ -409,24 +401,6 @@ class HomeworkListViewModel @Inject constructor(
                 }
             )
         }
-//        val newList = homeworkList.sortedWith(
-//            compareBy<HomeworkUiModel> { homework ->
-//                if (sortByDescendingImportance) -homework.importance else homework.importance
-//            }.thenBy { homework ->
-//                if (sortByDescendingId) -homework.id else homework.id
-//            }
-//        )
-//        val kanbanItemsList = _uiState.value.kanbanItemsList.map {
-//            it.copy(
-//                columnItems = it.columnItems.sortedWith(
-//                    compareBy<HomeworkUiModel> { homework ->
-//                        if (sortByDescendingImportance) -homework.importance else homework.importance
-//                    }.thenBy { homework ->
-//                        if (sortByDescendingId) -homework.id else homework.id
-//                    }
-//                )
-//            )
-//        }
         _uiState.update {
             it.copy(
                 homeworkList = newList,
@@ -438,7 +412,8 @@ class HomeworkListViewModel @Inject constructor(
     private fun updateCardColor(color: Color, homeworkModel: HomeworkModel) =
         viewModelScope.execute(
             source = {
-                homeworkRepository.updateHomework(
+                subjectsRepository.updateHomeworkInSubject(
+                    subjectId = _uiState.value.subjectId,
                     homeworkModel.copy(
                         color = color.toArgb(),
                         importance = color.toImportance()
@@ -451,15 +426,23 @@ class HomeworkListViewModel @Inject constructor(
                         isColorPaletteDialogOpen = false
                     )
                 }
+            },
+            onError = {
+
             }
         )
 
     private fun deleteSingleHomework(homeworkModel: HomeworkModel) = viewModelScope.execute(
         source = {
-            homeworkRepository.deleteHomework(homeworkModel)
+            subjectsRepository.updateHomeworkInSubject(
+                subjectId = _uiState.value.subjectId,
+                homeworkModel = homeworkModel
+            )
         },
         onSuccess = {
             selectedHomeworkForDelete = null
+        },
+        onError = {
         }
     )
 
@@ -487,7 +470,11 @@ class HomeworkListViewModel @Inject constructor(
         val listForDelete = _uiState.value.homeworkList.filter { it.isChecked }
         viewModelScope.execute(
             source = {
-                homeworkRepository.deleteListHomework(listForDelete.toListHomeworkModels())
+                subjectsRepository.deleteHomeworkListInSubject(
+                    subjectId = _uiState.value.subjectId,
+                    homeworkModelList = listForDelete.toHomeworkModelList()
+                )
+
             },
             onSuccess = {
                 _uiState.update {
@@ -495,27 +482,12 @@ class HomeworkListViewModel @Inject constructor(
                         isEditModeEnabled = false
                     )
                 }
+            },
+            onError = {
+
             }
         )
     }
-
-
-//    {
-//        val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
-//
-//        }
-//        viewModelScope.launch(exceptionHandler) {
-//            val deferredResultList = mutableListOf<Deferred<Unit>>()
-//            val listForDelete = _uiState.value.homeworkList.filter { it.isChecked }
-//            listForDelete.forEach { homeworkUiModel ->
-//                val deferredResult = async {
-//                    homeworkRepository.deleteHomework(homeworkUiModel.toHomeworkModel())
-//                }
-//                deferredResultList.add(deferredResult)
-//            }
-//            deferredResultList.awaitAll()
-//        }
-//    }
 
     private fun turnCardEditMode(index: Int) {
         val list = _uiState.value.homeworkList.map {
@@ -596,82 +568,61 @@ class HomeworkListViewModel @Inject constructor(
     }
 
     private fun getHomework(
-        subjectId: Long,
+        subjectId: String,
         sortByDescendingImportance: Boolean,
     ) {
         viewModelScope.execute(
             source = {
-                homeworkRepository.getHomeworkWithSubjectById(
-                    subjectId = subjectId
-                )
+                subjectsRepository.getSubjectByIdFlow(subjectId)
             },
-            onSuccess = { subjectWithHomeworkFlow ->
+            onSuccess = { subjectFlow ->
                 viewModelScope.launch {
-                    subjectWithHomeworkFlow.collect { subjectWithHomework ->
-                        if (subjectWithHomework.homework.isEmpty()) {
+                    subjectFlow.collect { subject ->
+                        if (subject.homework.isNotEmpty()) {
+                            val stages = stageRepository.getAllStagesSingleTime()
+                            val homeworkUiModels = subject.homework.toListHomeworkUiModel()
+                            val sortedHomework = if (sortByDescendingImportance) {
+                                homeworkUiModels.sortedByDescending { it.importance }
+                            } else {
+                                homeworkUiModels.sortedByDescending { it.id }
+                            }
+                            val homeworkByStage = sortedHomework.groupBy { it.stageId }
+                            val stageUiModelList = stages.map { stage ->
+                                StageUiModel(
+                                    id = stage.id,
+                                    stageName = stage.stageName,
+                                    color = stage.color,
+                                    itemsCount = (homeworkByStage[stage.id]?.size ?: 0).toString(),
+                                    isFinishStage = stage.isFinishStage
+                                )
+                            }
                             _uiState.update {
                                 it.copy(
-                                    subjectName = subjectWithHomework.subject.subjectName,
+                                    subjectName = subject.subjectName,
+                                    kanbanItemsList = stageUiModelList.map { stage ->
+                                        KanbanItem(
+                                            rowItem = stage,
+                                            columnItems = homeworkByStage[stage.id] ?: emptyList()
+
+                                        )
+                                    },
+                                    homeworkList = sortedHomework,
+                                    isLoading = false,
+                                    isScreenEmpty = false
+                                )
+                            }
+                            getDisplayMethod()
+
+                        } else {
+                            _uiState.update {
+                                it.copy(
+                                    subjectName = subject.subjectName,
                                     isLoading = false,
                                     isScreenEmpty = true
                                 )
                             }
-                        } else {
-                            viewModelScope.launch {
-                                val stages = stageRepository.getAllStagesSingleTime()
-                                val stageUiModelList = stages.map { stage ->
-                                    StageUiModel(
-                                        id = stage.id ?: 0L,
-                                        stageName = stage.stageName,
-                                        color = stage.color,
-                                        itemsCount = subjectWithHomework.homework.filter { homework ->
-                                            homework.stageId == stage.id
-                                        }.size.toString(),
-                                        isFinishStage = stage.isFinishStage
-                                    )
-                                }
-                                Log.d("gfdgdfgdfg", "getHomework: ${subjectWithHomework.homework}")
-                                _uiState.update {
-                                    it.copy(
-                                        subjectName = subjectWithHomework.subject.subjectName,
-                                        kanbanItemsList = stageUiModelList.map { stage ->
-                                            KanbanItem(
-                                                rowItem = stage,
-                                                columnItems = if (sortByDescendingImportance) {
-                                                    subjectWithHomework.homework.filter { homeworkModel ->
-                                                        homeworkModel.stageId == stage.id
-                                                    }.toHomeworkUiModelList()
-                                                        .sortedByDescending { homeworkModel ->
-                                                            homeworkModel.importance
-                                                        }
-                                                } else {
-                                                    subjectWithHomework.homework.filter { homeworkModel ->
-                                                        homeworkModel.stageId == stage.id
-                                                    }.toHomeworkUiModelList()
-                                                        .sortedByDescending { homeworkModel ->
-                                                            homeworkModel.id
-                                                        }
-                                                },
-                                            )
-                                        },
-                                        homeworkList = if (sortByDescendingImportance) {
-                                            subjectWithHomework.homework.toHomeworkUiModelList()
-                                                .sortedByDescending { homeworkModel ->
-                                                    homeworkModel.importance
-                                                }
-                                        } else {
-                                            subjectWithHomework.homework.toHomeworkUiModelList()
-                                                .sortedByDescending { homeworkModel ->
-                                                    homeworkModel.id
-                                                }
-                                        },
-                                        isLoading = false,
-                                        isScreenEmpty = false
-                                    )
-                                }
-                                getDisplayMethod()
-                            }
                         }
+
                     }
                 }
             }
@@ -691,21 +642,19 @@ class HomeworkListViewModel @Inject constructor(
                     stageName = kanbanItems[newRowId].rowItem.stageName,
                     isFinished = kanbanItems[newRowId].rowItem.isFinishStage
                 )
-
                 viewModelScope.execute(
                     source = {
-                        homeworkRepository.updateHomework(
-                            homework = homeworkModel.toHomeworkModel()
+                        subjectsRepository.updateHomeworkInSubject(
+                            subjectId = _uiState.value.subjectId,
+                            homeworkModel = homeworkModel.toHomeworkModel()
                         )
                     },
                     onSuccess = {
+
                     }
                 )
             }
-
-
         }
-
     }
 
     private fun navigateUp() {

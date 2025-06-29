@@ -2,7 +2,6 @@ package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.settingsScreen
 
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -428,7 +427,6 @@ class SettingsViewModel @Inject constructor(
 
     private fun exportDb(uri: Uri) = viewModelScope.execute(
         source = {
-            Log.d("rtytrytryrtytryrt", "exportDb: $uri")
             importExportDbRepository.exportDatabase(uri)
         },
         onSuccess = {
@@ -436,7 +434,7 @@ class SettingsViewModel @Inject constructor(
 
         },
         onError = {
-            Log.d("rtytrytryrtytryrt", "exportDb error: $it")
+
         }
     )
 

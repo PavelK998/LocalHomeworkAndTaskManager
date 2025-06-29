@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toImportance
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toTextColor
+
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.kanbanHeaderText
 
 @Composable

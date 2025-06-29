@@ -12,7 +12,7 @@ interface StageRepository {
 
     suspend fun updateStage(stage: StageModel)
 
-    suspend fun getStageById(stageId: Long): StageModel
+    suspend fun getStageById(stageId: String): StageModel
 
     suspend fun getAllStagesSingleTime(): List<StageModel>
 
@@ -21,7 +21,5 @@ interface StageRepository {
     suspend fun insertStageToPosition(stage: StageModel)
 
     suspend fun deleteStageFromPosition(stage: StageModel)
-
-    suspend fun shiftAllStagesPositionsPlusOne(position: Int)
 
 }

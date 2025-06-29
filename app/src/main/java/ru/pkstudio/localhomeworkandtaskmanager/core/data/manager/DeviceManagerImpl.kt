@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 class DeviceManagerImpl @Inject constructor(
     private val context: Context,
-): DeviceManager {
+) : DeviceManager {
     private val Context.dataStore by dataStore(
         fileName = "user-settings",
         serializer = UserSettingsSerializer
@@ -139,7 +139,8 @@ class DeviceManagerImpl @Inject constructor(
             context.getSystemService(VIBRATOR_SERVICE) as Vibrator
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val effect = VibrationEffect.createOneShot(vibratorDuration, VibrationEffect.DEFAULT_AMPLITUDE)
+            val effect =
+                VibrationEffect.createOneShot(vibratorDuration, VibrationEffect.DEFAULT_AMPLITUDE)
             vibrator.vibrate(effect)
         } else {
             @Suppress("DEPRECATION")

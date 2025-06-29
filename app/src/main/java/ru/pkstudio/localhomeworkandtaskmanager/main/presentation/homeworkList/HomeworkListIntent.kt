@@ -8,8 +8,8 @@ sealed interface HomeworkListIntent {
     data object NavigateToEditStages : HomeworkListIntent
 
     data class NavigateToDetailsHomework(
-        val homeworkId: Long,
-        val subjectId: Long,
+        val homeworkId: String,
+        val subjectId: String,
     ) : HomeworkListIntent
 
     data class NavigateToDetailsHomeworkFromKanban(
@@ -18,10 +18,6 @@ sealed interface HomeworkListIntent {
     ) : HomeworkListIntent
 
     data class CheckCard(val index: Int, val isChecked: Boolean) : HomeworkListIntent
-
-    data object ExpandMenu : HomeworkListIntent
-
-    data object ShrinkMenu : HomeworkListIntent
 
     data object DeleteCards : HomeworkListIntent
 
@@ -41,7 +37,7 @@ sealed interface HomeworkListIntent {
 
     data class OnCardColorPaletteClicked(val modelIndex: Int) : HomeworkListIntent
 
-    data class OnKanbanCardColorPaletteClicked(val modelId: Long) : HomeworkListIntent
+    data class OnKanbanCardColorPaletteClicked(val modelId: String) : HomeworkListIntent
 
     data object CloseCardColorPaletteDialog : HomeworkListIntent
 

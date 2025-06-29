@@ -18,6 +18,8 @@ import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance8
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance9
 
 data class HomeworkInfoState(
+    val subjectId: String = "",
+    val homeworkId: String = "",
     val homeworkUiModel: HomeworkUiModel? = null,
     val subjectUiModel: SubjectUiModel? = null,
     val nameRichTextState: RichTextState = RichTextState(),
