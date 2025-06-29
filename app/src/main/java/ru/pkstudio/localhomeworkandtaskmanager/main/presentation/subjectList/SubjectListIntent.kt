@@ -4,18 +4,20 @@ sealed interface SubjectListIntent {
 
     data class NavigateToHomeworkScreen(
         val subjectNane: String,
-        val subjectId: Long
+        val subjectId: String
     ): SubjectListIntent
 
     data object OpenAddSubject: SubjectListIntent
+
+    data object CloseDeleteDialog: SubjectListIntent
 
     data object LogOutClicked: SubjectListIntent
 
     data object CloseAddSubject: SubjectListIntent
 
-    data object NavigateUp: SubjectListIntent
-
     data class ChangeNameSubject(val text: String): SubjectListIntent
+
+    data class ChangeCommentSubject(val text: String): SubjectListIntent
 
     data object AddSubject: SubjectListIntent
 
@@ -26,6 +28,8 @@ sealed interface SubjectListIntent {
 
     data class TurnEditModeOff(val index: Int) : SubjectListIntent
 
+    data object ConfirmDeleteSubject: SubjectListIntent
+
     data class DeleteSubject(val index: Int): SubjectListIntent
 
     data class EditSubject(val index: Int): SubjectListIntent
@@ -33,5 +37,14 @@ sealed interface SubjectListIntent {
     data class OnEditTitleChanged(val text: String): SubjectListIntent
 
     data class OnEditCommentChanged(val text: String): SubjectListIntent
+
+
+    data object OnSettingClicked: SubjectListIntent
+
+    data object TurnFabInvisible: SubjectListIntent
+
+    data object TurnFabVisible: SubjectListIntent
+
+
 
 }

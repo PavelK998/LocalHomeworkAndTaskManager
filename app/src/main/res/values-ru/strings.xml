@@ -1,18 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LocalHomeworkAndTaskManager</string>
+    <string name="app_name">MyHomeworkManager</string>
+
+    <string name="loading">Загружаю…</string>
+    <string name="loading_more_time">Еще немного…</string>
+    <string name="data_management">Управление данными</string>
+    <string name="edit">Редактировать</string>
+    <string name="delete">Удалить</string>
+    <string name="sort">Сортировка:</string>
+    <string name="sort_by_add_date">По дате добавления</string>
+    <string name="sort_by_importance">По важности</string>
+    <string name="sort_by_descending_importance">Сначала важные</string>
+    <string name="sort_by_descending_add_date">Сначала новые</string>
+    <string name="ascending">По возрастанию</string>
+    <string name="descending">По убыванию</string>
+    <string name="select">Выбрать</string>
+    <string name="cancel">Отмена</string>
+    <string name="choose_time">Выберите время</string>
+    <string name="select_folder_dialog_title">Выберите папку</string>
+    <string name="select_folder_dialog_description">Вам необходимо выбрать или создать папку для хранения вложений и копий базы данных</string>
+
+    <string name="selectColor">Выберите цвет:</string>
+    <string name="selectStage">Выберите этап:</string>
+    <string name="importance_info">Цвета расположены по важности слева направо</string>
+    <string name="add_stage">Добавить этап</string>
+
     <string name="create_password">Придумайте пин-код</string>
     <string name="enter_password">Введите пин-код</string>
     <string name="repeat_password">Повторите пин-код</string>
     <string name="incorrect_password">Не верный пин-код</string>
     <string name="subjects">Предметы</string>
+    <string name="categories">Категории</string>
     <string name="add_new_subject">Добавить новый предмет</string>
+    <string name="add_new_category">Добавить новую категорию</string>
     <string name="confirm_button">Ок</string>
     <string name="dismiss_button">Отмена</string>
-    <string name="edit">Edit</string>
-    <string name="kanban">Канбан</string>
+
+    <string name="kanban">Доска</string>
     <string name="list">Список</string>
     <string name="add_homework_title_label">Введите название</string>
     <string name="add_homework_description_label">Введите описание</string>
-    <string name="default_stage">Стандартная</string>
+    <string name="default_stage">Сделать</string>
+    <string name="default_added_stage">Добавьте название</string>
+    <string name="default_finish_stage">Готово</string>
+    <string name="import_database">Импорт базы</string>
+    <string name="export_database">Экспорт базы</string>
+    <string name="settings">Настройки</string>
+    <string name="edit_stages">Настройка канбан доски</string>
+    <string name="subject_name_empty">Имя предмета не может быть пустым</string>
+    <string name="category_name_empty">Имя категории не может быть пустым</string>
+    <string name="name_subject">Название</string>
+    <string name="comment">Комментарий\n(опционально)</string>
+    <string name="delete_dialog_title">Вы уверены, что хотите удалить этот предмет?</string>
+    <string name="delete_dialog_title_category">Вы уверены, что хотите удалить эту категорию?</string>
+    <string name="delete_dialog_title_stage">Вы уверены, что хотите удалить этот этап?</string>
+    <string name="comment_subjects_delete_dialog">Все связанные данные будут удалены</string>
+    <string name="comment_subjects_delete_dialog_stage">Все связанные данные будут перенесены в этап: </string>
+    <string name="delete_single_stage">Вы не можете удалить начальную или завершающую стадию</string>
+    <string name="enable_dark_theme">Включить темную тему</string>
+    <string name="enable_light_theme">Включить светлую тему</string>
+    <string name="enable_system_theme">Включить системные настройки</string>
+    <string name="enable_dynamic_color_theme">Включить динамические цвета</string>
+
+    <string name="import_database_dialog_title">Вы собираетесь импортировать базу данных</string>
+    <string name="import_database_dialog_description">Если импорт пройдет успешно, приложение будет перезапущено.</string>
+    <string name="export_database_success">База данных успешно экспортирована</string>
+
+    <string name="export_database_dialog_title">Вы собираетесь экспортировать базу данных</string>
+    <string name="export_database_dialog_description">Если экспорт пройдет успешно, приложение будет перезапущено.\nИногда операционная система не дает выбрать папку, попробуйте либо выбрать другую папку, либо выйти из этой и вернуться к ней</string>
+
+    <string name="subject_name">Название предмета:</string>
+    <string name="category_name">Название категории:</string>
+    <string name="add_date">Добавлено:</string>
+    <string name="delete_homework_dialog_title">Подтвердите удаление</string>
+    <string name="delete_homework_dialog_description">Это домашнее задание будет удалено</string>
+    <string name="delete_task_dialog_description">Эта задача будет удалена</string>
+    <string name="delete_multiple_homework_dialog_description">Все выбранные элементы будут удалены</string>
+
+    <string name="emptyScreen">Кажется здесь пусто!!!\nПожалуйста, нажми кнопку, чтобы это исправить:)</string>
+    <string name="empty_homework_title">Название не может быть пустым</string>
+
+    //auth
+    <string name="auth_usage_title">Приложение может быть, как трекером задач, так и вашим электронным дневником.</string>
+    <string name="auth_usage_sub_title">Как вы хотите его использовать?</string>
+    <string name="auth_usage_parentheses">(это влияет только на текст уведомлений и названий экранов)</string>
+    <string name="auth_usage_btn_diary">Дневник</string>
+    <string name="auth_usage_btn_task_tracker">Таск трекер</string>
+    <string name="auth_theme_title">Выберите тему приложения</string>
+    <string name="auth_theme_hint">Просто смахните вправо:)</string>
+
+    //add homework
+    <string name="name">Название:</string>
+    <string name="description">Описание:</string>
+    <string name="importace">Важность:</string>
+    <string name="stage">Этап:</string>
+    <string name="finish_before">Завершить до:</string>
+    <string name="select_date">Выберите дату и время</string>
+
+    <string name="update_info_dialog_title">Ваши данные были изменены</string>
+    <string name="update_info_dialog_comment">Вы хотите обновить данные?</string>
+    <string name="update_info_toast">Успешно обновлено</string>
+    <string name="add_description">Нажмите здесь, чтобы добавить описание</string>
+    <string name="of">из</string>
+
+
+    //settings
+    <string name="personalization">Персонализация</string>
+    <string name="security">Безопасность</string>
+    <string name="theme_settings">Настройка темы</string>
+    <string name="change_password">Сменить пин-код</string>
+    <string name="change_theme_toolbar_title">Выберите тему</string>
+    <string name="enter_current_password">Введите текущий пин-код</string>
+    <string name="password_changed">Ваш пин-код успешно изменен</string>
 </resources>

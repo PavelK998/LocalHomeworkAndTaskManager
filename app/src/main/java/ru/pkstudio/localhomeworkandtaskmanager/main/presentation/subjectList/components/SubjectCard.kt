@@ -23,10 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 
 @Composable
@@ -51,6 +53,7 @@ fun SubjectCard(
             },
         shape = RoundedCornerShape(4.dp),
         colors = CardDefaults.cardColors().copy(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             contentColor = MaterialTheme.colorScheme.onSurface,
         )
     ) {
@@ -78,7 +81,10 @@ private fun InfoMode(
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             modifier = Modifier
-                .padding(vertical = 18.dp, horizontal = 8.dp)
+                .padding(
+                    vertical = if (comment.isNotBlank()) 12.dp else 18.dp,
+                    horizontal = 8.dp
+                )
                 .align(Alignment.CenterHorizontally),
             text = title,
             fontSize = 18.sp,
@@ -87,7 +93,8 @@ private fun InfoMode(
         if (comment.isNotBlank()){
             Text(
                 modifier = Modifier
-                    .padding(vertical = 18.dp, horizontal = 8.dp)
+                    .padding(horizontal = 8.dp)
+                    .padding(top = 4.dp, bottom = 12.dp)
                     .align(Alignment.Start),
                 text = comment,
                 fontSize = 14.sp,
@@ -121,24 +128,31 @@ private fun EditMode(
                 colors = TextFieldDefaults.colors().copy(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
                 ),
                 value = title,
                 onValueChange = onTitleChanged,
-                textStyle = MaterialTheme.typography.titleLarge
+                textStyle = MaterialTheme.typography.titleLarge,
+                label = {
+                    Text(stringResource(R.string.category_name))
+                }
+
             )
             TextField(
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors().copy(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
                 ),
                 value = comment,
                 onValueChange = onCommentChanged,
-                textStyle = MaterialTheme.typography.bodyLarge
+                textStyle = MaterialTheme.typography.bodyLarge,
+                label = {
+                    Text(stringResource(R.string.comment))
+                }
             )
         }
         IconButton(
@@ -184,7 +198,7 @@ private fun SubjectCardPrev() {
             navigateToHomeworkScreen = {},
             isEditModeEnabled = false,
             title = "Math",
-            comment = "Prepod Ivanov A U",
+            comment = "",
             onConfirmChangesBtnCLicked = {},
             onDiscardChangesBtnCLicked = {}
         )

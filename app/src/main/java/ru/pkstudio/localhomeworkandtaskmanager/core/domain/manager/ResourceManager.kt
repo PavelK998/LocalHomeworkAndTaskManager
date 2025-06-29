@@ -1,5 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager
 
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import androidx.annotation.ColorRes
@@ -18,4 +19,6 @@ interface ResourceManager {
     fun getColor(@ColorRes id: Int): Int
 
     suspend fun parseBase64StringFromUri(uri: Uri): String?
+
+    suspend fun parseBitmapFromUri(uri: Uri): Bitmap?
 }

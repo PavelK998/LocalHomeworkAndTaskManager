@@ -1,19 +1,30 @@
 package ru.pkstudio.localhomeworkandtaskmanager.core.di
 
 import android.content.Context
-import androidx.room.Room
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
+import ru.pkstudio.localhomeworkandtaskmanager.core.data.encrypt.Crypto
+import ru.pkstudio.localhomeworkandtaskmanager.core.data.manager.DeviceManagerImpl
+import ru.pkstudio.localhomeworkandtaskmanager.core.data.manager.VideoPlayerRepositoryImpl
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.VideoPlayerRepository
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.DefaultNavigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
-import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.AppDb
-import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.HomeworkDao
-import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.StageDao
-import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.SubjectsDao
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.realm.HomeworkObject
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.realm.StageObject
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.local.realm.SubjectObject
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.FilesHandleRepositoryImpl
+import ru.pkstudio.localhomeworkandtaskmanager.main.data.repository.ImportExportDbRepositoryImpl
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.FilesHandleRepository
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.ImportExportDbRepository
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -22,34 +33,77 @@ class AppModule {
 
     @Provides
     @Singleton
+    fun provideRealmDb(@ApplicationContext context: Context): Realm {
+        val encryptionKey = Crypto.getKeyForRealm(context)
+        return Realm.open(
+            configuration = RealmConfiguration.Builder(
+                schema = setOf(
+                    StageObject::class,
+                    SubjectObject::class,
+                    HomeworkObject::class
+                )
+            )
+                .name("homework_database.realm")
+                .encryptionKey(encryptionKey)
+                .schemaVersion(1)
+                .build(),
+        )
+    }
+
+
+    @Provides
+    @Singleton
     fun provideNavigation(): Navigator = DefaultNavigator(startDestination = Destination.AuthGraph)
 
     @Provides
     @Singleton
-    fun provideAppDb(@ApplicationContext context: Context): AppDb {
-        return Room.databaseBuilder(
+    fun provideImportExportDbRepository(
+        @ApplicationContext context: Context,
+    ): ImportExportDbRepository {
+        return ImportExportDbRepositoryImpl(
             context = context,
-            AppDb::class.java,
-            name = "homework.db"
-        ).build()
+        )
     }
 
     @Provides
     @Singleton
-    fun provideSubjectsDao(database: AppDb): SubjectsDao {
-        return database.subjectsDao
+    fun provideVideoPlayer(
+        @ApplicationContext context: Context,
+    ): Player {
+        return ExoPlayer.Builder(context)
+            .build()
     }
 
     @Provides
     @Singleton
-    fun provideHomeworkDao(database: AppDb): HomeworkDao {
-        return database.homeworkDao
+    fun provideVideoRepository(
+        @ApplicationContext context: Context,
+        player: Player
+    ): VideoPlayerRepository {
+        return VideoPlayerRepositoryImpl(
+            context = context,
+            player = player,
+        )
     }
 
     @Provides
     @Singleton
-    fun provideStageDao(database: AppDb): StageDao {
-        return database.stageDao
+    fun provideFilesRepository(
+        @ApplicationContext context: Context
+    ): FilesHandleRepository {
+        return FilesHandleRepositoryImpl(
+            context = context
+        )
     }
+
+    @Provides
+    @Singleton
+     fun provideDeviceManager(
+        @ApplicationContext context: Context,
+    ): DeviceManager {
+         return DeviceManagerImpl(
+             context = context
+         )
+     }
 
 }

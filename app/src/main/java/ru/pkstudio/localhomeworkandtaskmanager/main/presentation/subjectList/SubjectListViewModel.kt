@@ -1,25 +1,33 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.subjectList
 
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.core.data.util.SingleSharedFlow
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.extensions.execute
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
+import ru.pkstudio.localhomeworkandtaskmanager.core.util.Constants
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toSubjectUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.SubjectModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant10
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant5
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,12 +35,26 @@ class SubjectListViewModel @Inject constructor(
     private val subjectsRepository: SubjectsRepository,
     private val navigator: Navigator,
     private val resourceManager: ResourceManager,
-    private val stageRepository: StageRepository
+    private val deviceManager: DeviceManager,
+    private val stageRepository: StageRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(SubjectListState())
+    private var indexItemForDelete = -1
+
+
+
+    private val _uiAction = SingleSharedFlow<SubjectListUiAction>()
+    val uiAction = _uiAction.asSharedFlow()
+
+    private val _uiState = MutableStateFlow(
+        SubjectListState(
+            titleDeleteAlertDialog = resourceManager.getString(R.string.delete_dialog_title),
+            commentDeleteAlertDialog = resourceManager.getString(R.string.comment_subjects_delete_dialog),
+        )
+    )
     val uiState = _uiState
         .onStart {
+            checkUsage()
             checkStage()
             getData()
         }
@@ -64,8 +86,28 @@ class SubjectListViewModel @Inject constructor(
                 }
             }
 
+            is SubjectListIntent.ConfirmDeleteSubject -> {
+                if (indexItemForDelete != -1) {
+                    deleteSubject(indexItemForDelete)
+                }
+
+            }
+
+            is SubjectListIntent.CloseDeleteDialog -> {
+                _uiState.update {
+                    it.copy(
+                        isDeleteAlertDialogOpened = false
+                    )
+                }
+            }
+
             is SubjectListIntent.DeleteSubject -> {
-                deleteSubject(intent.index)
+                indexItemForDelete = intent.index
+                _uiState.update {
+                    it.copy(
+                        isDeleteAlertDialogOpened = true
+                    )
+                }
             }
 
             is SubjectListIntent.EditSubject -> {
@@ -83,12 +125,6 @@ class SubjectListViewModel @Inject constructor(
                             subjectId = intent.subjectId,
                         )
                     )
-                }
-            }
-
-            is SubjectListIntent.NavigateUp -> {
-                viewModelScope.launch {
-                    navigator.navigateUp()
                 }
             }
 
@@ -127,21 +163,70 @@ class SubjectListViewModel @Inject constructor(
             is SubjectListIntent.TurnEditModeOn -> {
                 turnOnEditModeForModel(intent.index)
             }
+
+            is SubjectListIntent.OnSettingClicked -> {
+                viewModelScope.launch {
+                    navigator.navigate(Destination.SettingsScreen)
+                }
+            }
+
+            is SubjectListIntent.ChangeCommentSubject -> {
+                _uiState.update {
+                    it.copy(
+                        newSubjectComment = intent.text
+                    )
+                }
+            }
+
+            is SubjectListIntent.TurnFabInvisible -> {
+                _uiState.update {
+                    it.copy(
+                        isFABVisible = false
+                    )
+                }
+            }
+
+            is SubjectListIntent.TurnFabVisible -> {
+                _uiState.update {
+                    it.copy(
+                        isFABVisible = true
+                    )
+                }
+            }
         }
     }
 
+    private fun checkUsage() = viewModelScope.launch {
+        when(deviceManager.getUsage()) {
+            Constants.TASK_TRACKER.ordinal -> {
+                _uiState.update {
+                    it.copy(
+                        toolbarTitle = resourceManager.getString(R.string.categories),
+                        titleDeleteAlertDialog = resourceManager.getString(R.string.delete_dialog_title_category),
+                        titleAddDialog = resourceManager.getString(R.string.add_new_category)
+                    )
+                }
+            }
+
+            Constants.DIARY.ordinal -> {
+                _uiState.update {
+                    it.copy(
+                        toolbarTitle = resourceManager.getString(R.string.subjects),
+                        titleDeleteAlertDialog = resourceManager.getString(R.string.delete_dialog_title),
+                        titleAddDialog = resourceManager.getString(R.string.add_new_subject)
+                    )
+                }
+            }
+        }
+    }
     private fun checkStage() {
         viewModelScope.execute(
             source = {
-                stageRepository.getAllStages()
+                stageRepository.getAllStagesSingleTime()
             },
-            onSuccess = { stageFlow ->
-                viewModelScope.launch {
-                    stageFlow.collect { stageModelList ->
-                        if (stageModelList.isEmpty()) {
-                            createStage()
-                        }
-                    }
+            onSuccess = { stageModelList ->
+                if (stageModelList.isEmpty()) {
+                    createStage()
                 }
             }
         )
@@ -150,18 +235,36 @@ class SubjectListViewModel @Inject constructor(
     private fun createStage() {
         viewModelScope.execute(
             source = {
-                stageRepository.insertStage(
-                    stage = StageModel(
-                        stageName = resourceManager.getString(R.string.default_stage)
+                stageRepository.insertStages(
+                    stagesList = listOf(
+                        StageModel(
+                            stageName = resourceManager.getString(R.string.default_stage),
+                            position = 0,
+                            color = stageVariant10.toArgb()
+                        ),
+                        StageModel(
+                            stageName = resourceManager.getString(R.string.default_finish_stage),
+                            position = 1,
+                            isFinishStage = true,
+                            color = stageVariant5.toArgb()
+                        )
                     )
                 )
+            },
+            onSuccess = {
+            },
+            onError = {
+                viewModelScope.launch {
+                    delay(10000)
+                    createStage()
+                }
             }
         )
     }
 
     private fun updateModel(index: Int) {
         val subjectsList = _uiState.value.subjectsList.toMutableList()
-        if (index in subjectsList.indices) {
+        if (index in subjectsList.indices && _uiState.value.subjectNameForEdit.isNotBlank()) {
             viewModelScope.execute(
                 source = {
                     subjectsRepository.updateSubject(
@@ -180,10 +283,14 @@ class SubjectListViewModel @Inject constructor(
                             subjectCommentForEdit = ""
                         )
                     }
+                },
+                onError = {
+                    parseException(it)
                 }
             )
+        } else if (_uiState.value.subjectNameForEdit.isBlank()) {
+            parseException(Throwable("Subject name can't be blank"))
         }
-
     }
 
     private fun revealModel(isRevealed: Boolean, index: Int) {
@@ -258,34 +365,55 @@ class SubjectListViewModel @Inject constructor(
                         subject = modelForDelete
                     )
                 },
-                onError = {}
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(
+                            isDeleteAlertDialogOpened = false
+                        )
+                    }
+                },
+                onError = {
+                    parseException(it)
+                }
             )
         }
     }
 
     private fun addSubject() {
-        viewModelScope.execute(
-            source = {
-                subjectsRepository.insertSubject(
-                    subject = SubjectModel(
-                        id = null,
-                        subjectName = _uiState.value.newSubjectName,
-                        comment = ""
+        if (_uiState.value.newSubjectName.isNotBlank()) {
+            viewModelScope.execute(
+                source = {
+                    subjectsRepository.insertSubject(
+                        subject = SubjectModel(
+                            id = "",
+                            subjectName = _uiState.value.newSubjectName,
+                            comment = _uiState.value.newSubjectComment
+                        )
+                    )
+                },
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(
+                            isAddSubjectAlertDialogOpened = false,
+                            newSubjectName = "",
+                            newSubjectComment = ""
+                        )
+                    }
+                },
+                onError = {
+
+                }
+            )
+        } else {
+            _uiAction.tryEmit(
+                SubjectListUiAction.ShowErrorMessage(
+                    resourceManager.getString(
+                        R.string.subject_name_empty
                     )
                 )
-            },
-            onSuccess = {
-                _uiState.update {
-                    it.copy(
-                        isAddSubjectAlertDialogOpened = false,
-                        newSubjectName = ""
-                    )
-                }
-            },
-            onError = {
+            )
+        }
 
-            }
-        )
     }
 
     private fun getData() {
@@ -317,5 +445,9 @@ class SubjectListViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun parseException(exception: Throwable) {
+
     }
 }

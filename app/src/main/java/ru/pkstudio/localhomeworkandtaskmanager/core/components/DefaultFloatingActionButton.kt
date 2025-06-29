@@ -14,7 +14,7 @@ fun DefaultFloatingActionButton(
     onClick: () -> Unit,
     imageVector: ImageVector,
     contentDescription: String = "",
-    iconTint: Color = MaterialTheme.colorScheme.onSurface
+    iconTint: Color = MaterialTheme.colorScheme.onPrimaryContainer
 ) {
     FloatingActionButton(
         modifier = modifier,

@@ -1,36 +1,82 @@
 package ru.pkstudio.localhomeworkandtaskmanager.auth
 
-import android.util.Log
+import android.content.res.Configuration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.Player
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.R
+import ru.pkstudio.localhomeworkandtaskmanager.auth.utils.AuthAction
+import ru.pkstudio.localhomeworkandtaskmanager.core.data.util.SingleSharedFlow
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
+import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.VideoPlayerRepository
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
+import ru.pkstudio.localhomeworkandtaskmanager.core.util.Constants
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val deviceManager: DeviceManager,
     private val resourceManager: ResourceManager,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val videoPlayerRepository: VideoPlayerRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AuthUiState())
-    val uiState = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(
+        AuthUiState(
+            listUiThemes = listOf(
+                resourceManager.getString(R.string.enable_system_theme),
+                resourceManager.getString(R.string.enable_light_theme),
+                resourceManager.getString(R.string.enable_dark_theme),
+            )
+        )
+    )
+    val uiState = _uiState
+        .onStart {
+            _uiAction.tryEmit(AuthUiAction.GetInitialData)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000L),
+            initialValue = AuthUiState()
+        )
+
+    private val videoListener by lazy {
+        object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                super.onPlaybackStateChanged(playbackState)
+                if (playbackState == Player.STATE_ENDED) {
+                    viewModelScope.launch {
+                        deviceManager.setIsFirstLaunch(false)
+                        _uiAction.tryEmit(AuthUiAction.SetUnspecifiedOrientation)
+                        selectUsageAction()
+                        _uiState.update {
+                            it.copy(
+                                isFirstLaunch = false,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private val _uiAction = SingleSharedFlow<AuthUiAction>()
+    val uiAction = _uiAction.asSharedFlow()
 
     private var firstEnteredPin = ""
 
-    init {
-        checkPinCode()
-    }
+    val player = videoPlayerRepository.currentPlayer
 
     fun handleIntent(intent: AuthIntent) {
         when (intent) {
@@ -93,23 +139,88 @@ class AuthViewModel @Inject constructor(
                                     } else {
                                         val isValid = _uiState.value.text == firstEnteredPin
                                         if (isValid) {
-                                            deviceManager.setPinCode(pinCode = newString)
-                                            pinSuccess()
+                                            viewModelScope.launch {
+                                                deviceManager.setPinCode(pinCode = newString)
+                                                pinSuccess()
+                                            }
                                         } else {
                                             pinError()
                                         }
                                     }
                                 } else {
-                                    if (validatePinCode(newString)) {
-                                        pinSuccess()
-                                    } else {
-                                        pinError()
+                                    viewModelScope.launch {
+                                        if (validatePinCode(newString)) {
+                                            pinSuccess()
+                                        } else {
+                                            pinError()
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+            }
+
+            is AuthIntent.SetDiaryUsage -> {
+                viewModelScope.launch {
+                    deviceManager.setUsage(Constants.DIARY.ordinal)
+                    selectThemeAction()
+                }
+            }
+
+            is AuthIntent.SetTaskTrackerUsage -> {
+                viewModelScope.launch {
+                    deviceManager.setUsage(Constants.TASK_TRACKER.ordinal)
+                    selectThemeAction()
+                }
+            }
+
+            is AuthIntent.SetThemeId -> {
+                if (intent.themeId in _uiState.value.listUiThemes.indices) {
+                    viewModelScope.launch {
+                        when (_uiState.value.listUiThemes[intent.themeId]) {
+                            resourceManager.getString(R.string.enable_system_theme) -> {
+                                delay(100)
+                                _uiAction.tryEmit(
+                                    AuthUiAction.SetSystemTheme
+                                )
+                            }
+
+                            resourceManager.getString(R.string.enable_light_theme) -> {
+                                delay(100)
+                                _uiAction.tryEmit(AuthUiAction.SetLightTheme)
+                            }
+
+                            resourceManager.getString(R.string.enable_dark_theme) -> {
+                                delay(100)
+                                _uiAction.tryEmit(AuthUiAction.SetDarkTheme)
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
+            is AuthIntent.OnThemeSelected -> {
+                checkPinCode()
+            }
+
+            is AuthIntent.OnBackBtnClicked -> {
+                when (_uiState.value.currentAuthAction) {
+                    AuthAction.SELECT_THEME -> {
+                        selectUsageAction()
+                    }
+
+                    else -> {
+                        _uiAction.tryEmit(AuthUiAction.FinishActivity)
+                    }
+                }
+            }
+
+            is AuthIntent.GetInitialData -> {
+                isFirstLaunch(intent.orientation)
             }
         }
     }
@@ -142,12 +253,57 @@ class AuthViewModel @Inject constructor(
         deviceManager.startMicroVibrate()
     }
 
-    private fun checkPinCode() {
+
+    private fun isFirstLaunch(orientation: Int) = viewModelScope.launch {
+        val isFirstLaunch = deviceManager.getIsFirstLaunch()
+        val lastAuthAction = deviceManager.getLastAuthAction()
+        _uiState.update {
+            it.copy(
+                isFirstLaunch = isFirstLaunch
+            )
+        }
+        if (isFirstLaunch) {
+            startVideo(orientation)
+        } else {
+            when (lastAuthAction) {
+                AuthAction.SELECT_USAGE.ordinal -> {
+                    selectUsageAction()
+                }
+
+                AuthAction.SELECT_THEME.ordinal -> {
+                    selectThemeAction()
+                }
+
+                else -> {
+                    checkPinCode()
+                }
+            }
+        }
+    }
+
+
+    private fun startVideo(orientation: Int) = viewModelScope.launch {
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            videoPlayerRepository.playVideo(R.raw.intro_landscape)
+            player.addListener(
+                videoListener
+            )
+        } else {
+            videoPlayerRepository.playVideo(R.raw.intro)
+            player.addListener(
+                videoListener
+            )
+        }
+    }
+
+
+    private fun checkPinCode() = viewModelScope.launch {
+        deviceManager.setLastAuthAction(AuthAction.SET_PIN.ordinal)
         val pin = deviceManager.getPinCode()
-        Log.d("xzczxczxc", "checkPinCode: $pin")
-        if (pin.isNullOrBlank()) {
+        if (pin.isEmpty()) {
             _uiState.update {
                 it.copy(
+                    currentAuthAction = AuthAction.SET_PIN,
                     isCreatePin = true,
                     titleText = resourceManager.getString(R.string.create_password)
                 )
@@ -155,6 +311,7 @@ class AuthViewModel @Inject constructor(
         } else {
             _uiState.update {
                 it.copy(
+                    currentAuthAction = AuthAction.SET_PIN,
                     isCreatePin = false,
                     titleText = resourceManager.getString(R.string.enter_password)
                 )
@@ -162,15 +319,31 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private fun setPinCode(pin: String) {
-        deviceManager.setPinCode(pin)
+    private fun selectThemeAction() = viewModelScope.launch {
+        deviceManager.setLastAuthAction(AuthAction.SELECT_THEME.ordinal)
+        _uiState.update {
+            it.copy(
+                currentAuthAction = AuthAction.SELECT_THEME
+            )
+        }
     }
 
-    private fun validatePinCode(pin: String): Boolean {
-        var pinCodeResult = false
-        deviceManager.getPinCode()?.let {
-            pinCodeResult = pin == it
+    private fun selectUsageAction() = viewModelScope.launch {
+        deviceManager.setLastAuthAction(AuthAction.SELECT_USAGE.ordinal)
+        _uiState.update {
+            it.copy(
+                currentAuthAction = AuthAction.SELECT_USAGE
+            )
         }
-        return pinCodeResult
+    }
+
+    private suspend fun validatePinCode(pin: String): Boolean {
+        return deviceManager.getPinCode() == pin
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        player.removeListener(videoListener)
+        player.release()
     }
 }
