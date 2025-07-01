@@ -12,9 +12,11 @@ interface SubjectsRepository {
 
     suspend fun updateSubject(subject: SubjectModel)
 
-    suspend fun insertHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel)
+    suspend fun insertHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel): String
 
     suspend fun updateHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel)
+
+    suspend fun updatePhotoListInSubject(subjectId: String, homeworkModel: HomeworkModel)
 
     suspend fun deleteHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel)
 

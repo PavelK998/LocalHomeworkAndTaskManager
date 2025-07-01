@@ -1,7 +1,7 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
 import android.annotation.SuppressLint
-import android.net.Uri
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -331,7 +331,7 @@ fun HomeworkInfoScreen(
     ) {
         HandlePhotos(
             whichPhotoShouldBeOpenFirst = uiState.whichPhotoShouldBeOpenedFirst,
-            listPhotos = uiState.photoList,
+            listPhotos = uiState.photoBitmapList,
             isUiVisible = uiState.isPhotoUiVisible,
             isDropDownMEnuExpanded = uiState.isDropDownMenuVisible,
             onClick = {
@@ -395,7 +395,7 @@ private fun MediaScreen(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         columns = GridCells.Adaptive(100.dp),
         content = {
-            itemsIndexed(uiState.photoList) { index, photo ->
+            itemsIndexed(uiState.photoBitmapList) { index, photo ->
                 Box(
                     modifier = Modifier
                         .size(100.dp)
@@ -421,7 +421,7 @@ private fun HandlePhotos(
     whichPhotoShouldBeOpenFirst: Int,
     isUiVisible: Boolean,
     isDropDownMEnuExpanded: Boolean,
-    listPhotos: List<Uri>,
+    listPhotos: List<Bitmap>,
     onClick: (Boolean) -> Unit,
     onBackCLick: () -> Unit,
     onExpandDropDownMenuClick: () -> Unit,

@@ -1,6 +1,7 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkInfo
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.SpanStyle
@@ -610,10 +611,7 @@ class HomeworkInfoViewModel @Inject constructor(
             }
             viewModelScope.execute(
                 source = {
-                    filesHandleRepository.deleteImageInUserFolder(
-                        folderUri = folderString!!.toUri(),
-                        imageName = _uiState.value.homeworkUiModel?.imageNameList!![index]
-                    )
+                    filesHandleRepository.deleteImage(_uiState.value.homeworkUiModel?.imageNameList!![index])
                 },
                 onLoading = { isLoading ->
                     _uiState.update {
@@ -630,7 +628,9 @@ class HomeworkInfoViewModel @Inject constructor(
                     }
                     val newImageList =
                         _uiState.value.homeworkUiModel?.imageNameList?.toMutableList()
+                    Log.d("tertertertr", "deletePhoto: $newImageList")
                     newImageList?.removeAt(index)
+                    Log.d("tertertertr", "after remove: $newImageList")
                     newImageList?.let {
                         updateImagesList(
                             imageNames = it
@@ -645,15 +645,19 @@ class HomeworkInfoViewModel @Inject constructor(
 
     private fun updateImagesList(imageNames: List<String>) {
         _uiState.value.homeworkUiModel?.let { homeworkUiModel ->
-//            viewModelScope.execute(
-//                source = {
-//                    homeworkRepository.updateHomework(
-//                        homework = homeworkUiModel.toHomeworkModel().copy(
-//                            imageNameList = imageNames
-//                        )
-//                    )
-//                },
-//                onSuccess = {
+            viewModelScope.execute(
+                source = {
+                    subjectsRepository.updateHomeworkInSubject(
+                        subjectId = _uiState.value.subjectId,
+                        homeworkModel = homeworkUiModel.toHomeworkModel().copy(
+                            imageNameList = imageNames
+                        )
+                    )
+                },
+                onSuccess = {
+                    _uiState.value.homeworkUiModel?.let {
+                        findImages(imageNames)
+                    }
 //                    viewModelScope.execute(
 //                        source = {
 //                            homeworkRepository.getHomeworkById(homeworkId)
@@ -679,12 +683,12 @@ class HomeworkInfoViewModel @Inject constructor(
 //                        },
 //                        onError = {}
 //                    )
-//
-//                },
-//                onError = {
-//
-//                }
-//            )
+
+                },
+                onError = {
+
+                }
+            )
         }
     }
 
@@ -785,10 +789,7 @@ class HomeworkInfoViewModel @Inject constructor(
         if (!folderString.isNullOrBlank()) {
             viewModelScope.execute(
                 source = {
-                    filesHandleRepository.deleteAllImagesInUserFolder(
-                        folderUri = folderString!!.toUri(),
-                        namesList = homeworkModel.imageNameList
-                    )
+                    filesHandleRepository.deleteAllImages(namesList = homeworkModel.imageNameList)
                 },
                 onSuccess = {
                     viewModelScope.execute(
@@ -934,7 +935,6 @@ class HomeworkInfoViewModel @Inject constructor(
 
                 if (!folder.isNullOrBlank() && homework != null && homework.imageNameList.isNotEmpty()) {
                     findImages(
-                        folderUri = folder.toUri(),
                         imageNames = homework.imageNameList
                     )
                 }
@@ -963,21 +963,22 @@ class HomeworkInfoViewModel @Inject constructor(
         )
     }
 
-    private fun findImages(folderUri: Uri, imageNames: List<String>) = viewModelScope.execute(
+    private fun findImages(imageNames: List<String>) = viewModelScope.execute(
         source = {
-            filesHandleRepository.findImagesInUserFolder(
-                folderUri = folderUri,
+            filesHandleRepository.findImagesInFolder(
                 namesList = imageNames
             )
         },
-        onSuccess = { uriList ->
+        onSuccess = { bitmapList ->
+            Log.d("asdasdasdasd", "findImages: $bitmapList")
             _uiState.update {
                 it.copy(
-                    photoList = uriList
+                    photoBitmapList = bitmapList
                 )
             }
         },
         onError = {
+            Log.d("asdasdasdasd", "findImages error $it")
         }
     )
 }
