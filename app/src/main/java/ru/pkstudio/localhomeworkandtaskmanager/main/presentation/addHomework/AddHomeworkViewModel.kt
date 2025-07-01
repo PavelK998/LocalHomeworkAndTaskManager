@@ -1,5 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.main.presentation.addHomework
 
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.SpanStyle
@@ -613,19 +614,20 @@ class AddHomeworkViewModel @Inject constructor(
                     if (folderUri.isNotBlank() && _uiState.value.imagesUriList.isNotEmpty()) {
                         viewModelScope.execute(
                             source = {
-                                filesHandleRepository.uploadImageToUserFolderWithImageUriList(
-                                    folderUri = folderUri.toUri(),
-                                    imageUriList = _uiState.value.imagesUriList
+                                filesHandleRepository.uploadImageWithImageUriList(
+                                   imageUriList = _uiState.value.imagesUriList
                                 )
                             },
                             onSuccess = { imageNamesList ->
-//                                updateHomeworkWithImagesList(
-//                                    homeworkId = id,
-//                                    imageNamesList = imageNamesList
-//                                )
+                                Log.d("yttryrtyrtyt", "addHomework: image names $imageNamesList")
+                                updateHomeworkWithImagesList(
+                                    subjectId = subjectId,
+                                    homeworkId = id,
+                                    imageNamesList = imageNamesList
+                                )
                             },
                             onError = {
-
+                                Log.d("yttryrtyrtyt", "addHomework: add image error $it")
                             }
                         )
                     } else {
@@ -649,35 +651,52 @@ class AddHomeworkViewModel @Inject constructor(
 
     }
 
-//    private fun updateHomeworkWithImagesList(homeworkId: Long, imageNamesList: List<String>){
-//        viewModelScope.execute(
-//            source = {
-//                homeworkRepository.getHomeworkById(homeworkId)
-//            },
-//            onSuccess = { homework ->
-//                viewModelScope.execute(
-//                    source = {
-//                        homeworkRepository.updateHomework(
-//                            homework.copy(
-//                                imageNameList = imageNamesList
-//                            )
-//                        )
-//                    },
-//                    onSuccess = {
-//                        _uiState.update {
-//                            it.copy(
-//                                isLoading = false
-//                            )
-//                        }
-//                        navigateUp()
-//                    }
-//                )
-//            },
-//            onError = {
-//
-//            }
-//        )
-//    }
+    private fun updateHomeworkWithImagesList(subjectId: String, homeworkId: String, imageNamesList: List<String>){
+        viewModelScope.execute(
+            source = {
+                subjectsRepository.getSubjectById(subjectId)
+            },
+            onSuccess = { subjects ->
+                val homework = subjects.homework.find { it.id == homeworkId }
+                Log.d("hhfghfghhfg", "homework: $homework")
+                Log.d("hhfghfghhfg", "homework id: $homeworkId")
+                Log.d("hhfghfghhfg", "subject id: $subjectId")
+                Log.d("hhfghfghhfg", "subjects: $subjects")
+
+                homework?.let { homeworkModel ->
+                    val updatedImageNamesList = homeworkModel.imageNameList.toMutableList()
+                    updatedImageNamesList.addAll(imageNamesList)
+                    val updatedHomeworkModel = homeworkModel.copy(
+                        imageNameList = updatedImageNamesList
+                    )
+
+                    Log.d("hhfghfghhfg", "updateHomeworkWithImagesList: $updatedHomeworkModel")
+                    viewModelScope.execute(
+                        source = {
+                            subjectsRepository.updateHomeworkInSubject(
+                                subjectId = subjectId,
+                                homeworkModel = updatedHomeworkModel
+                             )
+
+                        },
+                        onSuccess = {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false
+                                )
+                            }
+                            navigateUp()
+                        }
+                    )
+                }
+
+
+            },
+            onError = {
+                Log.d("hhfghfghhfg", "updateHomeworkWithImagesList error: $it")
+            }
+        )
+    }
 
     private fun navigateUp() {
         viewModelScope.launch {

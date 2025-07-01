@@ -17,4 +17,12 @@ interface FilesHandleRepository {
 
     suspend fun checkUriPermission(folderUri: Uri): Boolean
 
+    suspend fun uploadImageWithImageUriList(imageUriList: List<Uri>): List<String>
+
+    suspend fun deleteImage(imageName: String)
+
+    suspend fun deleteAllImages(namesList: List<String>): Boolean
+
+    suspend fun findImagesInFolder(namesList: List<String>): List<Bitmap>
+
 }
