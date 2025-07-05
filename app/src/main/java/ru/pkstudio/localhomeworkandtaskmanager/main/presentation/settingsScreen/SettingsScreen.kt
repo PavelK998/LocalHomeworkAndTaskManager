@@ -207,35 +207,36 @@ fun SettingsMainScreen(
             name = stringResource(id = R.string.change_password)
         )
 
-        HorizontalDivider(
-            modifier = Modifier.padding(vertical = 8.dp),
-            thickness = 1.dp,
-        )
-
-        Text(
-            style = MaterialTheme.typography.titleMedium,
-            text = stringResource(R.string.data_management)
-        )
-
-        MenuItem(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            onClick = {
-                handleIntent(SettingsIntent.OnImportClicked)
-            },
-            name = stringResource(id = R.string.import_database)
-        )
-
-        MenuItem(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            onClick = {
-                handleIntent(SettingsIntent.OnExportClicked)
-            },
-            name = stringResource(id = R.string.export_database)
-        )
+        //for future implementation
+//        HorizontalDivider(
+//            modifier = Modifier.padding(vertical = 8.dp),
+//            thickness = 1.dp,
+//        )
+//
+//        Text(
+//            style = MaterialTheme.typography.titleMedium,
+//            text = stringResource(R.string.data_management)
+//        )
+//
+//        MenuItem(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(top = 8.dp),
+//            onClick = {
+//                handleIntent(SettingsIntent.OnImportClicked)
+//            },
+//            name = stringResource(id = R.string.import_database)
+//        )
+//
+//        MenuItem(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(top = 8.dp),
+//            onClick = {
+//                handleIntent(SettingsIntent.OnExportClicked)
+//            },
+//            name = stringResource(id = R.string.export_database)
+//        )
 
     }
 }

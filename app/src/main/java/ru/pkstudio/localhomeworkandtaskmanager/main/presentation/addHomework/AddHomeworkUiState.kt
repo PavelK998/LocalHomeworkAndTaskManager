@@ -39,7 +39,6 @@ data class AddHomeworkState(
     val isStagePickerVisible: Boolean = false,
     val isDatePickerVisible: Boolean = false,
     val isTimePickerVisible: Boolean = false,
-    val isSelectFilePathDialogOpened: Boolean = false,
     val colorList: List<Color> =  listOf(
         importance1,
         importance2,

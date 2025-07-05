@@ -1,8 +1,6 @@
 package ru.pkstudio.localhomeworkandtaskmanager.core.di
 
 import android.content.Context
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,9 +10,7 @@ import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import ru.pkstudio.localhomeworkandtaskmanager.core.data.encrypt.Crypto
 import ru.pkstudio.localhomeworkandtaskmanager.core.data.manager.DeviceManagerImpl
-import ru.pkstudio.localhomeworkandtaskmanager.core.data.manager.VideoPlayerRepositoryImpl
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
-import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.VideoPlayerRepository
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.DefaultNavigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
@@ -62,27 +58,6 @@ class AppModule {
     ): ImportExportDbRepository {
         return ImportExportDbRepositoryImpl(
             context = context,
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun provideVideoPlayer(
-        @ApplicationContext context: Context,
-    ): Player {
-        return ExoPlayer.Builder(context)
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideVideoRepository(
-        @ApplicationContext context: Context,
-        player: Player
-    ): VideoPlayerRepository {
-        return VideoPlayerRepositoryImpl(
-            context = context,
-            player = player,
         )
     }
 

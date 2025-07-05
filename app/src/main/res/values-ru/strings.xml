@@ -2,6 +2,11 @@
 <resources>
     <string name="app_name">MyHomeworkManager</string>
 
+    //intro
+    <string name="text1">Привет!!!</string>
+    <string name="text2">Здесь ты сможешь управлять своими задачами</string>
+    <string name="text3">Приступим!</string>
+
     <string name="loading">Загружаю…</string>
     <string name="loading_more_time">Еще немного…</string>
     <string name="data_management">Управление данными</string>
