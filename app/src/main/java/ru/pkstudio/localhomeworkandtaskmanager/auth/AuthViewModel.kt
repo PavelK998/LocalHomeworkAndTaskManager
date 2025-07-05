@@ -1,10 +1,11 @@
 package ru.pkstudio.localhomeworkandtaskmanager.auth
 
-import android.content.res.Configuration
+import android.util.Log
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.Player
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,10 +16,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.auth.utils.AuthAction
+import ru.pkstudio.localhomeworkandtaskmanager.auth.utils.CurrentAuthGreetingAction
 import ru.pkstudio.localhomeworkandtaskmanager.core.data.util.SingleSharedFlow
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.DeviceManager
 import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.ResourceManager
-import ru.pkstudio.localhomeworkandtaskmanager.core.domain.manager.VideoPlayerRepository
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Destination
 import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.core.util.Constants
@@ -29,7 +30,6 @@ class AuthViewModel @Inject constructor(
     private val deviceManager: DeviceManager,
     private val resourceManager: ResourceManager,
     private val navigator: Navigator,
-    private val videoPlayerRepository: VideoPlayerRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -51,32 +51,10 @@ class AuthViewModel @Inject constructor(
             initialValue = AuthUiState()
         )
 
-    private val videoListener by lazy {
-        object : Player.Listener {
-            override fun onPlaybackStateChanged(playbackState: Int) {
-                super.onPlaybackStateChanged(playbackState)
-                if (playbackState == Player.STATE_ENDED) {
-                    viewModelScope.launch {
-                        deviceManager.setIsFirstLaunch(false)
-                        _uiAction.tryEmit(AuthUiAction.SetUnspecifiedOrientation)
-                        selectUsageAction()
-                        _uiState.update {
-                            it.copy(
-                                isFirstLaunch = false,
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private val _uiAction = SingleSharedFlow<AuthUiAction>()
     val uiAction = _uiAction.asSharedFlow()
 
     private var firstEnteredPin = ""
-
-    val player = videoPlayerRepository.currentPlayer
 
     fun handleIntent(intent: AuthIntent) {
         when (intent) {
@@ -220,7 +198,28 @@ class AuthViewModel @Inject constructor(
             }
 
             is AuthIntent.GetInitialData -> {
-                isFirstLaunch(intent.orientation)
+                isFirstLaunch()
+            }
+
+            is AuthIntent.SendLifecycleInfo -> {
+                if (_uiState.value.isFirstLaunch){
+                    when (intent.event) {
+                        Lifecycle.Event.ON_RESUME -> {
+                            if (job != null){
+                                job?.cancel()
+                                if (!job!!.isActive){
+                                    job = null
+                                    startOrResumeGreeting()
+                                }
+                            }
+                        }
+
+                        Lifecycle.Event.ON_PAUSE -> {
+                            stopGreeting()
+                        }
+                        else -> {}
+                    }
+                }
             }
         }
     }
@@ -254,7 +253,7 @@ class AuthViewModel @Inject constructor(
     }
 
 
-    private fun isFirstLaunch(orientation: Int) = viewModelScope.launch {
+    private fun isFirstLaunch() = viewModelScope.launch {
         val isFirstLaunch = deviceManager.getIsFirstLaunch()
         val lastAuthAction = deviceManager.getLastAuthAction()
         _uiState.update {
@@ -263,7 +262,7 @@ class AuthViewModel @Inject constructor(
             )
         }
         if (isFirstLaunch) {
-            startVideo(orientation)
+            startOrResumeGreeting()
         } else {
             when (lastAuthAction) {
                 AuthAction.SELECT_USAGE.ordinal -> {
@@ -282,20 +281,109 @@ class AuthViewModel @Inject constructor(
     }
 
 
-    private fun startVideo(orientation: Int) = viewModelScope.launch {
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            videoPlayerRepository.playVideo(R.raw.intro_landscape)
-            player.addListener(
-                videoListener
-            )
-        } else {
-            videoPlayerRepository.playVideo(R.raw.intro)
-            player.addListener(
-                videoListener
-            )
+    private var job: Job? = null
+    private var isGreetingRunning = false
+    private var previousGreetingAction = CurrentAuthGreetingAction.START
+    private val currentGreetingAction = MutableStateFlow(CurrentAuthGreetingAction.START)
+    private fun startOrResumeGreeting() {
+        Log.d("fgghfghdfhfgh", "startOrResumeGreeting: ${currentGreetingAction.value}")
+        isGreetingRunning = true
+        job = viewModelScope.launch {
+            val allStates = CurrentAuthGreetingAction.entries
+
+            val startIndex = allStates.indexOf(currentGreetingAction.value)
+            for (i in startIndex until allStates.size) {
+                delay(1500)
+                when (allStates[i]) {
+                    CurrentAuthGreetingAction.START -> {
+                        Log.d("fgghfghdfhfgh", "CurrentAuthGreetingAction.START")
+                        _uiState.update {
+                            it.copy(
+                                isText1Visible = true
+                            )
+                        }
+                        currentGreetingAction.value = CurrentAuthGreetingAction.TEXT_1
+                        previousGreetingAction = CurrentAuthGreetingAction.START
+                    }
+
+                    CurrentAuthGreetingAction.TEXT_1 -> {
+                        Log.d("fgghfghdfhfgh", "CurrentAuthGreetingAction.TEXT_1")
+                        _uiState.update {
+                            it.copy(
+                                isText1Visible = false
+                            )
+                        }
+                        delay(700)
+                        _uiState.update {
+                            it.copy(
+                                isText2Visible = true
+                            )
+                        }
+                        currentGreetingAction.value = CurrentAuthGreetingAction.TEXT_2
+                        previousGreetingAction = CurrentAuthGreetingAction.TEXT_1
+                    }
+
+
+                    CurrentAuthGreetingAction.TEXT_2 -> {
+                        Log.d("fgghfghdfhfgh", "CCurrentAuthGreetingAction.TEXT_2")
+                        _uiState.update {
+                            it.copy(
+                                isText2Visible = false
+                            )
+                        }
+                        delay(700)
+                        _uiState.update {
+                            it.copy(
+                                isText3Visible = true
+                            )
+                        }
+                        currentGreetingAction.value = CurrentAuthGreetingAction.TEXT_3
+                        previousGreetingAction = CurrentAuthGreetingAction.TEXT_2
+                    }
+
+                    CurrentAuthGreetingAction.TEXT_3 -> {
+                        Log.d("fgghfghdfhfgh", "CCurrentAuthGreetingAction.TEXT_3")
+                        _uiState.update {
+                            it.copy(
+                                isText2Visible = false
+                            )
+                        }
+                        delay(700)
+                        _uiState.update {
+                            it.copy(
+                                isText3Visible = true
+                            )
+                        }
+                        currentGreetingAction.value = CurrentAuthGreetingAction.END
+                        previousGreetingAction = CurrentAuthGreetingAction.TEXT_3
+                    }
+
+                    CurrentAuthGreetingAction.END -> {
+                        Log.d("fgghfghdfhfgh", "CCurrentAuthGreetingAction.END")
+                        _uiState.update {
+                            it.copy(
+                                isText3Visible = false
+                            )
+                        }
+                        delay(700)
+                        selectUsageAction()
+                        previousGreetingAction = CurrentAuthGreetingAction.END
+                    }
+
+                    CurrentAuthGreetingAction.STOP -> {
+                        Log.d("fgghfghdfhfgh", "CCurrentAuthGreetingAction.STOP")
+                        isGreetingRunning = false
+                        break
+                    }
+                }
+            }
         }
     }
 
+    private fun stopGreeting() {
+        isGreetingRunning = false
+        job?.cancel()
+    }
 
     private fun checkPinCode() = viewModelScope.launch {
         deviceManager.setLastAuthAction(AuthAction.SET_PIN.ordinal)
@@ -329,10 +417,12 @@ class AuthViewModel @Inject constructor(
     }
 
     private fun selectUsageAction() = viewModelScope.launch {
+        deviceManager.setIsFirstLaunch(false)
         deviceManager.setLastAuthAction(AuthAction.SELECT_USAGE.ordinal)
         _uiState.update {
             it.copy(
-                currentAuthAction = AuthAction.SELECT_USAGE
+                currentAuthAction = AuthAction.SELECT_USAGE,
+                isFirstLaunch = false
             )
         }
     }
@@ -343,7 +433,6 @@ class AuthViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        player.removeListener(videoListener)
-        player.release()
+        stopGreeting()
     }
 }

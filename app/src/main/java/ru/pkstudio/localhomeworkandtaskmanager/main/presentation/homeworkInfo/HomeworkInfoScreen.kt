@@ -672,21 +672,6 @@ private fun MainScreen(
     uiState: HomeworkInfoState,
     handleIntent: (HomeworkInfoIntent) -> Unit,
 ) {
-    if (uiState.isSelectFilePathDialogOpened) {
-        DeleteDialog(
-            title = stringResource(R.string.select_folder_dialog_title),
-            comment = stringResource(R.string.select_folder_dialog_description),
-            onConfirm = {
-                handleIntent(HomeworkInfoIntent.ConfirmPathSelect)
-            },
-            onDismissRequest = {
-                handleIntent(HomeworkInfoIntent.DismissPathSelectDialog)
-            },
-            onDismiss = {
-                handleIntent(HomeworkInfoIntent.DismissPathSelectDialog)
-            }
-        )
-    }
     Column(
         modifier = modifier
     ) {
