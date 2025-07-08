@@ -133,6 +133,24 @@ class SubjectsRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun changeStageInHomework(
+        oldStageId: String,
+        newStageId: String,
+        newStageName: String
+    ) = withContext(Dispatchers.IO) {
+        realmDb.write {
+            val allSubjects = query<SubjectObject>().find()
+            allSubjects.forEach { subject ->
+                subject.homeworkList.filter {
+                    it.stageId == oldStageId
+                }.forEach { homework ->
+                    homework.stageId = newStageId
+                    homework.stage = newStageName
+                }
+            }
+        }
+    }
+
     override suspend fun getSubjectById(subjectId: String) = withContext(Dispatchers.IO) {
         val queryObject =
             realmDb.query<SubjectObject>("_id == $0", ObjectId(subjectId)).first().find()
