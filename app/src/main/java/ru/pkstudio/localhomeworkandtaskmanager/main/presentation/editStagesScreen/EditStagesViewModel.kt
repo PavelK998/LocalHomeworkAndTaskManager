@@ -22,6 +22,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.core.navigation.Navigator
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.EditStageResult
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.StageModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant9
 import javax.inject.Inject
 
@@ -30,6 +31,7 @@ class EditStagesViewModel @Inject constructor(
     private val stageRepository: StageRepository,
     private val navigator: Navigator,
     private val resourceManager: ResourceManager,
+    private val subjectsRepository: SubjectsRepository
 ) : ViewModel() {
 
     private var isNavigateBtnClicked = false
@@ -62,7 +64,7 @@ class EditStagesViewModel @Inject constructor(
     fun handleIntent(intent: EditStagesIntent) {
         when (intent) {
             is EditStagesIntent.OnAddStageBtmClick -> {
-                if (intent.position == _uiState.value.stagesList.lastIndex){
+                if (intent.position == _uiState.value.stagesList.lastIndex) {
                     if (_uiState.value.stagesList.size == 2) {
                         addStage(intent.position)
                     } else {
@@ -124,12 +126,11 @@ class EditStagesViewModel @Inject constructor(
                             isDeleteAlertDialogOpened = false
                         )
                     }
-                    deleteStage(_uiState.value.stagesList[stageIndexForDelete])
-//                    changeStagesInHomework(
-//                        fromStageId = _uiState.value.stagesList[stageIndexForDelete].id ?: 0L,
-//                        targetStageId = _uiState.value.stagesList[0].id ?: 0L,
-//                        targetStageName = _uiState.value.stagesList[0].stageName
-//                    )
+                    changeStagesInHomework(
+                        fromStageId = _uiState.value.stagesList[stageIndexForDelete].id,
+                        targetStageId = _uiState.value.stagesList[0].id,
+                        targetStageName = _uiState.value.stagesList[0].stageName
+                    )
                 }
             }
 
@@ -157,8 +158,27 @@ class EditStagesViewModel @Inject constructor(
         }
     }
 
+    private fun changeStagesInHomework(
+        fromStageId: String,
+        targetStageId: String,
+        targetStageName: String,
+    ) {
+        viewModelScope.execute(
+            source = {
+                subjectsRepository.changeStageInHomework(
+                    oldStageId = fromStageId,
+                    newStageId = targetStageId,
+                    newStageName = targetStageName
+                )
+            },
+            onSuccess = {
+                deleteStage(_uiState.value.stagesList[stageIndexForDelete])
+            }
+        )
+    }
+
     private fun updateStageColor(color: Int) {
-        if (stageIndexForUpdate in _uiState.value.stagesList.indices){
+        if (stageIndexForUpdate in _uiState.value.stagesList.indices) {
             viewModelScope.execute(
                 source = {
                     stageRepository.updateStage(

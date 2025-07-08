@@ -20,7 +20,16 @@ interface SubjectsRepository {
 
     suspend fun deleteHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel)
 
-    suspend fun deleteHomeworkListInSubject(subjectId: String, homeworkModelList: List<HomeworkModel>)
+    suspend fun deleteHomeworkListInSubject(
+        subjectId: String,
+        homeworkModelList: List<HomeworkModel>
+    )
+
+    suspend fun changeStageInHomework(
+        oldStageId: String,
+        newStageId: String,
+        newStageName: String
+    )
 
     suspend fun getAllSubjects(): Flow<List<SubjectModel>>
 
