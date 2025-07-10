@@ -1,6 +1,12 @@
 <resources>
     <string name="app_name">MyHomeworkManager</string>
 
+
+    //intro
+    <string name="text1">Hello!!!</string>
+    <string name="text2">You\'re here to manage your tasks</string>
+    <string name="text3">Let\'s do it!</string>
+
     //core
     <string name="loading">Uploading it…</string>
     <string name="loading_more_time">Just a little more…</string>

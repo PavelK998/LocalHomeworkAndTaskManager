@@ -12,13 +12,24 @@ interface SubjectsRepository {
 
     suspend fun updateSubject(subject: SubjectModel)
 
-    suspend fun insertHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel)
+    suspend fun insertHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel): String
 
     suspend fun updateHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel)
 
+    suspend fun updatePhotoListInSubject(subjectId: String, homeworkModel: HomeworkModel)
+
     suspend fun deleteHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel)
 
-    suspend fun deleteHomeworkListInSubject(subjectId: String, homeworkModelList: List<HomeworkModel>)
+    suspend fun deleteHomeworkListInSubject(
+        subjectId: String,
+        homeworkModelList: List<HomeworkModel>
+    )
+
+    suspend fun changeStageInHomework(
+        oldStageId: String,
+        newStageId: String,
+        newStageName: String
+    )
 
     suspend fun getAllSubjects(): Flow<List<SubjectModel>>
 

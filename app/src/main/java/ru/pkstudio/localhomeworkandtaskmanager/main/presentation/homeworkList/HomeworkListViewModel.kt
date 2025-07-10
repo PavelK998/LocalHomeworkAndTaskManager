@@ -24,6 +24,7 @@ import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toHomeworkModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toImportance
 import ru.pkstudio.localhomeworkandtaskmanager.main.data.mappers.toListHomeworkUiModel
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.model.HomeworkModel
+import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.FilesHandleRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.StageRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.domain.repository.SubjectsRepository
 import ru.pkstudio.localhomeworkandtaskmanager.main.presentation.homeworkList.uiModel.StageUiModel
@@ -36,6 +37,7 @@ class HomeworkListViewModel @Inject constructor(
     private val subjectsRepository: SubjectsRepository,
     private val stageRepository: StageRepository,
     private val deviceManager: DeviceManager,
+    private val filesHandleRepository: FilesHandleRepository
 ) : ViewModel() {
     private val kanban = resourceManager.getString(R.string.kanban)
     private val list = resourceManager.getString(R.string.list)
@@ -432,19 +434,55 @@ class HomeworkListViewModel @Inject constructor(
             }
         )
 
-    private fun deleteSingleHomework(homeworkModel: HomeworkModel) = viewModelScope.execute(
-        source = {
-            subjectsRepository.updateHomeworkInSubject(
-                subjectId = _uiState.value.subjectId,
-                homeworkModel = homeworkModel
+    private fun deleteSingleHomework(homeworkModel: HomeworkModel){
+        _uiState.update {
+            it.copy(
+                isLoading = true
             )
-        },
-        onSuccess = {
-            selectedHomeworkForDelete = null
-        },
-        onError = {
         }
-    )
+        if (homeworkModel.imageNameList.isNotEmpty()) {
+            viewModelScope.execute(
+                source = {
+                    filesHandleRepository.deleteAllImages(namesList = homeworkModel.imageNameList)
+                },
+                onSuccess = {
+                    viewModelScope.execute(
+                        source = {
+                            subjectsRepository.deleteHomeworkInSubject(
+                                subjectId = _uiState.value.subjectId,
+                                homeworkModel = homeworkModel
+                            )
+                        },
+                        onSuccess = {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false
+                                )
+                            }
+                            selectedHomeworkForDelete = null
+                        }
+                    )
+                }
+            )
+        } else {
+            viewModelScope.execute(
+                source = {
+                    subjectsRepository.deleteHomeworkInSubject(
+                        subjectId = _uiState.value.subjectId,
+                        homeworkModel = homeworkModel
+                    )
+                },
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false
+                        )
+                    }
+                    selectedHomeworkForDelete = null
+                }
+            )
+        }
+    }
 
     private fun checkUsage() = viewModelScope.launch {
         when (deviceManager.getUsage()) {
@@ -468,25 +506,63 @@ class HomeworkListViewModel @Inject constructor(
 
     private fun deleteSelectedCards() {
         val listForDelete = _uiState.value.homeworkList.filter { it.isChecked }
-        viewModelScope.execute(
-            source = {
-                subjectsRepository.deleteHomeworkListInSubject(
-                    subjectId = _uiState.value.subjectId,
-                    homeworkModelList = listForDelete.toHomeworkModelList()
-                )
+        _uiState.update {
+            it.copy(
+                isLoading = true
+            )
+        }
 
-            },
-            onSuccess = {
-                _uiState.update {
-                    it.copy(
-                        isEditModeEnabled = false
+        if (listForDelete.any { it.imageNameList.isNotEmpty() }) {
+            val listPhotoNames = mutableListOf<String>()
+            val models = listForDelete.filter { it.imageNameList.isNotEmpty() }
+            models.forEach {
+                listPhotoNames.addAll(it.imageNameList)
+            }
+            viewModelScope.execute(
+                source = {
+                    filesHandleRepository.deleteAllImages(listPhotoNames)
+                },
+                onSuccess = {
+                    viewModelScope.execute(
+                        source = {
+                            subjectsRepository.deleteHomeworkListInSubject(
+                                subjectId = _uiState.value.subjectId,
+                                homeworkModelList = listForDelete.toHomeworkModelList()
+                            )
+                        },
+                        onSuccess = {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    isEditModeEnabled = false
+                                )
+                            }
+                        }
                     )
                 }
-            },
-            onError = {
+            )
+        } else {
+            viewModelScope.execute(
+                source = {
+                    subjectsRepository.deleteHomeworkListInSubject(
+                        subjectId = _uiState.value.subjectId,
+                        homeworkModelList = listForDelete.toHomeworkModelList()
+                    )
 
-            }
-        )
+                },
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(
+                            isEditModeEnabled = false,
+                            isLoading = false
+                        )
+                    }
+                },
+                onError = {
+
+                }
+            )
+        }
     }
 
     private fun turnCardEditMode(index: Int) {

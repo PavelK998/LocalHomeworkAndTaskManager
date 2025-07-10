@@ -57,41 +57,63 @@ class SubjectsRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun insertHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel)
-    = withContext(Dispatchers.IO) {
-        realmDb.write {
-            val queryObject = query<SubjectObject>("_id == $0", ObjectId(subjectId)).first().find()
-            if (queryObject != null){
-                findLatest(queryObject)?.homeworkList?.add(homeworkModel.toHomeworkObject())
+    override suspend fun insertHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel) =
+        withContext(Dispatchers.IO) {
+            realmDb.write {
+                val queryObject =
+                    query<SubjectObject>("_id == $0", ObjectId(subjectId)).first().find()
+                        ?: throw Exception("")
+                val homeworkObject = homeworkModel.toHomeworkObject()
+                findLatest(queryObject)?.homeworkList?.add(homeworkObject)
+                homeworkObject._id.toHexString()
             }
         }
-    }
 
-    override suspend fun updateHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel)
-    = withContext(Dispatchers.IO) {
-        realmDb.write {
-            val queryObject = query<SubjectObject>("_id == $0", ObjectId(subjectId)).first().find()
-            val homeworkObject = homeworkModel.toHomeworkObject()
-            if (queryObject != null){
-                val latestObject = findLatest(queryObject)
-                val index = latestObject?.homeworkList?.indexOfFirst { it._id == homeworkObject._id }
-                if (index != null && index != -1) {
-                    latestObject.homeworkList[index] = homeworkObject
+    override suspend fun updateHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel) =
+        withContext(Dispatchers.IO) {
+            realmDb.write {
+                val queryObject =
+                    query<SubjectObject>("_id == $0", ObjectId(subjectId)).first().find()
+                val homeworkObject = homeworkModel.toHomeworkObject()
+                if (queryObject != null) {
+                    val latestObject = findLatest(queryObject)
+                    val index =
+                        latestObject?.homeworkList?.indexOfFirst { it._id == homeworkObject._id }
+                    if (index != null && index != -1) {
+                        latestObject.homeworkList[index] = homeworkObject
+                    }
                 }
             }
         }
-    }
 
-    override suspend fun deleteHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel)
-    = withContext(Dispatchers.IO) {
-        realmDb.write {
-            val queryObject = query<SubjectObject>("_id == $0", ObjectId(subjectId)).first().find()
-            if (queryObject != null){
-                val latestQueryObject = findLatest(queryObject)?.homeworkList
-                latestQueryObject?.removeIf { it._id == homeworkModel.toHomeworkObject()._id }
+    override suspend fun updatePhotoListInSubject(subjectId: String, homeworkModel: HomeworkModel) =
+        withContext(Dispatchers.IO) {
+            realmDb.write {
+                val queryObject =
+                    query<SubjectObject>("_id == $0", ObjectId(subjectId)).first().find()
+                val homeworkObject = homeworkModel.toHomeworkObject()
+                if (queryObject != null) {
+                    val latestObject = findLatest(queryObject)
+                    val index =
+                        latestObject?.homeworkList?.indexOfFirst { it._id == homeworkObject._id }
+                    if (index != null && index != -1) {
+                        latestObject.homeworkList[index] = homeworkObject
+                    }
+                }
             }
         }
-    }
+
+    override suspend fun deleteHomeworkInSubject(subjectId: String, homeworkModel: HomeworkModel) =
+        withContext(Dispatchers.IO) {
+            realmDb.write {
+                val queryObject =
+                    query<SubjectObject>("_id == $0", ObjectId(subjectId)).first().find()
+                if (queryObject != null) {
+                    val latestQueryObject = findLatest(queryObject)?.homeworkList
+                    latestQueryObject?.removeIf { it._id == homeworkModel.toHomeworkObject()._id }
+                }
+            }
+        }
 
     override suspend fun deleteHomeworkListInSubject(
         subjectId: String,
@@ -99,13 +121,31 @@ class SubjectsRepositoryImpl @Inject constructor(
     ) = withContext(Dispatchers.IO) {
         realmDb.write {
             val queryObject = query<SubjectObject>("_id == $0", ObjectId(subjectId)).first().find()
-            if (queryObject != null){
+            if (queryObject != null) {
                 val latestQueryObject = findLatest(queryObject)?.homeworkList
                 val idsToDelete = homeworkModelList.map {
                     ObjectId(it.id)
                 }.toHashSet()
-                latestQueryObject?.removeAll{ homeworkObject ->  
+                latestQueryObject?.removeAll { homeworkObject ->
                     idsToDelete.contains(homeworkObject._id)
+                }
+            }
+        }
+    }
+
+    override suspend fun changeStageInHomework(
+        oldStageId: String,
+        newStageId: String,
+        newStageName: String
+    ) = withContext(Dispatchers.IO) {
+        realmDb.write {
+            val allSubjects = query<SubjectObject>().find()
+            allSubjects.forEach { subject ->
+                subject.homeworkList.filter {
+                    it.stageId == oldStageId
+                }.forEach { homework ->
+                    homework.stageId = newStageId
+                    homework.stage = newStageName
                 }
             }
         }

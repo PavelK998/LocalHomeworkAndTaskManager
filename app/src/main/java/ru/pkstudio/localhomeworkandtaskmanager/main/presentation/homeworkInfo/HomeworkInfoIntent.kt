@@ -104,10 +104,4 @@ sealed interface HomeworkInfoIntent {
 
     data object OnSelectMediaClick: HomeworkInfoIntent
 
-    data object ConfirmPathSelect: HomeworkInfoIntent
-
-    data object DismissPathSelectDialog: HomeworkInfoIntent
-
-    data class OnFileExportPathSelected(val uri: Uri): HomeworkInfoIntent
-
 }

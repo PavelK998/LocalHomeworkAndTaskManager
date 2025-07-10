@@ -77,7 +77,6 @@ import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultDatePicker
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTimePicker
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultTopAppBar
-import ru.pkstudio.localhomeworkandtaskmanager.core.components.DeleteDialog
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.EditTextPanel
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.ImportanceAndStageSelector
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.ImportanceColorPaletteDialog
@@ -153,21 +152,6 @@ fun AddHomeworkScreen(
                 )
             }
         ) { paddingValues ->
-            if (uiState.isSelectFilePathDialogOpened) {
-                DeleteDialog(
-                    title = stringResource(R.string.select_folder_dialog_title),
-                    comment = stringResource(R.string.select_folder_dialog_description),
-                    onConfirm = {
-                        handleIntent(AddHomeworkIntent.ConfirmPathSelect)
-                    },
-                    onDismissRequest = {
-                        handleIntent(AddHomeworkIntent.DismissPathSelectDialog)
-                    },
-                    onDismiss = {
-                        handleIntent(AddHomeworkIntent.DismissPathSelectDialog)
-                    }
-                )
-            }
 
             if (uiState.isColorPickerVisible) {
                 ImportanceColorPaletteDialog(

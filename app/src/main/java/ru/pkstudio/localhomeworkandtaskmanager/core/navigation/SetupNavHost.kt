@@ -97,6 +97,9 @@ fun SetupNavHost(
         navigation<Destination.AuthGraph>(
             startDestination = Destination.AuthScreen
         ) {
+//            composable<Destination.AuthTest> {
+//                AuthTest()
+//            }
             composable<Destination.AuthScreen> {
                 val viewModel = hiltViewModel<AuthViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
@@ -143,7 +146,6 @@ fun SetupNavHost(
                 AuthScreen(
                     uiState = uiState,
                     handleIntent = viewModel::handleIntent,
-                    player = viewModel.player,
                     isLandscape = isLandscape,
                     screenWidthPx = screenWidthPx
                 )
@@ -211,31 +213,6 @@ fun SetupNavHost(
                 val args = navBackStackEntry.toRoute<Destination.HomeworkAddScreen>()
                 val viewModel = hiltViewModel<AddHomeworkViewModel>()
                 val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
-                val launchSelectFilePath = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.OpenDocumentTree(),
-                    onResult = { uri ->
-                        val appName = context.getString(R.string.app_name)
-                        uri?.let {
-                            try {
-                                val documentFile =  DocumentFile.fromTreeUri(context, it)
-                                val appFolder = documentFile?.createDirectory(appName)
-                                if (appFolder != null) {
-                                    val takeFlags =
-                                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                                    context.contentResolver.takePersistableUriPermission(uri, takeFlags)
-                                    viewModel.handleIntent(
-                                        AddHomeworkIntent.OnFileExportPathSelected(
-                                            appFolder.uri
-                                        )
-                                    )
-                                }
-
-                            } catch (e:Exception) {
-
-                            }
-                        }
-                    }
-                )
                 val launcherForMultiplyImages = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.PickMultipleVisualMedia(
                         maxItems = 10
@@ -257,10 +234,6 @@ fun SetupNavHost(
                                     mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
                                 )
                             )
-                        }
-
-                        is AddHomeworkUIAction.LaunchPathSelectorForSaveImages -> {
-                            launchSelectFilePath.launch(null)
                         }
                     }
                 }
@@ -294,31 +267,6 @@ fun SetupNavHost(
                         subjectId = args.subjectId
                     )
                 }
-                val launchSelectFilePath = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.OpenDocumentTree(),
-                    onResult = { uri ->
-                        val appName = context.getString(R.string.app_name)
-                        uri?.let {
-                            try {
-                                val documentFile =  DocumentFile.fromTreeUri(context, it)
-                                val appFolder = documentFile?.createDirectory(appName)
-                                if (appFolder != null) {
-                                    val takeFlags =
-                                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                                    context.contentResolver.takePersistableUriPermission(uri, takeFlags)
-                                    viewModel.handleIntent(
-                                        HomeworkInfoIntent.OnFileExportPathSelected(
-                                            appFolder.uri
-                                        )
-                                    )
-                                }
-
-                            } catch (e:Exception) {
-
-                            }
-                        }
-                    }
-                )
                 val launcherForMultiplyImages = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.PickMultipleVisualMedia(
                         maxItems = 10
@@ -339,10 +287,6 @@ fun SetupNavHost(
                                     mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
                                 )
                             )
-                        }
-
-                        is HomeworkInfoUiAction.LaunchPathSelectorForSaveImages -> {
-                            launchSelectFilePath.launch(null)
                         }
                     }
                 }

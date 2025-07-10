@@ -4,6 +4,16 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -40,34 +50,37 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.media3.common.Player
-import androidx.media3.ui.PlayerView
 import ru.pkstudio.localhomeworkandtaskmanager.R
 import ru.pkstudio.localhomeworkandtaskmanager.auth.utils.AuthAction
 import ru.pkstudio.localhomeworkandtaskmanager.core.components.DefaultButton
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.LocalHomeworkAndTaskManagerTheme
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.emptyColor
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.filledColor
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.importance10
+import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.stageVariant5
 import ru.pkstudio.localhomeworkandtaskmanager.ui.theme.success
 
 @Composable
 fun AuthScreen(
     uiState: AuthUiState,
     handleIntent: (AuthIntent) -> Unit,
-    player: Player?,
     isLandscape: Boolean,
     screenWidthPx: Int
 ) {
+
     BackHandler {
         handleIntent(AuthIntent.OnBackBtnClicked)
     }
@@ -77,6 +90,21 @@ fun AuthScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
+            when(event) {
+                Lifecycle.Event.ON_PAUSE -> {
+                    Log.d("fgghfghdfhfgh", "AuthScreen: PAUSE")
+                    handleIntent(AuthIntent.SendLifecycleInfo(Lifecycle.Event.ON_PAUSE))
+                }
+
+                Lifecycle.Event.ON_RESUME -> {
+                    Log.d("fgghfghdfhfgh", "AuthScreen: RESUME")
+                    handleIntent(AuthIntent.SendLifecycleInfo(Lifecycle.Event.ON_RESUME))
+                }
+
+                else -> {}
+            }
+
+
             lifecycle = event
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -86,38 +114,44 @@ fun AuthScreen(
         }
     }
     if (uiState.isFirstLaunch) {
-        if (player != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-            ) {
-                AndroidView(
-                    factory = { context ->
-                        PlayerView(context).apply {
-                            this.player = player
-                            useController = false
-                        }
-                    },
-                    update = {
-                        when (lifecycle) {
-                            Lifecycle.Event.ON_PAUSE -> {
-                                it.onPause()
-                                it.player?.pause()
-                            }
-
-                            Lifecycle.Event.ON_RESUME -> {
-                                it.onResume()
-                                it.player?.play()
-                            }
-
-                            else -> {}
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        }
+        GradientBackgroundAnimationWithText(
+            modifier = Modifier.fillMaxSize(),
+            isFirstTextVisible = uiState.isText1Visible,
+            isSecondTextVisible = uiState.isText2Visible,
+            isThirdTextVisible = uiState.isText3Visible
+        )
+//        if (player != null) {
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .background(Color.Black)
+//            ) {
+//                AndroidView(
+//                    factory = { context ->
+//                        PlayerView(context).apply {
+//                            this.player = player
+//                            useController = false
+//                        }
+//                    },
+//                    update = {
+//                        when (lifecycle) {
+//                            Lifecycle.Event.ON_PAUSE -> {
+//                                it.onPause()
+//                                it.player?.pause()
+//                            }
+//
+//                            Lifecycle.Event.ON_RESUME -> {
+//                                it.onResume()
+//                                it.player?.play()
+//                            }
+//
+//                            else -> {}
+//                        }
+//                    },
+//                    modifier = Modifier.fillMaxSize()
+//                )
+//            }
+//        }
     } else {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -172,6 +206,143 @@ fun AuthScreen(
             }
         }
     }
+}
+
+@Composable
+fun GradientBackgroundAnimationWithText(
+    modifier: Modifier = Modifier,
+    isFirstTextVisible: Boolean,
+    isSecondTextVisible: Boolean,
+    isThirdTextVisible: Boolean,
+) {
+    // Определяем начальные и конечные цвета для анимации
+    val colorStart = stageVariant5// Зеленый
+    val colorEnd = importance10  // Синий
+
+    // Бесконечная анимация для градиента
+    val infiniteTransition = rememberInfiniteTransition()
+    val animatedProgress by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 3500, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    // Интерполяция цветов
+    val currentStartColor = lerp(colorStart, colorEnd, animatedProgress)
+    val currentEndColor = lerp(colorEnd, colorStart, animatedProgress)
+
+    // Создаем градиент
+    val gradientBrush = Brush.linearGradient(
+        colors = listOf(currentStartColor, currentEndColor),
+        start = Offset(0f, 0f),
+        end = Offset(1000f, 1000f)
+    )
+
+
+
+    // Основной контейнер
+    Box(
+        modifier = modifier
+            .background(gradientBrush),
+        contentAlignment = Alignment.Center
+    ) {
+        // Анимация для текста
+        AnimatedVisibility(
+            modifier = Modifier.fillMaxSize(),
+            visible = isFirstTextVisible,
+            enter = slideInVertically(
+                initialOffsetY = { it }, // Снизу вверх
+                animationSpec = tween(500)
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { it }, // Уходит вниз
+                animationSpec = tween(500)
+            )
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                contentAlignment = Alignment.Center
+            ){
+                Text(
+                    text = stringResource(R.string.text1),
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+
+        AnimatedVisibility(
+            modifier = Modifier.fillMaxSize(),
+            visible = isSecondTextVisible,
+            enter = slideInVertically(
+                initialOffsetY = { -it }, // Снизу вверх
+                animationSpec = tween(500)
+            ),
+            exit = slideOutHorizontally(
+                targetOffsetX = { -it }, // Уходит вниз
+                animationSpec = tween(500)
+            )
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                contentAlignment = Alignment.Center
+            ){
+                Text(
+                    text = stringResource(R.string.text2),
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+
+        AnimatedVisibility(
+            modifier = Modifier.fillMaxSize(),
+            visible = isThirdTextVisible,
+            enter = slideInHorizontally(
+                initialOffsetX = { it }, // Сверху вниз
+                animationSpec = tween(500)
+            ),
+            exit = slideOutHorizontally(
+                targetOffsetX = { -it }, // Уходит вверх
+                animationSpec = tween(500)
+            )
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                contentAlignment = Alignment.Center
+            ){
+                Text(
+                    text = stringResource(R.string.text3),
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+    }
+}
+// Функция для интерполяции цветов
+@Composable
+fun lerp(start: Color, stop: Color, fraction: Float): Color {
+    return Color(
+        red = lerp(start.red, stop.red, fraction),
+        green = lerp(start.green, stop.green, fraction),
+        blue = lerp(start.blue, stop.blue, fraction),
+        alpha = lerp(start.alpha, stop.alpha, fraction)
+    )
+}
+
+// Функция для интерполяции значений
+fun lerp(start: Float, stop: Float, fraction: Float): Float {
+    return start + fraction * (stop - start)
 }
 
 @Composable
@@ -772,7 +943,6 @@ private fun AuthScreenPreview() {
                 currentAuthAction = AuthAction.SELECT_THEME
             ),
             handleIntent = {},
-            player = null,
             screenWidthPx = 0,
             isLandscape = false
         )
