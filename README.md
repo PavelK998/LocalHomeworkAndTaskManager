@@ -21,7 +21,8 @@ Android 7.0 (Nougat) или выше
 
 ## Технологии
 Язык: Kotlin  
-База данных: Realm (SQLite)  
+База данных: Realm database
 UI: Jetpack Compose  
 Архитектура: MVVM + MVI  
+Защита данных: Встроенное шифрование Realm, шифрование AES-256 для Data store, Android Keystore для хранения ключей
 
